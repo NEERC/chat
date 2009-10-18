@@ -1,0 +1,1 @@
+java -Dfile.encoding=windows-1251 -jar client.jar %*

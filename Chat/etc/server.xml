@@ -1,0 +1,25 @@
+<config>
+    <port>6123</port>
+    <password>password</password>
+    <neerc-clock>qf-main.xml</neerc-clock>
+    <users>
+        <!--<user name="Hall1" host="10.0.1.1" group="Halls"/>-->
+        <!--<user name="Hall2" host="10.0.1.2" group="Halls"/>-->
+        <!--<user name="Hall3" host="10.0.1.3" group="Halls"/>-->
+        <!--<user name="Hall4" host="10.0.1.4" group="Halls"/>-->
+        <!--<user name="Hall5" host="10.0.1.5" group="Halls"/>-->
+        <!--<user name="Hall6" host="10.0.1.6" group="Halls"/>-->
+        <!--<user name="Hall7" host="10.0.1.7" group="Halls"/>-->
+        <!--<user name="HallC" host="10.0.1.8"/>-->
+        <!--<user name="Test" host="127.0.0.1" power="yes"/>-->
+        <!--<user name="Test" host="192.168.0.2" power="yes"/>-->
+        <!--<user name="Test1" host="127.0.0.1" power="no" group="Halls"/>-->
+        <!--<user name="Matvey" host="10.0.1.207" power="yes"/>-->
+        <!--<user name="Testt" host="10.0.1.207" power="yes"/>-->
+        <!--<user name="Geo" host="10.0.0.3" power="yes"/>-->
+        <user name="Matvey" host="127.0.0.1" power="yes" group="Mgmt"/>
+        <user name="Test1" host="127.0.0.1" power="no" group="Halls"/>
+        <user name="Test2" host="127.0.0.1" power="no" group="Halls"/>
+    </users>
+    <!--<plugin class="ru.ifmo.neerc.chat.plugin.crisscross.CrissCrossPlugin"/>-->
+</config>

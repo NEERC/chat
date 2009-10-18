@@ -1,0 +1,121 @@
+// $Id$
+/**
+ * Date: 25.10.2004
+ */
+package ru.ifmo.neerc.chat.message;
+
+import ru.ifmo.ips.config.XMLConfig;
+import ru.ifmo.ips.config.ConfigException;
+import ru.ifmo.neerc.chat.ChatLogger;
+import ru.ifmo.neerc.chat.plugin.CustomMessage;
+
+import java.io.*;
+
+/**
+ * @author Matvey Kazakov
+ */
+public class MessageFactory {
+    private static MessageFactory instance = new MessageFactory();
+    private static final String ATTR_TYPE = "@type";
+    private static final String ATTR_DEST = "@dest";
+
+    public MessageFactory() {
+        try {
+        } catch (Exception e) {
+        }
+    }
+
+    public byte[] serialize(Message message) {
+        byte[] serialized = message.getSerialized();
+        try {
+            if (serialized == null) {
+                XMLConfig messageXml = XMLConfig.createEmptyConfig("message");
+                messageXml.setProperty(ATTR_TYPE, String.valueOf(message.getType()));
+                messageXml.setProperty(ATTR_DEST, String.valueOf(message.getDestination()));
+                message.serialize(messageXml);
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                OutputStreamWriter writer = new OutputStreamWriter(out);
+                messageXml.writeCompactConfig(writer);
+                writer.close();
+                out.write(0);
+                serialized = out.toByteArray();
+                message.setSerialized(serialized);
+            }
+        } catch (Exception e) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            out.write(0);
+            serialized = out.toByteArray();
+        }
+        return serialized;
+    }
+
+    public Message deserialize(byte[] in) {
+
+        XMLConfig messageXml = null;
+        try {
+            messageXml = new XMLConfig(new InputStreamReader(new ByteArrayInputStream(in)));
+        } catch (ConfigException e) {
+            ChatLogger.logError("Error parsing message: " + new String(in));
+            throw e;
+        }
+        int messageType = messageXml.getInt(ATTR_TYPE, 0);
+        int destination = messageXml.getInt(ATTR_DEST, 0);
+        Message message = createMessage(messageType);
+        message.setDestination(destination);
+        message.deserialize(messageXml);
+        ByteArrayOutputStream byteArrayOutputStream = null;
+        try {
+            byteArrayOutputStream = new ByteArrayOutputStream();
+            byteArrayOutputStream.write(in);
+            byteArrayOutputStream.write(0);
+            message.setSerialized(byteArrayOutputStream.toByteArray());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return message;
+    }
+
+    /**
+     * Creates instance of message.
+     * @param messageType type of message to be created
+     * @return newly created instance or <code>NULL</code> if message type not supported.
+     */
+    private Message createMessage(int messageType) {
+        Message message = null;
+        switch (messageType) {
+            case Message.SERVER_MESSAGE:
+                message = new ServerMessage();
+                break;
+            case Message.USER_MESSAGE:
+                message = new UserMessage();
+                break;
+            case Message.LOGIN_MESSAGE:
+                message = new LoginMessage();
+                break;
+            case Message.WELCOME_MESSAGE:
+                message = new WelcomeMessage();
+                break;
+            case Message.TIMER_MESSAGE:
+                message = new TimerMessage();
+                break;
+            case Message.TASK_MESSAGE:
+                message = new TaskMessage();
+                break;
+            case Message.UPDATE_USERS_LIST_MESSAGE:
+                message = new UserListUpdateMessage();
+                break; 
+            case Message.PING_MESSAGE:
+                message = new PingMessage();
+                break;
+            case Message.CUSTOM_MESSAGE:
+                message = new CustomMessage();
+        }
+        return message;
+    }
+
+    public static MessageFactory getInstance() {
+        return instance;
+    }
+
+}
+

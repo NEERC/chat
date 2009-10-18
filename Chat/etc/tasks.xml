@@ -1,0 +1,18 @@
+<tasks>
+    <!-- No -> In progress -> Done -->
+    <task desc="TODO" type="Todo">
+        <assign group="Halls"/>
+    </task>
+    <!-- Yes/no answer -->
+    <task desc="Task" type="Conf">
+        <assign user="Test1"/>
+    </task>
+    <!-- OK / Fail reason task -->
+    <task desc="Где Гео?" type="Q">
+        <assign group="Halls"/>
+    </task>
+    <!-- Text answer -->
+    <task desc="Где Гео?" type="Q">
+        <assign group="Halls"/>
+    </task>
+</tasks>

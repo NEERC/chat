@@ -1,0 +1,6 @@
+<config>
+    <host>localhost</host>
+    <port>6123</port>
+    <user>Matvey</user>
+    <!--plugin class="ru.ifmo.neerc.chat.plugin.crisscross.CrissCrossPlugin"/-->
+</config>
