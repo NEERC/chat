@@ -37,10 +37,10 @@
             <include name="ru/ifmo/neerc/chat/**/*.*"/> 
             <exclude name="ru/ifmo/neerc/chat/client/**/*.*"/> 
         </jar> 
-        <copy file="server.bat" todir="${server.dir}"/>
+        <copy file="etc/server.bat" todir="${server.dir}"/>
         <copy file="etc/server.xml" todir="${server.dir}"/>
         <copy file="etc/qf-main.xml" todir="${server.dir}"/>
-        <copy file="client.bat" todir="${client.dir}"/>
+        <copy file="etc/client.bat" todir="${client.dir}"/>
         <copy file="etc/client.xml" todir="${client.dir}"/>
     </target>
 </project>  
