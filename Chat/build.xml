@@ -5,8 +5,8 @@
     <property name="client.jar" value="${client.dir}/client.jar"/>
     <property name="server.dir" value="${deploy.dir}/server"/>
     <property name="server.jar" value="${server.dir}/server.jar"/>
-    <property name="src.dir" value="src"/>
-    <property name="resources.dir" value="resources"/>
+    <property name="src.dir" value="src/main/java"/>
+    <property name="resources.dir" value="src/main/resources"/>
 
     <target name="build" description="Builds NEERC chat">
         <mkdir dir="${deploy.dir}"/>
