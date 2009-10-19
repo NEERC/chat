@@ -43,17 +43,17 @@ public class TaskRegistry implements UserRegistryListener, MessageListener {
 
     public synchronized void registerTask(Task task) {
         taskById.put(task.getId(), task);
-        for (Iterator<TaskRegistryListener> iterator = listeners.iterator(); iterator.hasNext();) {
-            iterator.next().taskAdded(task);
-        }
+		for (TaskRegistryListener listener : listeners) {
+			listener.taskAdded(task);
+		}
     }
 
     public synchronized void deleteTask(int taskId) {
         Task task = taskById.remove(taskId);
         if (task != null) {
-            for (Iterator<TaskRegistryListener> iterator = listeners.iterator(); iterator.hasNext();) {
-                iterator.next().taskDeleted(task);
-            }
+			for (TaskRegistryListener listener : listeners) {
+				listener.taskDeleted(task);
+			}
         }
     }
 
@@ -101,19 +101,19 @@ public class TaskRegistry implements UserRegistryListener, MessageListener {
     }
 
     private void fireTaskChanged(Task task) {
-        for (Iterator<TaskRegistryListener> iterator = listeners.iterator(); iterator.hasNext();) {
-            iterator.next().taskChanged(task);
-        }
+		for (TaskRegistryListener listener : listeners) {
+			listener.taskChanged(task);
+		}
     }
     
     private static int TASK_ID = 0;
 
     public synchronized Task createTask(String taskDescription, int type) {
-        int max = 0;
-        for (Iterator<Integer> iterator = taskById.keySet().iterator(); iterator.hasNext();) {
-            max = Math.max(iterator.next(), max);
-        }
-        return new Task(newTaskID(max), taskDescription, type);
+        int maxId = 0;
+		for (int id : taskById.keySet()) {
+			maxId = Math.max(id, maxId);
+		}
+        return new Task(newTaskID(maxId), taskDescription, type);
     }
 
     private static synchronized int newTaskID(int max) {
@@ -123,9 +123,9 @@ public class TaskRegistry implements UserRegistryListener, MessageListener {
 
     public synchronized void init(Task[] list) {
         if (list != null) {
-            for (int i = 0; i < list.length; i++) {
-                registerTask(list[i]);
-            }
+			for (Task aList : list) {
+				registerTask(aList);
+			}
         }
     }
 

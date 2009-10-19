@@ -97,12 +97,8 @@ public class UserEntry implements Comparable {
 
         final UserEntry userEntry = (UserEntry)o;
 
-        if (id != userEntry.id) {
-            return false;
-        }
-
-        return true;
-    }
+		return id == userEntry.id;
+	}
 
     public int hashCode() {
         return id;
@@ -121,8 +117,8 @@ public class UserEntry implements Comparable {
         id = node.getInt(ATTR_ID);
         name = node.getProperty(ATTR_NAME);
         group = node.getProperty(ATTR_GROUP);
-        online = new Boolean(node.getProperty(ATTR_ONLINE)).booleanValue();
-        power = new Boolean(node.getProperty(ATTR_POWER)).booleanValue();
+        online = Boolean.valueOf(node.getProperty(ATTR_ONLINE));
+        power = Boolean.valueOf(node.getProperty(ATTR_POWER));
     }
 
     public String toString() {

@@ -35,9 +35,6 @@ public class MessageFactory {
     private static final String ATTR_DEST = "@dest";
 
     public MessageFactory() {
-        try {
-        } catch (Exception e) {
-        }
     }
 
     public byte[] serialize(Message message) {
@@ -65,8 +62,7 @@ public class MessageFactory {
     }
 
     public Message deserialize(byte[] in) {
-
-        XMLConfig messageXml = null;
+        XMLConfig messageXml;
         try {
             messageXml = new XMLConfig(new InputStreamReader(new ByteArrayInputStream(in)));
         } catch (ConfigException e) {
@@ -78,7 +74,7 @@ public class MessageFactory {
         Message message = createMessage(messageType);
         message.setDestination(destination);
         message.deserialize(messageXml);
-        ByteArrayOutputStream byteArrayOutputStream = null;
+        ByteArrayOutputStream byteArrayOutputStream;
         try {
             byteArrayOutputStream = new ByteArrayOutputStream();
             byteArrayOutputStream.write(in);

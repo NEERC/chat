@@ -33,9 +33,9 @@ import java.awt.event.ActionListener;
  * @author Matvey Kazakov
  */
 public class TaskPanel extends JPanel {
-    private static final ImageIcon iconTaskAdd = new ImageIcon(TaskPanel.class.getResource("res/task_add.gif"));
-    private static final ImageIcon iconTaskAssign = new ImageIcon(TaskPanel.class.getResource("res/task_assign.gif"));
-    private static final ImageIcon iconTaskRemove = new ImageIcon(TaskPanel.class.getResource("res/task_remove.gif"));
+//    private static final ImageIcon iconTaskAdd = new ImageIcon(TaskPanel.class.getResource("res/task_add.gif"));
+//    private static final ImageIcon iconTaskAssign = new ImageIcon(TaskPanel.class.getResource("res/task_assign.gif"));
+//    private static final ImageIcon iconTaskRemove = new ImageIcon(TaskPanel.class.getResource("res/task_remove.gif"));
     
     
     private static final ImageIcon iconActionDone = new ImageIcon(TaskPanel.class.getResource("res/task_action_complete.gif"));

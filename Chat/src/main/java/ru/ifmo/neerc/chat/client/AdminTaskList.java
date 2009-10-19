@@ -65,8 +65,8 @@ public class AdminTaskList extends JTable {
             if (columnIndex == 0) {
                 return tasks.get(rowIndex);
             } else {
-                UserEntry currentUser = (UserEntry)users.get(columnIndex - 1);
-                Task currentTask = (Task)tasks.get(rowIndex);
+                UserEntry currentUser = users.get(columnIndex - 1);
+                Task currentTask = tasks.get(rowIndex);
                 return new TaskObject(currentTask, currentUser);
             }
         }
@@ -107,7 +107,7 @@ public class AdminTaskList extends JTable {
         }
 
         public String getColumnName(int column) {
-            return (column == 0) ? "Task" : ((UserEntry)users.get(column - 1)).getName();
+            return (column == 0) ? "Task" : users.get(column - 1).getName();
         }
     }
 

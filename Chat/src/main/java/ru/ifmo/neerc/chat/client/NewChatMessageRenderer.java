@@ -183,8 +183,7 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
             return 1;
         }
         int maximum_height = 1;
-        for (Iterator<Map.Entry<Integer, Integer>> it = rowheights.entrySet().iterator(); it.hasNext();) {
-            Map.Entry<Integer, Integer> entry = it.next();
+        for (Map.Entry<Integer, Integer> entry : rowheights.entrySet()) {
             int cellHeight = entry.getValue();
             maximum_height = Math.max(maximum_height, cellHeight);
         }

@@ -47,7 +47,7 @@ public final class ChatLogger {
      *
      * @param message message to print
      */
-    public static final void logInfo(String message) {
+    public static void logInfo(String message) {
         writeMessage(message, logFile, INFO);
     }
 
@@ -56,7 +56,7 @@ public final class ChatLogger {
      *
      * @param message message to print
      */
-    public static final void logDebug(String message) {
+    public static void logDebug(String message) {
         writeMessage(message, debugFile, DEBUG);
     }
 
@@ -65,7 +65,7 @@ public final class ChatLogger {
      *
      * @param message message to print
      */
-    public static final void logChat(String message) {
+    public static void logChat(String message) {
         writeMessage(message, chatFile, CHAT);
     }
 
@@ -74,7 +74,7 @@ public final class ChatLogger {
      *
      * @param message message to print
      */
-    public static final void logError(String message) {
+    public static void logError(String message) {
         writeMessage(message, errorFile, ERROR);
     }
 

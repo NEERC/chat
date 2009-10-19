@@ -123,8 +123,7 @@ public class AdminTaskPanel extends JPanel {
         btnRemoveTask.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Task[] tasks = getSelectedTasks();
-                for (int i = 0; i < tasks.length; i++) {
-                    Task task = tasks[i];
+                for (Task task : tasks) {
                     clientReader.write(new TaskMessage(TaskMessage.DELETE, -1, task, null));
                 }
                 enableButtons();

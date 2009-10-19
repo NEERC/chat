@@ -38,6 +38,7 @@ class MessageMulticaster {
 
     /**
      * Returns multicater instance.
+     * @return multicater instance
      */
     public static MessageMulticaster getInstance() {
         return instance;

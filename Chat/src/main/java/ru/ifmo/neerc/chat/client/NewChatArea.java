@@ -19,20 +19,18 @@
  */
 package ru.ifmo.neerc.chat.client;
 
-import javax.swing.table.TableCellRenderer;
 import java.util.ArrayList;
 
 /**
  * @author Matvey Kazakov
  */
 public class NewChatArea extends MyJTable<ChatMessage> {
-    private TableCellRenderer cellRenderer;
+//    private TableCellRenderer cellRenderer;
 
     public NewChatArea() {
         super(new ArrayList<ChatMessage>());
         setAppendToTheEnd(true);
-        cellRenderer = new ChatMessageRenderer();
-        setRenderer(cellRenderer);
+        setRenderer(new ChatMessageRenderer());
     }
 
 

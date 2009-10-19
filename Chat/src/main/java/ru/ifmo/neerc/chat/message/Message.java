@@ -107,6 +107,7 @@ public abstract class Message {
 
     /**
      * Return message type.
+     * @return message type
      */
     public int getType() {
         return type;

@@ -75,8 +75,8 @@ public class WelcomeMessage extends Message {
     protected void deserialize(Config message) {
         Config welcomeElement = message.getNode(TAG_WELCOME);
         userId = welcomeElement.getInt(ATTR_USERID);
-        Config[] list = new ru.ifmo.ips.config.Config[0];
-        int length = 0;
+        Config[] list;
+        int length;
         try {
             list = welcomeElement.getNodeList(TAG_USER);
             length = list.length;

@@ -93,7 +93,7 @@ public class ImportTasksDialog extends JDialog {
                 int type = convertType(taskNode.getProperty("@type"));
                 Task task = registry.createTask(description, type);                
                 clientReader.write(new TaskMessage(TaskMessage.CREATE, -1, task, null));
-                Config[] assignNodes = new Config[0];
+                Config[] assignNodes;
                 try {
                     assignNodes = taskNode.getNodeList("assign");
                 } catch (ConfigException e) {
@@ -109,8 +109,8 @@ public class ImportTasksDialog extends JDialog {
                         } 
                     } else if (groupName != null) {
                         UserEntry[] users = UserRegistry.getInstance().findByGroupName(groupName);
-                        for (int i = 0; i < users.length; i++) {
-                            clientReader.write(new TaskMessage(TaskMessage.ASSIGN, users[i].getId(), task, null));
+                        for (UserEntry user : users) {
+                            clientReader.write(new TaskMessage(TaskMessage.ASSIGN, user.getId(), task, null));
                         }
                     }
                 }

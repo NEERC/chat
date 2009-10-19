@@ -35,7 +35,8 @@ public class UserRegistry {
 
     /**
      * Returns user registry instance
-     */
+	 * @return user registry instance
+	 */
     public static UserRegistry getInstance() {
         return instance;
     }
@@ -69,9 +70,9 @@ public class UserRegistry {
             user.setOnline(oldEntry.isOnline());
         }
         userByName.put(user.getName(), user);
-        for (Iterator<UserRegistryListener> iterator = listeners.iterator(); iterator.hasNext();) {
-            iterator.next().userAdded(user);
-        }
+		for (UserRegistryListener listener : listeners) {
+			listener.userAdded(user);
+		}
         return true;
     }
 
@@ -81,21 +82,21 @@ public class UserRegistry {
             return;
         }
         userEntry.setOnline(online);
-        for (Iterator<UserRegistryListener> iterator = listeners.iterator(); iterator.hasNext();) {
-            iterator.next().userChanged(user);
-        }
+		for (UserRegistryListener listener : listeners) {
+			listener.userChanged(user);
+		}
     }
 
     public synchronized void init(UserEntry[] list) {
         UserEntry[] entries = serialize();
         Set<Integer> oldEntries = new HashSet<Integer>();
-        for (int i = 0; i < entries.length; i++) {
-            oldEntries.add(entries[i].getId());
-        }
-        for (int i = 0; i < list.length; i++) {
-            register(list[i]);
-            oldEntries.remove(list[i].getId());
-        }
+		for (UserEntry entry1 : entries) {
+			oldEntries.add(entry1.getId());
+		}
+		for (UserEntry aList : list) {
+			register(aList);
+			oldEntries.remove(aList.getId());
+		}
         for (Integer entry : oldEntries) {
             unregister(entry);
         }
@@ -106,9 +107,9 @@ public class UserRegistry {
         if (user != null) {
             userByName.remove(user.getName());
         }
-        for (Iterator<UserRegistryListener> iterator = listeners.iterator(); iterator.hasNext();) {
-            iterator.next().userRemoved(user);
-        }
+		for (UserRegistryListener listener : listeners) {
+			listener.userRemoved(user);
+		}
     }
 
     public int getUserNumber() {

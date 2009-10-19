@@ -175,7 +175,7 @@ class Connection extends Thread implements MessageListener {
                 return false;
             }
             user.setName(userName);
-            user.setPower(power != null && power.booleanValue());
+            user.setPower(power);
             user.setGroup(server.getUserGroup(userName));
             UserRegistry userRegistry = UserRegistry.getInstance();
             if (!userRegistry.connectUser(user)) {                  

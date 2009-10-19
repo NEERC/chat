@@ -78,7 +78,7 @@ class ClientReader extends Thread {
 
 
     public int connect(TaskRegistry taskRegistry, String host, int port, String user) {
-        int userId = -1;
+        int userId;
         try {
             socket = new Socket(host, port);
             socket.setSoTimeout(1000);

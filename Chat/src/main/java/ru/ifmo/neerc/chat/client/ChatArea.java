@@ -19,8 +19,6 @@
  */
 package ru.ifmo.neerc.chat.client;
 
-import ru.ifmo.neerc.chat.UserEntry;
-
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -48,7 +46,6 @@ public class ChatArea extends JTable {
         setShowGrid(false);
         setTableHeader(null);
         setBackground(Color.white);
-        TableCellRenderer cellRenderer;
         final TableColumn timeColumn = getColumnModel().getColumn(0);
         timeColumn.setResizable(false);
         timeColumn.setCellRenderer(new NewChatMessageRenderer());

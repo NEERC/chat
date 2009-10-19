@@ -72,7 +72,7 @@ public class ChatClient extends JFrame implements MessageListener {
         Config config = new XMLConfig(DEFAULT_CONFIG_FILE);
         localHistorySize = config.getInt("history", -1);
         clientReader = new ClientReader(this);
-        int userId = -1;
+        int userId;
         try {
             userId = clientReader.connect(taskRegistry, config.getProperty("host"),
                     config.getInt("port"), config.getProperty("user"));
@@ -329,7 +329,7 @@ public class ChatClient extends JFrame implements MessageListener {
         ChatLogger.logChat(chatMessage.log());
     }
 
-    private ArrayList<ChatMessage> messagesToShow = new ArrayList<ChatMessage>();
+    private final ArrayList<ChatMessage> messagesToShow = new ArrayList<ChatMessage>();
     
     private void addMessage(ChatMessage msg) {
         synchronized (messagesToShow) {

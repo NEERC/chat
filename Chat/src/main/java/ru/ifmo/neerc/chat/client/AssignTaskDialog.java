@@ -82,12 +82,10 @@ public class AssignTaskDialog extends JDialog{
 
     private JTree createTree() {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode();
-        for (int i = 0; i < allGroups.length; i++) {
-            String group = allGroups[i];
+        for (String group : allGroups) {
             UserEntry[] curUsers = users.get(group);
             DefaultMutableTreeNode groupNode = new DefaultMutableTreeNode(group);
-            for (int j = 0; j < curUsers.length; j++) {
-                UserEntry user = curUsers[j];
+            for (UserEntry user : curUsers) {
                 groupNode.add(new DefaultMutableTreeNode(user, false));
             }
             root.add(groupNode);
@@ -118,8 +116,7 @@ public class AssignTaskDialog extends JDialog{
             }
         }
         for (UserEntry user : selectedUsers) {
-            for (int j = 0; j < tasks.length; j++) {
-                Task task = tasks[j];
+            for (Task task : tasks) {
                 clientReader.write(new TaskMessage(TaskMessage.ASSIGN, user.getId(), task, null));
             }
         }

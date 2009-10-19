@@ -57,8 +57,8 @@ public class UserListUpdateMessage extends Message {
 
     protected void deserialize(Config message) {
         Config welcomeElement = message.getNode(TAG_WELCOME);
-        Config[] list = new Config[0];
-        int length = 0;
+        Config[] list;
+        int length;
         try {
             list = welcomeElement.getNodeList(TAG_USER);
             length = list.length;
