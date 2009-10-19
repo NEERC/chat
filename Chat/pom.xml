@@ -4,7 +4,7 @@
 
     <groupId>ru.ifmo.neerc</groupId>
     <artifactId>chat</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>1.0-SNAPSHOT</version>
 
     <name>NEERC Chat</name>
     <description>
