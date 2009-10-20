@@ -8,7 +8,6 @@ import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.ifmo.neerc.chat.Task;
-import ru.ifmo.neerc.chat.TaskRegistry;
 import ru.ifmo.neerc.chat.client.Chat;
 import ru.ifmo.neerc.chat.message.Message;
 import ru.ifmo.neerc.chat.message.TaskMessage;
@@ -22,7 +21,7 @@ import java.util.Random;
 public class XmppChat implements Chat {
     private static final Logger LOG = LoggerFactory.getLogger(XmppChat.class);
 
-    private static final Random random = new Random();
+    private static final Random random = new Random(System.currentTimeMillis());
 
     private MultiUserChat muc;
 
@@ -40,6 +39,7 @@ public class XmppChat implements Chat {
             XMPPConnection connection = new XMPPConnection(config);
             // Connect to the server
             connection.connect();
+            connection.addConnectionListener(new MyConnectionListener());
 
             // Log into the server
             // You have to specify your Jabber ID addres WITHOUT @jabber.org at the end
@@ -54,7 +54,7 @@ public class XmppChat implements Chat {
 
             // Joins the new room
             DiscussionHistory history = new DiscussionHistory();
-            history.setMaxStanzas(5);
+            history.setMaxStanzas(5); // TODO set since
             muc.join(
                     name, // nick
                     "",   // password
@@ -81,23 +81,51 @@ public class XmppChat implements Chat {
                 TaskMessage taskMessage = (TaskMessage) message;
                 Task task = taskMessage.getTask();
 
-                if (TaskRegistry.getInstance().findTask(task.getId()) == null) {
-                    Form formToSend = new Form(Form.TYPE_FORM);
-                    FormField field = new FormField();
-                    field.setLabel("Label");
-                    field.setType(FormField.TYPE_BOOLEAN);
-                    formToSend.addField(field);
+//                if (TaskRegistry.getInstance().findTask(task.getId()) == null) {
+                Form formToSend = new Form(Form.TYPE_FORM);
+                FormField field = new FormField("user");
+                field.setLabel("user");
+                field.addValue("tester");
+                field.setType(FormField.TYPE_BOOLEAN);
+                formToSend.addField(field);
 
-                    org.jivesoftware.smack.packet.Message msg = muc.createMessage();
-                    msg.setBody("Form");
-                    msg.addExtension(formToSend.getDataFormToSend());
-                    muc.sendMessage(msg);
-                }
+                org.jivesoftware.smack.packet.Message msg = muc.createMessage();
+                msg.setBody("Form");
+                msg.addExtension(formToSend.getDataFormToSend());
+                muc.sendMessage(msg);
+//                }
             } else {
                 throw new UnsupportedOperationException(message.getClass().getSimpleName());
             }
         } catch (XMPPException e) {
             e.printStackTrace(); // TODO
+        }
+    }
+
+    private class MyConnectionListener implements ConnectionListener {
+        @Override
+        public void connectionClosed() {
+            LOG.debug("Connection closed");
+        }
+
+        @Override
+        public void connectionClosedOnError(Exception e) {
+            LOG.error("Connection closed on error", e);
+        }
+
+        @Override
+        public void reconnectingIn(int i) {
+            LOG.debug("Reconnecting in " + i);
+        }
+
+        @Override
+        public void reconnectionSuccessful() {
+            LOG.debug("Reconnected");
+        }
+
+        @Override
+        public void reconnectionFailed(Exception e) {
+            LOG.error("Reconnection failed", e);
         }
     }
 }

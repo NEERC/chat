@@ -30,7 +30,7 @@ import java.io.FileNotFoundException;
 /**
  * Fork of {@link ru.ifmo.neerc.chat.client.ChatClient}.
  *
- * @author Matvey Kazakov
+ * @author Evgeny Mandrikov
  */
 public class XmppChatClient extends AbstractChatClient {
 
