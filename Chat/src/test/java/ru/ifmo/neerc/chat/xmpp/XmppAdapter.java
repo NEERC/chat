@@ -2,17 +2,14 @@ package ru.ifmo.neerc.chat.xmpp;
 
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smackx.Form;
 import org.jivesoftware.smackx.muc.MultiUserChat;
+import org.jivesoftware.smackx.muc.Occupant;
 import org.jivesoftware.smackx.muc.ParticipantStatusListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.ifmo.neerc.chat.MessageListener;
-import ru.ifmo.neerc.chat.UserEntry;
-import ru.ifmo.neerc.chat.UserRegistry;
-import ru.ifmo.neerc.chat.message.Message;
-import ru.ifmo.neerc.chat.message.ServerMessage;
-import ru.ifmo.neerc.chat.message.UserMessage;
-import ru.ifmo.neerc.chat.message.UserText;
+import ru.ifmo.neerc.chat.*;
+import ru.ifmo.neerc.chat.message.*;
 
 import java.util.Iterator;
 
@@ -26,31 +23,54 @@ public abstract class XmppAdapter implements PacketListener, MessageListener, Pa
 
     private MultiUserChat chat;
 
-    private UserEntry getUser(String participant) {
+    private UserEntry getUser(String user) {
         final UserRegistry userRegistry = UserRegistry.getInstance();
 
-        final String name = participant.substring(participant.indexOf('/') + 1);
-        UserEntry user = userRegistry.findByName(name);
+        final Occupant occupant = chat.getOccupant(user);
+        final String role = occupant == null ? "user" : occupant.getRole();
 
-        if (user == null) {
-//            final String role = chat.getOccupant(participant).getRole();
+        final String nick = user.substring(user.indexOf('/') + 1);
+        UserEntry userEntry = userRegistry.findByName(nick);
 
+        LOG.debug("Found {} {}", role, user);
+        final boolean power = "moderator".equalsIgnoreCase(role);
+
+        if (userEntry == null) {
             final int id = userRegistry.getUserNumber() + 1;
-            LOG.debug("Added user {} with id {}", participant, id);
-            user = new UserEntry(
+            LOG.debug("Added {} {} with id {}", new Object[]{role, user, id});
+            userEntry = new UserEntry(
                     id,
-                    name,
-                    false // TODO power
+                    nick,
+                    power
             );
-            userRegistry.register(user);
+        } else {
+            userEntry.setPower(power);
         }
-        return user;
+        userRegistry.register(userEntry);
+        return userEntry;
     }
 
     @Override
     public void processPacket(Packet packet) {
         // TODO unchecked cast
         org.jivesoftware.smack.packet.Message xmppMessage = (org.jivesoftware.smack.packet.Message) packet;
+
+        Form formToRespond = Form.getFormFrom(packet);
+        if (formToRespond != null) {
+            LOG.debug("Form found");
+            Task task = new Task(1, "test", TaskFactory.TASK_TODO);
+            TaskMessage taskMessage = new TaskMessage(
+                    TaskMessage.ASSIGN,
+                    UserRegistry.getInstance().findByName("tester").getId(),
+                    task,
+                    new TodoTaskResult()
+            );
+            TaskRegistry.getInstance().registerTask(task);
+
+            processMessage(taskMessage);
+            return;
+        }
+
         UserEntry user = getUser(xmppMessage.getFrom());
         UserMessage message = new UserMessage(
                 user.getId(),

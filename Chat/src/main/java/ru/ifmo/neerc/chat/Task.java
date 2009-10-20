@@ -19,7 +19,6 @@
  */
 package ru.ifmo.neerc.chat;
 
-import ru.ifmo.ips.Utils;
 import ru.ifmo.ips.config.Config;
 import ru.ifmo.ips.config.ConfigException;
 import ru.ifmo.neerc.chat.message.UserText;
@@ -37,7 +36,7 @@ public class Task implements Comparable<Task> {
     private Set<Integer> assignedUsers = new HashSet<Integer>();
     private Map<Integer, TaskResult> taskResults = new HashMap<Integer, TaskResult>();
     private int id;
-    
+
     private int type = TaskFactory.TASK_TODO;
 
     private static int LAST_ID = 0;
@@ -49,7 +48,7 @@ public class Task implements Comparable<Task> {
     private static final String NODE_RESULT = "result";
 
 
-    Task(int id, String description, int type) {
+    public Task(int id, String description, int type) {
         this();
         this.description.setText(description);
         this.id = id;
@@ -96,7 +95,7 @@ public class Task implements Comparable<Task> {
             return false;
         }
 
-        final Task task = (Task)o;
+        final Task task = (Task) o;
 
         if (id != task.id) {
             return false;
@@ -121,7 +120,7 @@ public class Task implements Comparable<Task> {
             TaskResult result = entry.getValue();
             result.serialize(node.createNode(NODE_RESULT + "#" + userId));
         }
-        
+
     }
 
     public void deserialize(Config config) {
@@ -172,7 +171,7 @@ public class Task implements Comparable<Task> {
             return assignedUsers.contains(userId);
         }
     }
-    
+
     public TaskResult getResult(int userId) {
         TaskResult taskResult = taskResults.get(userId);
         if (taskResult == null && isAssigned(userId)) {

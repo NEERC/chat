@@ -1,12 +1,17 @@
 package ru.ifmo.neerc.chat.xmpp;
 
 import org.jivesoftware.smack.*;
+import org.jivesoftware.smackx.Form;
+import org.jivesoftware.smackx.FormField;
 import org.jivesoftware.smackx.muc.DiscussionHistory;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.ifmo.neerc.chat.Task;
+import ru.ifmo.neerc.chat.TaskRegistry;
 import ru.ifmo.neerc.chat.client.Chat;
 import ru.ifmo.neerc.chat.message.Message;
+import ru.ifmo.neerc.chat.message.TaskMessage;
 import ru.ifmo.neerc.chat.message.UserMessage;
 
 import java.util.Random;
@@ -39,8 +44,7 @@ public class XmppChat implements Chat {
             // Log into the server
             // You have to specify your Jabber ID addres WITHOUT @jabber.org at the end
             // TODO make this configurable
-            connection.login("tester", "12345", "SomeResource" + random.nextInt());
-//            connection.login("admin", "12345", "SomeResource" + random.nextInt());
+            connection.login(name, "12345", "SomeResource" + random.nextInt());
 
             LOG.debug("AUTHENTICATED: " + connection.isAuthenticated());
 
@@ -72,6 +76,23 @@ public class XmppChat implements Chat {
             if (message instanceof UserMessage) {
                 UserMessage userMessage = (UserMessage) message;
                 muc.sendMessage(userMessage.getText().getText());
+            } else if (message instanceof TaskMessage) {
+                // TODO
+                TaskMessage taskMessage = (TaskMessage) message;
+                Task task = taskMessage.getTask();
+
+                if (TaskRegistry.getInstance().findTask(task.getId()) == null) {
+                    Form formToSend = new Form(Form.TYPE_FORM);
+                    FormField field = new FormField();
+                    field.setLabel("Label");
+                    field.setType(FormField.TYPE_BOOLEAN);
+                    formToSend.addField(field);
+
+                    org.jivesoftware.smack.packet.Message msg = muc.createMessage();
+                    msg.setBody("Form");
+                    msg.addExtension(formToSend.getDataFormToSend());
+                    muc.sendMessage(msg);
+                }
             } else {
                 throw new UnsupportedOperationException(message.getClass().getSimpleName());
             }
