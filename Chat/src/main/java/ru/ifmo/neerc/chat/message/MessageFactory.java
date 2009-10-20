@@ -19,8 +19,8 @@
  */
 package ru.ifmo.neerc.chat.message;
 
-import ru.ifmo.ips.config.XMLConfig;
 import ru.ifmo.ips.config.ConfigException;
+import ru.ifmo.ips.config.XMLConfig;
 import ru.ifmo.neerc.chat.ChatLogger;
 import ru.ifmo.neerc.chat.plugin.CustomMessage;
 
@@ -66,7 +66,7 @@ public class MessageFactory {
         try {
             messageXml = new XMLConfig(new InputStreamReader(new ByteArrayInputStream(in)));
         } catch (ConfigException e) {
-            ChatLogger.logError("Error parsing message: " + new String(in));
+            ChatLogger.LOG.error("Error parsing message: " + new String(in), e);
             throw e;
         }
         int messageType = messageXml.getInt(ATTR_TYPE, 0);
@@ -88,6 +88,7 @@ public class MessageFactory {
 
     /**
      * Creates instance of message.
+     *
      * @param messageType type of message to be created
      * @return newly created instance or <code>NULL</code> if message type not supported.
      */
@@ -114,7 +115,7 @@ public class MessageFactory {
                 break;
             case Message.UPDATE_USERS_LIST_MESSAGE:
                 message = new UserListUpdateMessage();
-                break; 
+                break;
             case Message.PING_MESSAGE:
                 message = new PingMessage();
                 break;

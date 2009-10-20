@@ -28,8 +28,8 @@ import org.slf4j.LoggerFactory;
  * @author Matvey Kazakov
  */
 public final class ChatLogger {
-    private static final Logger LOG = LoggerFactory.getLogger(ChatLogger.class);
-    private static final Logger CHAT = LoggerFactory.getLogger("Chat");
+    public static final Logger LOG = LoggerFactory.getLogger(ChatLogger.class);
+    public static final Logger CHAT = LoggerFactory.getLogger("Chat");
 
     /**
      * Log informational message. This is system mesasge, but usually does not mean a problem.
