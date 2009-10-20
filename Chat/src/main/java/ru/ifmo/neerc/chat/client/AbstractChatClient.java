@@ -33,6 +33,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * TODO: Log file
@@ -238,12 +239,14 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
             switch (serverMessage.getEventType()) {
                 case ServerMessage.USER_JOINED:
                     chatMessage = ChatMessage.createServerMessage(
-                            "User " + serverMessage.getUser().getName() + " has joined chat");
+                            "User " + serverMessage.getUser().getName() + " has joined chat"
+                    );
                     UserRegistry.getInstance().putOnline(serverMessage.getUser(), true);
                     break;
                 case ServerMessage.USER_LEFT:
                     chatMessage = ChatMessage.createServerMessage(
-                            "User " + serverMessage.getUser().getName() + " has left chat");
+                            "User " + serverMessage.getUser().getName() + " has left chat"
+                    );
                     UserRegistry.getInstance().putOnline(serverMessage.getUser(), false);
                     break;
             }
@@ -255,14 +258,22 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
                 case TaskMessage.ASSIGN:
                     if (taskMessage.getUser() == user.getId()) {
                         final String description = taskRegistry.findTask(taskMessage.getTaskId()).getDescription();
+                        Date timestamp = taskMessage.getTimestamp();
+                        // TODO don't show popup for old tasks
                         new Thread(new Runnable() {
                             public void run() {
-                                JOptionPane.showMessageDialog(AbstractChatClient.this, "New task: " + description,
-                                        "New Task", JOptionPane.WARNING_MESSAGE);
+                                JOptionPane.showMessageDialog(
+                                        AbstractChatClient.this,
+                                        "New task: " + description,
+                                        "New Task",
+                                        JOptionPane.WARNING_MESSAGE
+                                );
                             }
                         }).start();
                         chatMessage = ChatMessage.createTaskMessage(
-                                "!!! New task '" + description + "' has been assigned to you !!!");
+                                "!!! New task '" + description + "' has been assigned to you !!!",
+                                timestamp
+                        );
                     }
                     break;
             }

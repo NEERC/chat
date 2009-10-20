@@ -16,6 +16,7 @@ import ru.ifmo.neerc.chat.UserRegistry;
 import ru.ifmo.neerc.chat.message.*;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Iterator;
 
 /**
@@ -56,39 +57,43 @@ public abstract class XmppAdapter implements PacketListener, MessageListener {
 
     @Override
     public void processPacket(Packet packet) {
-        // TODO unchecked cast
+        if (!(packet instanceof org.jivesoftware.smack.packet.Message)) {
+            // TODO Godin: maybe throw exception?
+            return;
+        }
+
         org.jivesoftware.smack.packet.Message xmppMessage = (org.jivesoftware.smack.packet.Message) packet;
 
         UserEntry user = getUser(xmppMessage.getFrom());
+        Date timestamp = null;
+
+        for (PacketExtension extension : xmppMessage.getExtensions()) {
+            if ("jabber:x:delay".equals(extension.getNamespace())) {
+                DelayInformation delayInformation = (DelayInformation) extension;
+                timestamp = delayInformation.getStamp();
+            } else {
+                LOG.debug("Found unknown packet extenstion {} with namespace {}",
+                        extension.getClass().getSimpleName(),
+                        extension.getNamespace()
+                );
+            }
+        }
+
+        Message message;
 
         Object taskMessageProperty = xmppMessage.getProperty("taskMessage");
         if (taskMessageProperty != null) {
             byte[] bytes = (byte[]) taskMessageProperty;
             bytes = Arrays.copyOf(bytes, bytes.length - 1); // TODO Godin: WTF?
-            TaskMessage taskMessage = (TaskMessage) MessageFactory.getInstance().deserialize(bytes);
-
-            LOG.debug("Found taskMessage: " + taskMessage.asString());
-
-            processMessage(taskMessage);
-            return;
-        }
-
-        for (PacketExtension extension : xmppMessage.getExtensions()) {
-            LOG.debug("Found packet extenstion {} with namespace {}",
-                    extension.getClass().getSimpleName(),
-                    extension.getNamespace()
+            message = MessageFactory.getInstance().deserialize(bytes);
+            LOG.debug("Found taskMessage: " + message.asString());
+        } else {
+            message = new UserMessage(
+                    user.getId(),
+                    new UserText(xmppMessage.getBody())
             );
         }
-
-        DelayInformation delayInformation = (DelayInformation) xmppMessage.getExtension("jabber:x:delay");
-        if (delayInformation != null) {
-            LOG.debug(delayInformation.getStamp().toString());
-        }
-
-        UserMessage message = new UserMessage(
-                user.getId(),
-                new UserText(xmppMessage.getBody())
-        );
+        message.setTimestamp(timestamp);
         processMessage(message);
     }
 

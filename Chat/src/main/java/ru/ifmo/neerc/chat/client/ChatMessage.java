@@ -32,42 +32,49 @@ import java.util.Date;
  * @author Matvey Kazakov
  */
 public class ChatMessage {
-
     public static final String LOG_TIME_FORMAT = "yyyy.MM.dd HH:mm:ss";
-
 
     public static final int SERVER_MESSAGE = 0;
     public static final int USER_MESSAGE = 1;
     public static final int TASK_MESSAGE = 2;
+
     private int type;
     private String text;
     private UserEntry user;
     private boolean priv;
-    private Date timestamp = new Date();
+    private Date timestamp;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-    
+
     private boolean special;
 
-    private ChatMessage(int type, String text, UserEntry user, boolean special, boolean priv) {
+    private ChatMessage(int type, String text, UserEntry user, boolean special, boolean priv, Date timestamp) {
         this.special = special;
         this.type = type;
         this.text = text;
         this.user = user;
         this.priv = priv;
+        this.timestamp = timestamp == null ? new Date() : timestamp;
     }
 
     public static ChatMessage createServerMessage(String text) {
-        return new ChatMessage(SERVER_MESSAGE, text, null, false, false);
+        return new ChatMessage(SERVER_MESSAGE, text, null, false, false, null);
     }
 
-    public static ChatMessage createTaskMessage(String text) {
-        return new ChatMessage(TASK_MESSAGE, text, null, true, false);
+    public static ChatMessage createTaskMessage(String text, Date timestamp) {
+        return new ChatMessage(TASK_MESSAGE, text, null, true, false, timestamp);
     }
 
     public static ChatMessage createUserMessage(UserMessage userMessage) {
         UserEntry user = UserRegistry.getInstance().search(userMessage.getFrom());
         String text = userMessage.getText().getText();
-        return new ChatMessage(USER_MESSAGE, text, user, userMessage.isImportant(), userMessage.isPrivate());
+        return new ChatMessage(
+                USER_MESSAGE,
+                text,
+                user,
+                userMessage.isImportant(),
+                userMessage.isPrivate(),
+                userMessage.getTimestamp()
+        );
     }
 
     public int getType() {
@@ -118,7 +125,7 @@ public class ChatMessage {
             } else if (src.startsWith("!")) {
                 return "<html><b><font color=\"red\">" + replaceEnters(src.substring(1)) + "</font></b></html>";
             }
-        } 
+        }
         return "<html>" + replaceEnters(replaceHTML(src)) + "</html>";
     }
 
@@ -126,17 +133,22 @@ public class ChatMessage {
         StringCharacterIterator iterator = new StringCharacterIterator(src);
         StringBuilder result = new StringBuilder();
         for (char c = iterator.first(); c != CharacterIterator.DONE; c = iterator.next()) {
-            switch(c) {
+            switch (c) {
                 case '<':
-                    result.append("&lt;"); break;
+                    result.append("&lt;");
+                    break;
                 case '>':
-                    result.append("&gt;"); break;
+                    result.append("&gt;");
+                    break;
                 case '&':
-                    result.append("&amp;"); break;
+                    result.append("&amp;");
+                    break;
                 case '"':
-                    result.append("&quot;"); break;
+                    result.append("&quot;");
+                    break;
                 default:
-                    result.append(c); break;
+                    result.append(c);
+                    break;
             }
         }
         return result.toString();
@@ -154,7 +166,6 @@ public class ChatMessage {
         }
         return result.toString();
     }
-
 
     public boolean isSpecial() {
         return special;
