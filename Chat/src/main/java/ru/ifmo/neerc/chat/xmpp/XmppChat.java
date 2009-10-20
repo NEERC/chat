@@ -1,15 +1,13 @@
 package ru.ifmo.neerc.chat.xmpp;
 
 import org.jivesoftware.smack.*;
-import org.jivesoftware.smackx.Form;
-import org.jivesoftware.smackx.FormField;
 import org.jivesoftware.smackx.muc.DiscussionHistory;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.ifmo.neerc.chat.Task;
 import ru.ifmo.neerc.chat.client.Chat;
 import ru.ifmo.neerc.chat.message.Message;
+import ru.ifmo.neerc.chat.message.MessageFactory;
 import ru.ifmo.neerc.chat.message.TaskMessage;
 import ru.ifmo.neerc.chat.message.UserMessage;
 
@@ -25,14 +23,17 @@ public class XmppChat implements Chat {
 
     private MultiUserChat muc;
 
+    private XmppAdapter adapter;
+
     public XmppChat(String name, XmppAdapter adapter) {
+        this.adapter = adapter;
         try {
             // Create the configuration for this new connection
             ConnectionConfiguration config = new ConnectionConfiguration("localhost", 5222); // TODO make this configurable
             config.setCompressionEnabled(false);
             config.setSASLAuthenticationEnabled(true);
             config.setReconnectionAllowed(true);
-//        config.setDebuggerEnabled(true);
+//            config.setDebuggerEnabled(true);
 
             SASLAuthentication.supportSASLMechanism("PLAIN", 0);
 
@@ -54,7 +55,7 @@ public class XmppChat implements Chat {
 
             // Joins the new room
             DiscussionHistory history = new DiscussionHistory();
-            history.setMaxStanzas(5); // TODO set since
+            history.setMaxStanzas(100); // TODO set since
             muc.join(
                     name, // nick
                     "",   // password
@@ -77,23 +78,14 @@ public class XmppChat implements Chat {
                 UserMessage userMessage = (UserMessage) message;
                 muc.sendMessage(userMessage.getText().getText());
             } else if (message instanceof TaskMessage) {
-                // TODO
                 TaskMessage taskMessage = (TaskMessage) message;
-                Task task = taskMessage.getTask();
-
-//                if (TaskRegistry.getInstance().findTask(task.getId()) == null) {
-                Form formToSend = new Form(Form.TYPE_FORM);
-                FormField field = new FormField("user");
-                field.setLabel("user");
-                field.addValue("tester");
-                field.setType(FormField.TYPE_BOOLEAN);
-                formToSend.addField(field);
-
+                byte[] bytes = MessageFactory.getInstance().serialize(taskMessage);
                 org.jivesoftware.smack.packet.Message msg = muc.createMessage();
-                msg.setBody("Form");
-                msg.addExtension(formToSend.getDataFormToSend());
+                msg.setProperty("taskMessage", bytes);
+                msg.setBody("Task");
                 muc.sendMessage(msg);
-//                }
+
+                adapter.processMessage(message);
             } else {
                 throw new UnsupportedOperationException(message.getClass().getSimpleName());
             }

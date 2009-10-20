@@ -113,12 +113,15 @@ public class Task implements Comparable<Task> {
         node.setProperty(ATTR_TYPE, "" + type);
         node.setProperty(NODE_DESC, description.asString());
         for (Integer user : assignedUsers) {
-            node.createNode(NODE_ASSIGNED + "#" + user);
+            node.createNode(NODE_ASSIGNED + "#" + UserRegistry.getInstance().search(user).getName());
+//            node.createNode(NODE_ASSIGNED + "#" + user);
         }
         for (Map.Entry<Integer, TaskResult> entry : taskResults.entrySet()) {
             int userId = entry.getKey();
             TaskResult result = entry.getValue();
-            result.serialize(node.createNode(NODE_RESULT + "#" + userId));
+            String username = UserRegistry.getInstance().search(userId).getName();
+            result.serialize(node.createNode(NODE_RESULT + "#" + username));
+//            result.serialize(node.createNode(NODE_RESULT + "#" + userId));
         }
 
     }
@@ -131,7 +134,10 @@ public class Task implements Comparable<Task> {
         try {
             Config[] assigned = node.getNodeList(NODE_ASSIGNED);
             for (int i = 0; i < assigned.length; i++) {
-                assignedUsers.add(assigned[i].getInt(ATTR_ID));
+                String username = assigned[i].getString(ATTR_ID);
+                int userId = UserRegistry.getInstance().findByName(username).getId();
+                assignedUsers.add(userId);
+//                assignedUsers.add(assigned[i].getInt(ATTR_ID));
             }
         } catch (ConfigException e) {
             // do nothing
@@ -140,7 +146,9 @@ public class Task implements Comparable<Task> {
             Config[] results = node.getNodeList(NODE_RESULT);
             for (int i = 0; i < results.length; i++) {
                 Config resultNode = results[i];
-                int userId = resultNode.getInt(ATTR_ID);
+                String username = resultNode.getString(ATTR_ID);
+                int userId = UserRegistry.getInstance().findByName(username).getId();
+//                int userId = resultNode.getInt(ATTR_ID);
                 TaskResult result = TaskFactory.create(type);
                 result.deserialize(resultNode);
                 taskResults.put(userId, result);

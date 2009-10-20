@@ -3,7 +3,6 @@ package ru.ifmo.neerc.chat.xmpp;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.PacketExtension;
-import org.jivesoftware.smackx.Form;
 import org.jivesoftware.smackx.muc.DefaultParticipantStatusListener;
 import org.jivesoftware.smackx.muc.DefaultUserStatusListener;
 import org.jivesoftware.smackx.muc.MultiUserChat;
@@ -11,12 +10,12 @@ import org.jivesoftware.smackx.muc.Occupant;
 import org.jivesoftware.smackx.packet.DelayInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.ifmo.neerc.chat.*;
-import ru.ifmo.neerc.chat.message.ServerMessage;
-import ru.ifmo.neerc.chat.message.TaskMessage;
-import ru.ifmo.neerc.chat.message.UserMessage;
-import ru.ifmo.neerc.chat.message.UserText;
+import ru.ifmo.neerc.chat.MessageListener;
+import ru.ifmo.neerc.chat.UserEntry;
+import ru.ifmo.neerc.chat.UserRegistry;
+import ru.ifmo.neerc.chat.message.*;
 
+import java.util.Arrays;
 import java.util.Iterator;
 
 /**
@@ -60,22 +59,15 @@ public abstract class XmppAdapter implements PacketListener, MessageListener {
         // TODO unchecked cast
         org.jivesoftware.smack.packet.Message xmppMessage = (org.jivesoftware.smack.packet.Message) packet;
 
-        Form form = Form.getFormFrom(packet);
-        if (form != null) {
-            if (form.getField("user") != null) {
-                String user = form.getField("user").getValues().next();
-                LOG.debug("Form for user " + user);
-            }
+        UserEntry user = getUser(xmppMessage.getFrom());
 
-            LOG.debug("Form found");
-            Task task = new Task(1, "test", TaskFactory.TASK_TODO);
-            TaskMessage taskMessage = new TaskMessage(
-                    TaskMessage.ASSIGN,
-                    UserRegistry.getInstance().findByName("tester").getId(),
-                    task,
-                    new TodoTaskResult()
-            );
-            TaskRegistry.getInstance().registerTask(task);
+        Object taskMessageProperty = xmppMessage.getProperty("taskMessage");
+        if (taskMessageProperty != null) {
+            byte[] bytes = (byte[]) taskMessageProperty;
+            bytes = Arrays.copyOf(bytes, bytes.length - 1); // TODO Godin: WTF?
+            TaskMessage taskMessage = (TaskMessage) MessageFactory.getInstance().deserialize(bytes);
+
+            LOG.debug("Found taskMessage: " + taskMessage.asString());
 
             processMessage(taskMessage);
             return;
@@ -93,7 +85,6 @@ public abstract class XmppAdapter implements PacketListener, MessageListener {
             LOG.debug(delayInformation.getStamp().toString());
         }
 
-        UserEntry user = getUser(xmppMessage.getFrom());
         UserMessage message = new UserMessage(
                 user.getId(),
                 new UserText(xmppMessage.getBody())

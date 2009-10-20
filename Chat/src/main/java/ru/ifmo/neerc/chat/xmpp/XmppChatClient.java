@@ -37,7 +37,7 @@ public class XmppChatClient extends AbstractChatClient {
     public XmppChatClient() throws HeadlessException, FileNotFoundException {
         final String name = System.getProperty("username");
 
-        user = new UserEntry(0, name, false);
+        user = new UserEntry(0, name, false); // TODO power
         UserRegistry.getInstance().register(user);
         UserRegistry.getInstance().putOnline(user, true);
 
