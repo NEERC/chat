@@ -11,17 +11,14 @@ import ru.ifmo.neerc.chat.message.MessageFactory;
 import ru.ifmo.neerc.chat.message.TaskMessage;
 import ru.ifmo.neerc.chat.message.UserMessage;
 
-import java.util.Random;
-
 /**
  * @author Evgeny Mandrikov
  */
 public class XmppChat implements Chat {
     private static final Logger LOG = LoggerFactory.getLogger(XmppChat.class);
 
-    private static final Random random = new Random(System.currentTimeMillis());
-
     private MultiUserChat muc;
+    private XMPPConnection connection;
 
     private XmppAdapter adapter;
 
@@ -37,15 +34,14 @@ public class XmppChat implements Chat {
 
             SASLAuthentication.supportSASLMechanism("PLAIN", 0);
 
-            XMPPConnection connection = new XMPPConnection(config);
+            connection = new XMPPConnection(config);
             // Connect to the server
             connection.connect();
-            connection.addConnectionListener(new MyConnectionListener());
 
             // Log into the server
             // You have to specify your Jabber ID addres WITHOUT @jabber.org at the end
             // TODO make this configurable
-            connection.login(name, "12345", "SomeResource" + random.nextInt());
+            connection.login(name, "12345", connection.getHost());
 
             LOG.debug("AUTHENTICATED: " + connection.isAuthenticated());
 
@@ -53,7 +49,7 @@ public class XmppChat implements Chat {
             // TODO make this configurable
             muc = new MultiUserChat(connection, "neerc@conference.localhost");
 
-            // Joins the new room
+            // Joins the new room and retrieve history
             DiscussionHistory history = new DiscussionHistory();
             history.setMaxStanzas(100); // TODO set since
             muc.join(
@@ -67,7 +63,7 @@ public class XmppChat implements Chat {
 
             adapter.registerListeners(muc);
         } catch (XMPPException e) {
-            e.printStackTrace(); // TODO
+            LOG.error("Unable to connect", e);
         }
     }
 
@@ -90,34 +86,15 @@ public class XmppChat implements Chat {
                 throw new UnsupportedOperationException(message.getClass().getSimpleName());
             }
         } catch (XMPPException e) {
-            e.printStackTrace(); // TODO
+            LOG.error("Unable to write message", e);
         }
     }
 
-    private class MyConnectionListener implements ConnectionListener {
-        @Override
-        public void connectionClosed() {
-            LOG.debug("Connection closed");
-        }
+    public MultiUserChat getMultiUserChat() {
+        return muc;
+    }
 
-        @Override
-        public void connectionClosedOnError(Exception e) {
-            LOG.error("Connection closed on error", e);
-        }
-
-        @Override
-        public void reconnectingIn(int i) {
-            LOG.debug("Reconnecting in " + i);
-        }
-
-        @Override
-        public void reconnectionSuccessful() {
-            LOG.debug("Reconnected");
-        }
-
-        @Override
-        public void reconnectionFailed(Exception e) {
-            LOG.error("Reconnection failed", e);
-        }
+    public XMPPConnection getConnection() {
+        return connection;
     }
 }

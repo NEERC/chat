@@ -48,6 +48,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     public ChatArea outputAreaJury;
     public JTextArea inputArea;
     public JLabel neercTimer = new JLabel();
+    protected JLabel connectionStatus = new JLabel();
     protected TaskRegistry taskRegistry = TaskRegistry.getInstance();
     protected UserEntry user;
     protected int localHistorySize;
@@ -159,6 +160,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 //            }
 //        }
         toolBar.add(Box.createHorizontalGlue());
+        toolBar.add(connectionStatus);
         toolBar.add(neercTimer);
         return toolBar;
     }
@@ -259,17 +261,18 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
                     if (taskMessage.getUser() == user.getId()) {
                         final String description = taskRegistry.findTask(taskMessage.getTaskId()).getDescription();
                         Date timestamp = taskMessage.getTimestamp();
-                        // TODO don't show popup for old tasks
-                        new Thread(new Runnable() {
-                            public void run() {
-                                JOptionPane.showMessageDialog(
-                                        AbstractChatClient.this,
-                                        "New task: " + description,
-                                        "New Task",
-                                        JOptionPane.WARNING_MESSAGE
-                                );
-                            }
-                        }).start();
+                        if ((timestamp == null) || (DateUtils.getTimeDifference(timestamp) < DateUtils.MINUTE)) {
+                            new Thread(new Runnable() {
+                                public void run() {
+                                    JOptionPane.showMessageDialog(
+                                            AbstractChatClient.this,
+                                            "New task: " + description,
+                                            "New Task",
+                                            JOptionPane.WARNING_MESSAGE
+                                    );
+                                }
+                            }).start();
+                        }
                         chatMessage = ChatMessage.createTaskMessage(
                                 "!!! New task '" + description + "' has been assigned to you !!!",
                                 timestamp
