@@ -1,3 +1,3 @@
 #!/bin/sh
 
-java -Dusername=admin -cp chat-client.jar ru.ifmo.neerc.chat.xmpp.XmppChatClient
+java -Dconsole.encoding=UTF-8 -Dusername=admin -cp chat-client.jar ru.ifmo.neerc.chat.xmpp.XmppChatClient
