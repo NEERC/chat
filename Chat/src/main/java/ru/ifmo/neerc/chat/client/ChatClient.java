@@ -22,10 +22,8 @@ package ru.ifmo.neerc.chat.client;
 import ru.ifmo.ips.config.Config;
 import ru.ifmo.ips.config.XMLConfig;
 import ru.ifmo.neerc.chat.*;
-import ru.ifmo.neerc.chat.plugin.PluginManager;
-import ru.ifmo.neerc.chat.plugin.ChatPlugin;
-import ru.ifmo.neerc.chat.plugin.CustomMessage;
 import ru.ifmo.neerc.chat.message.*;
+import ru.ifmo.neerc.chat.plugin.CustomMessage;
 
 import javax.swing.*;
 import javax.swing.text.AttributeSet;
@@ -61,8 +59,8 @@ public class ChatClient extends JFrame implements MessageListener {
     private TimerTicker ticker = new TimerTicker(neercTimer);
     private JPanel mainPanel;
     private JSplitPane powerSplitter;
-    
-    private PluginManager pluginManager;
+
+//    private PluginManager pluginManager;
 
     public static void main(String[] args) throws FileNotFoundException {
         new ChatClient().setVisible(true);
@@ -83,11 +81,11 @@ public class ChatClient extends JFrame implements MessageListener {
             return;
         }
         user = UserRegistry.getInstance().search(userId);
-        pluginManager = new PluginManager(config, new MessageListener() {
-            public void processMessage(Message message) {
-                clientReader.write(message);
-            }
-        }, userId, mainPanel);
+//        pluginManager = new PluginManager(config, new MessageListener() {
+//            public void processMessage(Message message) {
+//                clientReader.write(message);
+//            }
+//        }, userId, mainPanel);
         setupUI();
         setVisible(true);
     }
@@ -173,19 +171,19 @@ public class ChatClient extends JFrame implements MessageListener {
 
 
         toolBar.add(about);
-        java.util.List<ChatPlugin> plugins = pluginManager.getPlugins();
-        if (plugins.size() > 0) {
-            toolBar.addSeparator();
-            for (final ChatPlugin plugin : plugins) {
-                JButton button = new JButton(plugin.getIcon());
-                button.addActionListener(new ActionListener()  {
-                    public void actionPerformed(ActionEvent e) {
-                        plugin.start();
-                    }
-                });
-                toolBar.add(button);
-            }
-        }
+//        java.util.List<ChatPlugin> plugins = pluginManager.getPlugins();
+//        if (plugins.size() > 0) {
+//            toolBar.addSeparator();
+//            for (final ChatPlugin plugin : plugins) {
+//                JButton button = new JButton(plugin.getIcon());
+//                button.addActionListener(new ActionListener()  {
+//                    public void actionPerformed(ActionEvent e) {
+//                        plugin.start();
+//                    }
+//                });
+//                toolBar.add(button);
+//            }
+//        }
         toolBar.add(Box.createHorizontalGlue());
         toolBar.add(neercTimer);
         return toolBar;
@@ -242,7 +240,7 @@ public class ChatClient extends JFrame implements MessageListener {
     private void send(String text) {
         // ansure that null won't be here
         text = String.valueOf(text);
-        
+
         int toPos = text.indexOf(">");
         int destination = -1;
         if (toPos >= 0) {
@@ -262,7 +260,7 @@ public class ChatClient extends JFrame implements MessageListener {
         taskRegistry.processMessage(message);
         ChatMessage chatMessage = null;
         if (message instanceof ServerMessage) {
-            ServerMessage serverMessage = (ServerMessage)message;
+            ServerMessage serverMessage = (ServerMessage) message;
 
             switch (serverMessage.getEventType()) {
                 case ServerMessage.USER_JOINED:
@@ -277,9 +275,9 @@ public class ChatClient extends JFrame implements MessageListener {
                     break;
             }
         } else if (message instanceof UserMessage) {
-            chatMessage = ChatMessage.createUserMessage((UserMessage)message);
+            chatMessage = ChatMessage.createUserMessage((UserMessage) message);
         } else if (message instanceof TaskMessage) {
-            final TaskMessage taskMessage = (TaskMessage)message;
+            final TaskMessage taskMessage = (TaskMessage) message;
             switch (taskMessage.getTaskMsgType()) {
                 case TaskMessage.ASSIGN:
                     if (taskMessage.getUser() == user.getId()) {
@@ -296,13 +294,13 @@ public class ChatClient extends JFrame implements MessageListener {
                     break;
             }
         } else if (message instanceof TimerMessage) {
-            final TimerMessage timerMessage = (TimerMessage)message;
+            final TimerMessage timerMessage = (TimerMessage) message;
             ticker.updateStatus(timerMessage.getTotal(), timerMessage.getTime(), timerMessage.getStatus());
         } else if (message instanceof UserListUpdateMessage) {
             ChatLogger.logDebug("User list update is received");
-            UserRegistry.getInstance().init(((UserListUpdateMessage)message).getEntries());
+            UserRegistry.getInstance().init(((UserListUpdateMessage) message).getEntries());
         } else if (message instanceof CustomMessage) {
-            pluginManager.processMessage(message);
+//            pluginManager.processMessage(message);
         }
 
         if (chatMessage != null) {
@@ -323,14 +321,14 @@ public class ChatClient extends JFrame implements MessageListener {
     private void showMessage(ChatMessage chatMessage) {
         outputArea.addMessage(chatMessage);
         if (chatMessage.isSpecial()) {
-                outputAreaJury.addMessage(chatMessage);
-            }
+            outputAreaJury.addMessage(chatMessage);
+        }
 
         ChatLogger.logChat(chatMessage.log());
     }
 
     private final ArrayList<ChatMessage> messagesToShow = new ArrayList<ChatMessage>();
-    
+
     private void addMessage(ChatMessage msg) {
         synchronized (messagesToShow) {
             messagesToShow.add(msg);
