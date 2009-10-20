@@ -19,7 +19,10 @@
  */
 package ru.ifmo.neerc.chat.client;
 
-import ru.ifmo.neerc.chat.*;
+import ru.ifmo.neerc.chat.Task;
+import ru.ifmo.neerc.chat.TaskFactory;
+import ru.ifmo.neerc.chat.TaskRegistry;
+import ru.ifmo.neerc.chat.TaskRegistryListener;
 import ru.ifmo.neerc.chat.message.TaskMessage;
 
 import javax.swing.*;
@@ -43,12 +46,12 @@ public class AdminTaskPanel extends JPanel {
 
     private Frame owner;
     private TaskRegistry registry;
-    private ClientReader clientReader;
+    private Chat clientReader;
     private AdminTaskList taskList;
     private JButton btnAssignTask;
     private JButton btnRemoveTask;
 
-    public AdminTaskPanel(Frame owner, TaskRegistry taskRegistry, ClientReader clientReader) {
+    public AdminTaskPanel(Frame owner, TaskRegistry taskRegistry, Chat clientReader) {
         super(new BorderLayout());
         this.owner = owner;
         this.registry = taskRegistry;
@@ -79,7 +82,7 @@ public class AdminTaskPanel extends JPanel {
         enableButtons();
     }
 
-    static JDialog createPowerDialog(Frame frame, TaskRegistry taskRegistry, ClientReader clientReader) {
+    static JDialog createPowerDialog(Frame frame, TaskRegistry taskRegistry, Chat clientReader) {
         JDialog dialog = new JDialog(frame);
         dialog.setTitle("Tasks");
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -166,7 +169,7 @@ public class AdminTaskPanel extends JPanel {
         int[] selectedIndices = taskList.getSelectedRows();
         Task[] tasks = new Task[selectedIndices.length];
         for (int i = 0; i < selectedIndices.length; i++) {
-            tasks[i] = (Task)taskList.getValueAt(selectedIndices[i], 0);
+            tasks[i] = (Task) taskList.getValueAt(selectedIndices[i], 0);
         }
         return tasks;
     }

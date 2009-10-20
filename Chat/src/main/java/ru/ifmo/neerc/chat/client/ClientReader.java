@@ -20,10 +20,10 @@
 package ru.ifmo.neerc.chat.client;
 
 import ru.ifmo.ips.IpsRuntimeException;
+import ru.ifmo.neerc.chat.ChatLogger;
 import ru.ifmo.neerc.chat.MessageUtils;
 import ru.ifmo.neerc.chat.TaskRegistry;
 import ru.ifmo.neerc.chat.UserRegistry;
-import ru.ifmo.neerc.chat.ChatLogger;
 import ru.ifmo.neerc.chat.message.*;
 
 import java.io.IOException;
@@ -34,14 +34,14 @@ import java.net.Socket;
 /**
  * @author Matvey Kazakov
  */
-class ClientReader extends Thread {
+class ClientReader extends Thread implements Chat {
     private Socket socket;
-    private ChatClient chatClient;
+    private AbstractChatClient chatClient;
     private OutputStream out;
-    
+
     private final Pinger pinger = new Pinger();
 
-    public ClientReader(ChatClient listener) {
+    public ClientReader(AbstractChatClient listener) {
         super("chatclient Reader");
         this.chatClient = listener;
         setDaemon(true);
@@ -71,7 +71,8 @@ class ClientReader extends Thread {
                 if (in != null) {
                     in.close();
                 }
-            } catch (IOException e) {}
+            } catch (IOException e) {
+            }
             chatClient.connectionLost();
         }
     }
@@ -87,10 +88,10 @@ class ClientReader extends Thread {
             out.write(MessageFactory.getInstance().serialize(new LoginMessage(user)));
             Message message = MessageUtils.getMessage(socket.getInputStream());
             if (message instanceof WelcomeMessage) {
-                WelcomeMessage welcomeMessage = ((WelcomeMessage)message);
+                WelcomeMessage welcomeMessage = ((WelcomeMessage) message);
                 UserRegistry.getInstance().init(welcomeMessage.getEntries());
                 taskRegistry.init(welcomeMessage.getTasks());
-                userId = welcomeMessage.getUserId(); 
+                userId = welcomeMessage.getUserId();
 
                 // Give the reader a higher priority to work around
                 // a problem with shared access to the console.
@@ -119,7 +120,7 @@ class ClientReader extends Thread {
 
     }
 
-    private class Pinger extends Thread{
+    private class Pinger extends Thread {
 
         public Pinger() {
             super("Server ping thread");

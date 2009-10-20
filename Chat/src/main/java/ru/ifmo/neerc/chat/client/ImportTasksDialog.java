@@ -21,15 +21,15 @@
 package ru.ifmo.neerc.chat.client;
 
 import ru.ifmo.ips.config.Config;
-import ru.ifmo.ips.config.XMLConfig;
 import ru.ifmo.ips.config.ConfigException;
+import ru.ifmo.ips.config.XMLConfig;
 import ru.ifmo.neerc.chat.*;
 import ru.ifmo.neerc.chat.message.TaskMessage;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.StringReader;
 
 /**
@@ -38,9 +38,9 @@ import java.io.StringReader;
  * @author Matvey Kazakov
  */
 public class ImportTasksDialog extends JDialog {
-    private ClientReader clientReader;
+    private Chat clientReader;
 
-    public ImportTasksDialog(Frame owner, ClientReader clientReader) throws HeadlessException {
+    public ImportTasksDialog(Frame owner, Chat clientReader) throws HeadlessException {
         super(owner, "Import task batch", true);
         this.clientReader = clientReader;
         JPanel mainPanel = new JPanel();
@@ -48,7 +48,7 @@ public class ImportTasksDialog extends JDialog {
 
         final JTextArea textArea = new JTextArea(30, 80);
         mainPanel.add(new JScrollPane(textArea));
-        
+
         JPanel btnPanel = new JPanel();
         btnPanel.setLayout(new BoxLayout(btnPanel, BoxLayout.X_AXIS));
         JButton btnOK = new JButton("OK");
@@ -91,7 +91,7 @@ public class ImportTasksDialog extends JDialog {
             for (Config taskNode : list) {
                 String description = taskNode.getProperty("@desc");
                 int type = convertType(taskNode.getProperty("@type"));
-                Task task = registry.createTask(description, type);                
+                Task task = registry.createTask(description, type);
                 clientReader.write(new TaskMessage(TaskMessage.CREATE, -1, task, null));
                 Config[] assignNodes;
                 try {
@@ -106,7 +106,7 @@ public class ImportTasksDialog extends JDialog {
                         UserEntry user = UserRegistry.getInstance().findByName(userName);
                         if (user != null) {
                             clientReader.write(new TaskMessage(TaskMessage.ASSIGN, user.getId(), task, null));
-                        } 
+                        }
                     } else if (groupName != null) {
                         UserEntry[] users = UserRegistry.getInstance().findByGroupName(groupName);
                         for (UserEntry user : users) {
@@ -117,17 +117,16 @@ public class ImportTasksDialog extends JDialog {
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Could not import tasks (see details in log file):" + e.getMessage(),
-                "Error importing tasks", JOptionPane.ERROR_MESSAGE);
+                    "Error importing tasks", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
     }
 
     /**
-     * 
      * @param typeName string task type identifier
-     * @return  type identifier
+     * @return type identifier
      * @throws IllegalArgumentException in case type could not recognized
-     * @throws NullPointerException if typeName is null
+     * @throws NullPointerException     if typeName is null
      */
     private int convertType(String typeName) {
         String s = typeName.toUpperCase();
@@ -139,7 +138,7 @@ public class ImportTasksDialog extends JDialog {
             return TaskFactory.TASK_CONFIRM;
         } else if (s.startsWith("Q")) {
             return TaskFactory.TASK_QUESTION;
-        }  
+        }
         throw new IllegalArgumentException("Unknown type identifier: " + typeName);
     }
 }

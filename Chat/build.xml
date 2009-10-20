@@ -1,4 +1,4 @@
-<project name="NEERC chat" basedir="." default="build" >
+<project name="NEERC chat" basedir="." default="build">
     <property name="deploy.dir" value="target/deploy"/>
     <property name="classes.dir" value="target/classes"/>
     <property name="client.dir" value="${deploy.dir}/client"/>
@@ -17,27 +17,27 @@
         </javac>
         <copy todir="${classes.dir}">
             <fileset dir="${resources.dir}">
-                <include name="**/*.gif"/> 
-                <include name="**/*.png"/> 
-                <include name="**/*.html"/> 
-            </fileset> 
-        </copy> 
+                <include name="**/*.gif"/>
+                <include name="**/*.png"/>
+                <include name="**/*.html"/>
+            </fileset>
+        </copy>
         <jar destfile="${client.jar}" basedir="${classes.dir}">
             <manifest>
-                <attribute name="Main-Class" value="ru.ifmo.neerc.chat.client.ChatClient"/>  
+                <attribute name="Main-Class" value="ru.ifmo.neerc.chat.client.AbstractChatClient"/>
             </manifest>
-            <include name="ru/ifmo/ips/**/*.*"/> 
-            <include name="ru/ifmo/neerc/chat/**/*.*"/> 
-            <exclude name="ru/ifmo/neerc/chat/server/**/*.*"/> 
-        </jar> 
+            <include name="ru/ifmo/ips/**/*.*"/>
+            <include name="ru/ifmo/neerc/chat/**/*.*"/>
+            <exclude name="ru/ifmo/neerc/chat/server/**/*.*"/>
+        </jar>
         <jar destfile="${server.jar}" basedir="${classes.dir}">
             <manifest>
-                <attribute name="Main-Class" value="ru.ifmo.neerc.chat.server.ChatServer"/>  
+                <attribute name="Main-Class" value="ru.ifmo.neerc.chat.server.ChatServer"/>
             </manifest>
-            <include name="ru/ifmo/ips/**/*.*"/> 
-            <include name="ru/ifmo/neerc/chat/**/*.*"/> 
-            <exclude name="ru/ifmo/neerc/chat/client/**/*.*"/> 
-        </jar> 
+            <include name="ru/ifmo/ips/**/*.*"/>
+            <include name="ru/ifmo/neerc/chat/**/*.*"/>
+            <exclude name="ru/ifmo/neerc/chat/client/**/*.*"/>
+        </jar>
         <copy file="etc/server.sh" todir="${server.dir}"/>
         <chmod file="${server.dir}/server.sh" perm="a+x"/>
         <copy file="etc/server.bat" todir="${server.dir}"/>

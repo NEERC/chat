@@ -38,21 +38,21 @@ import java.util.List;
 /**
  * @author Matvey Kazakov
  */
-public class AssignTaskDialog extends JDialog{
-    private ClientReader clientReader;
+public class AssignTaskDialog extends JDialog {
+    private Chat clientReader;
     private Task[] tasks;
     private JTree tree;
     private String[] allGroups;
     private Map<String, UserEntry[]> users = new HashMap<String, UserEntry[]>();
 
-    public AssignTaskDialog(Frame owner, ClientReader clientReader, Task[] tasks) throws HeadlessException {
+    public AssignTaskDialog(Frame owner, Chat clientReader, Task[] tasks) throws HeadlessException {
         super(owner, true);
         setTitle("Choose user to perform task");
         this.clientReader = clientReader;
         this.tasks = tasks;
         initUsersList();
         tree = createTree();
-        
+
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.add(new JScrollPane(tree), BorderLayout.CENTER);
         JPanel btnPanel = new JPanel();
@@ -91,14 +91,14 @@ public class AssignTaskDialog extends JDialog{
             root.add(groupNode);
         }
         JTree tree = new JTree(new DefaultTreeModel(root));
-        
+
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         tree.setRootVisible(false);
-        
+
         for (int i = 0; i < tree.getRowCount(); i++) {
             tree.expandRow(i);
         }
-        
+
         return tree;
     }
 
@@ -107,11 +107,11 @@ public class AssignTaskDialog extends JDialog{
         List<UserEntry> selectedUsers = new ArrayList<UserEntry>();
         if (treePaths != null) {
             for (TreePath treePath : treePaths) {
-                Object node = ((DefaultMutableTreeNode)treePath.getLastPathComponent()).getUserObject();
+                Object node = ((DefaultMutableTreeNode) treePath.getLastPathComponent()).getUserObject();
                 if (node instanceof UserEntry) {
-                    selectedUsers.add((UserEntry)node);
+                    selectedUsers.add((UserEntry) node);
                 } else if (node instanceof String) {
-                    selectedUsers.addAll(Arrays.asList(users.get((String)node)));
+                    selectedUsers.addAll(Arrays.asList(users.get((String) node)));
                 }
             }
         }
@@ -141,11 +141,11 @@ public class AssignTaskDialog extends JDialog{
             List<UserEntry> curUsers = entry.getValue();
             UserEntry[] curUsersArray = curUsers.toArray(new UserEntry[curUsers.size()]);
             Arrays.sort(curUsersArray);
-            users.put(group,  curUsersArray);
+            users.put(group, curUsersArray);
             groups.add(group);
         }
         allGroups = groups.toArray(new String[groups.size()]);
         Arrays.sort(allGroups);
     }
-    
+
 }

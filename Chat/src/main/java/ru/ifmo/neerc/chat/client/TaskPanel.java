@@ -36,20 +36,20 @@ public class TaskPanel extends JPanel {
 //    private static final ImageIcon iconTaskAdd = new ImageIcon(TaskPanel.class.getResource("res/task_add.gif"));
 //    private static final ImageIcon iconTaskAssign = new ImageIcon(TaskPanel.class.getResource("res/task_assign.gif"));
 //    private static final ImageIcon iconTaskRemove = new ImageIcon(TaskPanel.class.getResource("res/task_remove.gif"));
-    
-    
+
+
     private static final ImageIcon iconActionDone = new ImageIcon(TaskPanel.class.getResource("res/task_action_complete.gif"));
     private static final ImageIcon iconActionFail = new ImageIcon(TaskPanel.class.getResource("res/task_action_fail.png"));
     private static final ImageIcon iconActionStart = new ImageIcon(TaskPanel.class.getResource("res/task_action_start.png"));
 
     private int userId;
-    private ClientReader clientReader;
+    private Chat clientReader;
     private JList taskList;
     private AbstractButton btnActionDone;
     private AbstractButton btnActionStart;
     private AbstractButton btnActionFail;
 
-    public TaskPanel(TaskRegistry taskRegistry, UserEntry user, ClientReader clientReader) {
+    public TaskPanel(TaskRegistry taskRegistry, UserEntry user, Chat clientReader) {
         super(new BorderLayout());
         this.userId = user.getId();
         this.clientReader = clientReader;
@@ -92,7 +92,7 @@ public class TaskPanel extends JPanel {
     private void enableButtons() {
         Task task = null;
         try {
-            task = (Task)taskList.getSelectedValue();
+            task = (Task) taskList.getSelectedValue();
         } catch (Exception e) {
         }
         enableButton(task != null && task.getResult(userId).actionSupported(TaskFactory.ACTION_FAIL), btnActionFail);
@@ -119,12 +119,12 @@ public class TaskPanel extends JPanel {
         return toolBar;
     }
 
-    private void performAction(int action) {        
-        Task task = (Task)taskList.getSelectedValue();
+    private void performAction(int action) {
+        Task task = (Task) taskList.getSelectedValue();
         TaskResult taskResult = task.getResult(userId);
         if (action == TaskFactory.ACTION_FAIL || action == TaskFactory.ACTION_DONE && taskResult instanceof QuestionTaskResult) {
             String message = action == TaskFactory.ACTION_FAIL ? "Give the reason" : "Your answer is";
-            String reason = JOptionPane.showInputDialog(SwingUtilities.getWindowAncestor(this), message, 
+            String reason = JOptionPane.showInputDialog(SwingUtilities.getWindowAncestor(this), message,
                     taskResult.toString());
             if (reason == null || reason.length() == 0) {
                 return;
