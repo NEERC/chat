@@ -17,9 +17,8 @@ import ru.ifmo.neerc.chat.message.UserMessage;
 public class XmppChat implements Chat {
     private static final Logger LOG = LoggerFactory.getLogger(XmppChat.class);
 
-    // TODO make this configurable
-    private static final String SERVER_HOST = "10.90.93.204";
-    private static final int SERVER_PORT = 5222;
+    private static final String SERVER_HOST = System.getProperty("server.host", "localhost");
+    private static final int SERVER_PORT = Integer.parseInt(System.getProperty("server.port", "5222"));
     private static final String ROOM = "neerc@conference.localhost";
 
     private MultiUserChat muc;
@@ -27,7 +26,6 @@ public class XmppChat implements Chat {
 
     private XmppAdapter adapter;
 
-    // TODO make this configurable
     private String name;
     private String password = "12345";
 
@@ -36,10 +34,10 @@ public class XmppChat implements Chat {
         this.adapter = adapter;
         // Create the configuration for this new connection
         ConnectionConfiguration config = new ConnectionConfiguration(SERVER_HOST, SERVER_PORT);
-        config.setCompressionEnabled(false);
+        config.setCompressionEnabled(true);
         config.setSASLAuthenticationEnabled(true);
         config.setReconnectionAllowed(true);
-//            config.setDebuggerEnabled(true);
+//        config.setDebuggerEnabled(true);
 
         SASLAuthentication.supportSASLMechanism("PLAIN", 0);
 
@@ -86,7 +84,7 @@ public class XmppChat implements Chat {
         try {
             // Joins the new room and retrieves history
             DiscussionHistory history = new DiscussionHistory();
-            history.setMaxStanzas(100); // TODO set since
+            history.setMaxStanzas(100); // TODO set since to last message timestamp
             muc.join(
                     name, // nick
                     "",   // password
