@@ -27,7 +27,7 @@ public class XmppChat implements Chat {
     private XmppAdapter adapter;
 
     private String name;
-    private String password = "12345";
+    private String password = System.getProperty("password", "12345");
 
     public XmppChat(String name, XmppAdapter adapter) {
         this.name = name;
