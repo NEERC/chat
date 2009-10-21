@@ -69,7 +69,7 @@ public class MessageLocalHistory extends ArrayList<String> {
     
     public String getMessage() {
         if (cursor < size()) {
-            return get(cursor);
+            return (String)get(cursor);
         } else {
             return null;
         }

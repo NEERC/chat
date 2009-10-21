@@ -23,6 +23,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.io.InputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 /**
@@ -35,15 +37,15 @@ public class AboutBox extends JDialog{
     /**
      * Constructs about box
      * @param owner wner window
-     */
-    public AboutBox(Frame owner) {
+     */    
+    public AboutBox(Frame owner) throws HeadlessException {
         super(owner, true);
         // change title of the about box
         setTitle("About NEERC chat");
         JPanel mainPanel = new JPanel(new BorderLayout());
         // read help from file and create label with the help
 
-        JEditorPane html;
+        JEditorPane html = null;
         try {
             html = new JEditorPane(getClass().getResource("res/help.html"));
             html.setEditable(false);

@@ -43,7 +43,7 @@ class UserInfoFrame extends Frame {
     }
 
     protected void processKeyEvent(KeyEvent e) {
-        char c = e.getKeyChar();
+        char c = (char)e.getKeyChar();
         if (c == '\n') {
             dispose();
         } 

@@ -58,11 +58,11 @@ class ChatMessageRenderer implements TableCellRenderer {
         ChatMessage message = (ChatMessage)value;
         JComponent component;
         if (message != null && message.getType() == ChatMessage.USER_MESSAGE) {
-            component = userMessagePanel;
+            component = (JComponent)userMessagePanel;
             userLabel.setText(message.getUser().getName());
             timeLabel.setText(message.getTime());
             messageArea.setText(message.getConvertedMessage());
-//            int newWidth = table.getWidth();
+            int newWidth = table.getWidth();
 //            userMessagePanel.setMaximumSize(table.getSize());
             userMessagePanel.setSize(table.getColumn(column).getWidth(), 100000);
             int newHeight = userMessagePanel.getPreferredSize().height;
@@ -72,7 +72,6 @@ class ChatMessageRenderer implements TableCellRenderer {
             }
         } else {
             component = infoMessageLabel;
-            assert message != null; // todo: is this correct?
             infoMessageLabel.setText(message.getText());
             if (message.getType() == ChatMessage.TASK_MESSAGE) {
                 infoMessageLabel.setForeground(Color.red);

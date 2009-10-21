@@ -19,6 +19,7 @@
  */
 package ru.ifmo.neerc.chat;
 
+import ru.ifmo.ips.Utils;
 import ru.ifmo.ips.config.Config;
 import ru.ifmo.ips.config.ConfigException;
 import ru.ifmo.neerc.chat.message.UserText;
@@ -36,7 +37,7 @@ public class Task implements Comparable<Task> {
     private Set<Integer> assignedUsers = new HashSet<Integer>();
     private Map<Integer, TaskResult> taskResults = new HashMap<Integer, TaskResult>();
     private int id;
-
+    
     private int type = TaskFactory.TASK_TODO;
 
     private static int LAST_ID = 0;
@@ -48,7 +49,7 @@ public class Task implements Comparable<Task> {
     private static final String NODE_RESULT = "result";
 
 
-    public Task(int id, String description, int type) {
+    Task(int id, String description, int type) {
         this();
         this.description.setText(description);
         this.id = id;
@@ -95,7 +96,7 @@ public class Task implements Comparable<Task> {
             return false;
         }
 
-        final Task task = (Task) o;
+        final Task task = (Task)o;
 
         if (id != task.id) {
             return false;
@@ -113,17 +114,14 @@ public class Task implements Comparable<Task> {
         node.setProperty(ATTR_TYPE, "" + type);
         node.setProperty(NODE_DESC, description.asString());
         for (Integer user : assignedUsers) {
-            node.createNode(NODE_ASSIGNED + "#" + UserRegistry.getInstance().search(user).getName());
-//            node.createNode(NODE_ASSIGNED + "#" + user);
+            node.createNode(NODE_ASSIGNED + "#" + user);
         }
         for (Map.Entry<Integer, TaskResult> entry : taskResults.entrySet()) {
             int userId = entry.getKey();
             TaskResult result = entry.getValue();
-            String username = UserRegistry.getInstance().search(userId).getName();
-            result.serialize(node.createNode(NODE_RESULT + "#" + username));
-//            result.serialize(node.createNode(NODE_RESULT + "#" + userId));
+            result.serialize(node.createNode(NODE_RESULT + "#" + userId));
         }
-
+        
     }
 
     public void deserialize(Config config) {
@@ -134,10 +132,7 @@ public class Task implements Comparable<Task> {
         try {
             Config[] assigned = node.getNodeList(NODE_ASSIGNED);
             for (int i = 0; i < assigned.length; i++) {
-                String username = assigned[i].getString(ATTR_ID);
-                int userId = UserRegistry.getInstance().findByName(username).getId();
-                assignedUsers.add(userId);
-//                assignedUsers.add(assigned[i].getInt(ATTR_ID));
+                assignedUsers.add(assigned[i].getInt(ATTR_ID));
             }
         } catch (ConfigException e) {
             // do nothing
@@ -146,9 +141,7 @@ public class Task implements Comparable<Task> {
             Config[] results = node.getNodeList(NODE_RESULT);
             for (int i = 0; i < results.length; i++) {
                 Config resultNode = results[i];
-                String username = resultNode.getString(ATTR_ID);
-                int userId = UserRegistry.getInstance().findByName(username).getId();
-//                int userId = resultNode.getInt(ATTR_ID);
+                int userId = resultNode.getInt(ATTR_ID);
                 TaskResult result = TaskFactory.create(type);
                 result.deserialize(resultNode);
                 taskResults.put(userId, result);
@@ -179,7 +172,7 @@ public class Task implements Comparable<Task> {
             return assignedUsers.contains(userId);
         }
     }
-
+    
     public TaskResult getResult(int userId) {
         TaskResult taskResult = taskResults.get(userId);
         if (taskResult == null && isAssigned(userId)) {

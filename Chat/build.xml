@@ -1,0 +1,51 @@
+<project name="NEERC chat" basedir="." default="build" >
+    <property name="deploy.dir" value="target/deploy"/>
+    <property name="classes.dir" value="target/classes"/>
+    <property name="client.dir" value="${deploy.dir}/client"/>
+    <property name="client.jar" value="${client.dir}/client.jar"/>
+    <property name="server.dir" value="${deploy.dir}/server"/>
+    <property name="server.jar" value="${server.dir}/server.jar"/>
+    <property name="src.dir" value="src/main/java"/>
+    <property name="resources.dir" value="src/main/resources"/>
+
+    <target name="build" description="Builds NEERC chat">
+        <mkdir dir="${deploy.dir}"/>
+        <mkdir dir="${classes.dir}"/>
+        <mkdir dir="${client.dir}"/>
+        <mkdir dir="${server.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${classes.dir}" debug="yes" excludes="ru/ifmo/neerc/chat/plugin/**">
+        </javac>
+        <copy todir="${classes.dir}">
+            <fileset dir="${resources.dir}">
+                <include name="**/*.gif"/> 
+                <include name="**/*.png"/> 
+                <include name="**/*.html"/> 
+            </fileset> 
+        </copy> 
+        <jar destfile="${client.jar}" basedir="${classes.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="ru.ifmo.neerc.chat.client.ChatClient"/>  
+            </manifest>
+            <include name="ru/ifmo/ips/**/*.*"/> 
+            <include name="ru/ifmo/neerc/chat/**/*.*"/> 
+            <exclude name="ru/ifmo/neerc/chat/server/**/*.*"/> 
+        </jar> 
+        <jar destfile="${server.jar}" basedir="${classes.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="ru.ifmo.neerc.chat.server.ChatServer"/>  
+            </manifest>
+            <include name="ru/ifmo/ips/**/*.*"/> 
+            <include name="ru/ifmo/neerc/chat/**/*.*"/> 
+            <exclude name="ru/ifmo/neerc/chat/client/**/*.*"/> 
+        </jar> 
+        <copy file="etc/server.sh" todir="${server.dir}"/>
+        <chmod file="${server.dir}/server.sh" perm="a+x"/>
+        <copy file="etc/server.bat" todir="${server.dir}"/>
+        <copy file="etc/server.xml" todir="${server.dir}"/>
+        <copy file="etc/qf-main.xml" todir="${server.dir}"/>
+        <copy file="etc/client.sh" todir="${client.dir}"/>
+        <chmod file="${client.dir}/client.sh" perm="a+x"/>
+        <copy file="etc/client.bat" todir="${client.dir}"/>
+        <copy file="etc/client.xml" todir="${client.dir}"/>
+    </target>
+</project>

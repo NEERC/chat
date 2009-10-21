@@ -21,8 +21,6 @@ package ru.ifmo.neerc.chat.message;
 
 import ru.ifmo.ips.config.Config;
 
-import java.util.Date;
-
 /**
  * Represents abstract chat message.
  *
@@ -67,16 +65,11 @@ public abstract class Message {
      * Message used to check connection alive
      */
     protected static final int PING_MESSAGE = 1001;
-
+    
     /**
      * Message used to send custom information
      */
     protected static final int CUSTOM_MESSAGE = 10000;
-
-    /**
-     * Message timestamp.
-     */
-    private Date timestamp;
 
     /**
      * Stores message type. Either {@link #SERVER_MESSAGE}, {@link #TASK_MESSAGE}, {@link #USER_MESSAGE},
@@ -96,14 +89,13 @@ public abstract class Message {
     /**
      * Constructor cteates message of given type.
      *
-     * @param type        new message type.
+     * @param type new message type.
      * @param destination destination of the message.
      */
     protected Message(int type, int destination) {
         this.type = type;
         this.destination = destination;
     }
-
     /**
      * Constructor cteates message of given type.
      *
@@ -115,16 +107,13 @@ public abstract class Message {
 
     /**
      * Return message type.
-     *
-     * @return message type
      */
     public int getType() {
         return type;
     }
 
     /**
-     * Returns message destination.
-     *
+     * Returns message destination
      * @return user ID
      */
     public int getDestination() {
@@ -133,19 +122,6 @@ public abstract class Message {
 
     public void setDestination(int destination) {
         this.destination = destination;
-    }
-
-    /**
-     * Returns message timestamp.
-     *
-     * @return message timestamp
-     */
-    public Date getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(Date timestamp) {
-        this.timestamp = timestamp;
     }
 
     /**
@@ -164,7 +140,7 @@ public abstract class Message {
     protected abstract void serialize(Config message);
 
     protected abstract void deserialize(Config message);
-
+    
     public abstract String asString();
 
     public boolean shouldBeSentTo(int id) {

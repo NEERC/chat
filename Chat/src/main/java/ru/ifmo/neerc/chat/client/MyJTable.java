@@ -195,14 +195,14 @@ public class MyJTable<T> extends JPanel {
         public void fireTableDataChanged() {
             if (!tableDataChangedLock) {
                 tableDataChangedLock = true;
-                int savedStart;
-                int savedLength;
+                int savedStart = start;
+                int savedLength = length;
                 do {
                     savedStart = start;
                     savedLength = length;
                     updateRowSizes();
                 } while(savedLength != length || savedStart != start);
-                super.fireTableDataChanged();
+                super.fireTableDataChanged();;
                 resizeTableRows();
                 tableDataChangedLock = false;
             }

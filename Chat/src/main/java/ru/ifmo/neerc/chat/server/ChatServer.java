@@ -23,6 +23,7 @@ import ru.ifmo.ips.IpsRuntimeException;
 import ru.ifmo.ips.config.*;
 import ru.ifmo.neerc.chat.*;
 import ru.ifmo.neerc.chat.plugin.PluginManager;
+import ru.ifmo.neerc.chat.client.UserUnregisteredException;
 import ru.ifmo.neerc.chat.message.UserListUpdateMessage;
 import ru.ifmo.neerc.chat.message.UserMessage;
 
@@ -68,8 +69,6 @@ public class ChatServer extends Thread implements ConfigListener {
 
     /**
      * Exit with an error message, when an exception occurs.
-     * @param e exception
-     * @param msg additional message
      */
     public static void fail(Exception e, String msg) {
         System.err.println(msg + ": " + e);
@@ -154,7 +153,7 @@ public class ChatServer extends Thread implements ConfigListener {
     public synchronized Boolean allowUserToConnect(String user, String host) {
         if (host != null && host.equals(userHosts.get(user))) {
             ChatLogger.logDebug("Allowed " + user + " from " + host);
-            return userPowers.get(user);
+            return (Boolean)userPowers.get(user);
         } else {
             ChatLogger.logDebug("Could not allow connect " + user + " from " + host);
             return null;
@@ -376,7 +375,7 @@ public class ChatServer extends Thread implements ConfigListener {
             }
             TaskRegistry.getInstance().init(tasks);
 
-            Config[] userNodes;
+            Config[] userNodes = new Config[0];
             try {
                 userNodes = dump.getNodeList(NODE_USER);
             } catch (ConfigException e) {
@@ -389,7 +388,7 @@ public class ChatServer extends Thread implements ConfigListener {
                 UserRegistry.getInstance().register(user);
             }
             
-            Config[] msgNodes;
+            Config[] msgNodes = new Config[0];
             try {
                 msgNodes = dump.getNodeList(NODE_MESSAGE);
             } catch (ConfigException e) {

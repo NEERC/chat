@@ -25,7 +25,7 @@ import ru.ifmo.neerc.chat.*;
 /**
  * @author Matvey Kazakov
  */
-public class TaskMessage extends Message {
+public class TaskMessage extends Message{
     public static final int CREATE = 0;
     public static final int ASSIGN = 1;
     public static final int COMPLETE = 2;
@@ -39,7 +39,6 @@ public class TaskMessage extends Message {
     private static final String ATTR_TYPE = "@type";
     private static final String ATTR_USER = "@user";
     private static final String ATTR_TASK = "@task";
-    private static final String ATTR_USERNAME = "@username";
     private static final String NODE_ANSWER = "complete";
 
     public TaskMessage() {
@@ -62,9 +61,6 @@ public class TaskMessage extends Message {
         Config node = message.createNode(NODE_TASK);
         node.setProperty(ATTR_TYPE, "" + taskMsgType);
         node.setProperty(ATTR_USER, "" + user);
-        if (user != -1) {
-            node.setProperty(ATTR_USERNAME, UserRegistry.getInstance().search(user).getName());
-        }
         if (taskMsgType == CREATE) {
             task.serialize(node);
         } else {
@@ -79,10 +75,6 @@ public class TaskMessage extends Message {
         Config node = message.getNode(NODE_TASK);
         taskMsgType = node.getInt(ATTR_TYPE);
         user = node.getInt(ATTR_USER);
-        if (user != -1) {
-            String userName = node.getString(ATTR_USERNAME);
-            user = UserRegistry.getInstance().findByName(userName).getId();
-        }
         if (taskMsgType == CREATE) {
             task = new Task();
             task.deserialize(node);
@@ -96,11 +88,13 @@ public class TaskMessage extends Message {
                 }
             }
         }
+        
+        
     }
 
     public String asString() {
         StringBuilder res = new StringBuilder("-----!!! Task '" + task.getDescription() + "' ");
-        switch (taskMsgType) {
+        switch(taskMsgType) {
             case CREATE:
                 res.append("is created");
                 break;
