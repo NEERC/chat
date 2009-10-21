@@ -84,6 +84,23 @@ public class UserRegistry {
             return;
         }
         userEntry.setOnline(online);
+        userChanged(user);
+    }
+
+    public synchronized void putOffline(UserEntry user) {
+        putOnline(user, false);
+    }
+
+    public synchronized void putOnline(UserEntry user) {
+        putOnline(user, true);
+    }
+
+    public synchronized void setRole(UserEntry user, String role) {
+        user.setPower("moderator".equalsIgnoreCase(role));
+        userChanged(user);
+    }
+
+    private void userChanged(UserEntry user) {
         for (UserRegistryListener listener : listeners) {
             listener.userChanged(user);
         }

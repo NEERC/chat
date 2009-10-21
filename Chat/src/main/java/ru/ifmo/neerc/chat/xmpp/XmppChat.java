@@ -7,7 +7,6 @@ import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.muc.DiscussionHistory;
 import org.jivesoftware.smackx.muc.MultiUserChat;
-import org.jivesoftware.smackx.muc.Occupant;
 import org.jivesoftware.smackx.packet.DelayInformation;
 import org.jivesoftware.smackx.packet.MUCUser;
 import org.slf4j.Logger;
@@ -17,11 +16,11 @@ import ru.ifmo.neerc.chat.message.*;
 import ru.ifmo.neerc.chat.message.MessageListener;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
+import ru.ifmo.neerc.chat.utils.DebugUtils;
 
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Iterator;
 
 /**
  * @author Evgeny Mandrikov
@@ -193,30 +192,21 @@ public class XmppChat implements Chat {
 
     private Date lastActivity = null;
 
-    public UserEntry getUser(String user, String role) {
+    public UserEntry getUser(String user) {
         final UserRegistry userRegistry = UserRegistry.getInstance();
         final String nick = user.substring(user.indexOf('/') + 1);
         UserEntry userEntry = userRegistry.findByName(nick);
-        final boolean power = "moderator".equalsIgnoreCase(role) || "owner".equalsIgnoreCase(role);
         if (userEntry == null) {
             final int id = userRegistry.getUserNumber() + 1;
-            LOG.debug("Added {} {} with id {}", new Object[]{role, user, id});
+            LOG.debug("Added {} with id {}", new Object[]{user, id});
             userEntry = new UserEntry(
                     id,
                     nick,
-                    power
+                    false
             );
-        } else {
-            userEntry.setPower(power);
+            userRegistry.register(userEntry);
         }
-        userRegistry.register(userEntry);
         return userEntry;
-    }
-
-    private UserEntry getUser(String user) {
-        final Occupant occupant = muc.getOccupant(user);
-        final String role = occupant == null ? "member" : occupant.getRole();
-        return getUser(user, role);
     }
 
     public void registerConnectionListeners(XMPPConnection conn) {
@@ -226,19 +216,16 @@ public class XmppChat implements Chat {
     public void registerRoomListeners(MultiUserChat chat) {
         chat.addMessageListener(new MyMessageListener());
 
+        /*
         LOG.debug("Occupants count = " + chat.getOccupantsCount());
         Iterator<String> occupants = chat.getOccupants();
         while (occupants.hasNext()) {
             String user = occupants.next();
             Occupant occupant = chat.getOccupant(user);
-            LOG.debug("JID={} Nick={} Role={} Affiliation={}", new Object[]{
-                    occupant.getJid(),
-                    occupant.getNick(),
-                    occupant.getRole(),
-                    occupant.getAffiliation()
-            });
-            UserRegistry.getInstance().putOnline(getUser(user, occupant.getRole()), true);
+            LOG.debug(DebugUtils.occupantToString(occupant));
+            UserRegistry.getInstance().putOnline(getUser(user), true);
         }
+        */
     }
 
     public void processMessage(Message message) {
@@ -252,30 +239,27 @@ public class XmppChat implements Chat {
             }
             Presence presence = (Presence) packet;
 
-            MUCUser mucExtension = (MUCUser) packet.getExtension("x", "http://jabber.org/protocol/muc#user");
-            if (mucExtension != null) {
-                String newAffiliation = mucExtension.getItem().getAffiliation();
-                String newRole = mucExtension.getItem().getRole();
-                // TODO zibada: use this to update power status
-            }
-
             String from = packet.getFrom();
             boolean avail = presence.isAvailable();
+
+            UserEntry user = getUser(from);
+
+            MUCUser mucExtension = (MUCUser) packet.getExtension("x", "http://jabber.org/protocol/muc#user");
+            if (mucExtension != null) {
+                MUCUser.Item item = mucExtension.getItem();
+                LOG.debug(from + " " + DebugUtils.userItemToString(item));
+                UserRegistry.getInstance().setRole(user, item.getRole());
+            }
+
             if (avail) {
                 LOG.debug("JOINED: {}", from);
-
-                UserEntry user = getUser(from);
-                UserRegistry.getInstance().putOnline(user, true);
-
+                UserRegistry.getInstance().putOnline(user);
                 processMessage(new ServerMessage(
                         "User " + user.getName() + " has joined chat"
                 ));
             } else {
                 LOG.debug("LEFT: {}", from);
-
-                UserEntry user = getUser(from);
-                UserRegistry.getInstance().putOnline(user, false);
-
+                UserRegistry.getInstance().putOffline(user);
                 processMessage(new ServerMessage(
                         "User " + user.getName() + " has left chat"
                 ));

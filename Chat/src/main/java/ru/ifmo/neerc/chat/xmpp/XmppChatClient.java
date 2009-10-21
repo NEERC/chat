@@ -37,7 +37,7 @@ public class XmppChatClient extends AbstractChatClient {
 
         user = new UserEntry(0, name, true); // TODO power
         UserRegistry.getInstance().register(user);
-        UserRegistry.getInstance().putOnline(user, true);
+        UserRegistry.getInstance().putOnline(user);
 
         chat = new XmppChat(name, this);
 
@@ -75,7 +75,7 @@ public class XmppChatClient extends AbstractChatClient {
             setConnectionError(message);
             processMessage(new ServerMessage(message));
             for (UserEntry user : UserRegistry.getInstance().getUsers()) {
-                UserRegistry.getInstance().putOnline(user, false);
+                UserRegistry.getInstance().putOffline(user);
             }
         }
 
