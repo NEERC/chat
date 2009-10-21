@@ -99,7 +99,7 @@ public class XmppChat implements Chat {
             // Joins the new room and retrieves history
             DiscussionHistory history = new DiscussionHistory();
             if (lastActivity != null) {
-                history.setSince(lastActivity);
+                history.setSince(new Date(lastActivity.getTime() + 1));
             } else {
                 if (System.getProperty("history") != null) {
                     int size = Integer.parseInt(System.getProperty("history"));
