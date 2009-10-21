@@ -25,10 +25,7 @@ import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
 
 import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
+import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -94,6 +91,30 @@ public class AssignTaskDialog extends JDialog {
 
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         tree.setRootVisible(false);
+
+        DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer() {
+            @Override
+            public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+                if (leaf) {
+                    UserEntry entry = (UserEntry) ((DefaultMutableTreeNode) value).getUserObject();
+                    this.hasFocus = hasFocus;
+                    setText(entry.getName());
+                    setForeground(sel ? this.getTextSelectionColor() : this.getTextNonSelectionColor());
+                    setEnabled(true);
+                    setIcon(entry.isPower() ?
+                            (entry.isOnline() ? UsersPanel.iconUserPower : UsersPanel.iconUserPowerOffline) :
+                            (entry.isOnline() ? UsersPanel.iconUserNormal : UsersPanel.iconUserNormalOffline)
+                    );
+                    setComponentOrientation(tree.getComponentOrientation());
+                    this.selected = sel;
+                    return this;
+                } else {
+                    return super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+                }
+            }
+        };
+        renderer.setLeafIcon(UsersPanel.iconUserNormal);
+        tree.setCellRenderer(renderer);
 
         for (int i = 0; i < tree.getRowCount(); i++) {
             tree.expandRow(i);

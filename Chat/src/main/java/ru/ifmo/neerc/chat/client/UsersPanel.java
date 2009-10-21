@@ -31,10 +31,14 @@ import java.util.Arrays;
  * @author Matvey Kazakov
  */
 public class UsersPanel extends JPanel {
-    private static final ImageIcon iconUserNormal = new ImageIcon(
+    public static final ImageIcon iconUserNormal = new ImageIcon(
             UsersPanel.class.getResource("res/user_normal.gif"));
-    private static final ImageIcon iconUserPower = new ImageIcon(
+    public static final ImageIcon iconUserPower = new ImageIcon(
             UsersPanel.class.getResource("res/user_power.gif"));
+    public static final ImageIcon iconUserNormalOffline = new ImageIcon(
+            UsersPanel.class.getResource("res/user_normal_offline.gif"));
+    public static final ImageIcon iconUserPowerOffline = new ImageIcon(
+            UsersPanel.class.getResource("res/user_power_offline.gif"));
 
     private UserEntry user;
 
@@ -90,6 +94,7 @@ public class UsersPanel extends JPanel {
 
     private class UserListCellRenderer extends DefaultListCellRenderer {
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             UserEntry entry = (UserEntry) value;
             Color foreground;
@@ -105,12 +110,10 @@ public class UsersPanel extends JPanel {
                 foreground = Color.lightGray;
             }
             setForeground(foreground);
-
-            if (entry.isPower()) {
-                setIcon(iconUserPower);
-            } else {
-                setIcon(iconUserNormal);
-            }
+            setIcon(entry.isPower() ?
+                    (entry.isOnline() ? iconUserPower : iconUserPowerOffline) :
+                    (entry.isOnline() ? iconUserNormal : iconUserNormalOffline)
+            );
 
             setEnabled(list.isEnabled());
             Font font = list.getFont();
