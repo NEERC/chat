@@ -2,8 +2,11 @@ package ru.ifmo.neerc.chat.xmpp;
 
 import org.jivesoftware.smack.*;
 import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.PacketExtension;
+import org.jivesoftware.smack.filter.PacketTypeFilter;
 import org.jivesoftware.smackx.muc.*;
+import org.jivesoftware.smackx.packet.MUCUser;
 import org.jivesoftware.smackx.packet.DelayInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +64,9 @@ public class XmppChat implements Chat {
 
         // Create a MultiUserChat using an XMPPConnection for a room
         muc = new MultiUserChat(connection, ROOM);
-        registerListeners(muc);
+        registerRoomListeners(muc);
+
+        registerConnectionListeners(connection);
 
         join();
 
@@ -211,10 +216,15 @@ public class XmppChat implements Chat {
         return getUser(user, role);
     }
 
-    public void registerListeners(MultiUserChat chat) {
+    public void registerConnectionListeners(XMPPConnection conn) {
+        conn.addPacketListener(new MyPresenceListener(), new PacketTypeFilter(Presence.class));
+    }
+
+    public void registerRoomListeners(MultiUserChat chat) {
         chat.addMessageListener(new MyPacketListener());
-        chat.addParticipantStatusListener(new MyParticipantStatusListener());
-        chat.addUserStatusListener(new MyUserStatusListener());
+
+        // chat.addParticipantStatusListener(new MyParticipantStatusListener());
+        // chat.addUserStatusListener(new MyUserStatusListener());
 
         LOG.debug("Occupants count = " + chat.getOccupantsCount());
         Iterator<String> occupants = chat.getOccupants();
@@ -233,6 +243,34 @@ public class XmppChat implements Chat {
 
     public void processMessage(Message message) {
         messageListener.processMessage(message);
+    }
+
+    private class MyPresenceListener implements PacketListener {
+        public void processPacket(Packet packet) {
+	        if (!(packet instanceof Presence)) {
+    	    	return;
+	        }
+	        Presence presence = (Presence)packet;
+
+            MUCUser mucExtension = (MUCUser) packet.getExtension("x", "http://jabber.org/protocol/muc#user");
+            if (mucExtension != null)
+            {
+	            String newAffiliation = mucExtension.getItem().getAffiliation();
+    	        String newRole = mucExtension.getItem().getRole();
+        	    // TODO zibada: use this to update power status
+        	}
+
+            String from = packet.getFrom();
+            boolean avail = presence.isAvailable();
+            if (avail) {
+                LOG.debug("JOINED: {}", from);
+                processMessage(new ServerMessage(ServerMessage.USER_JOINED, getUser(from)));
+            }
+            else {
+                LOG.debug("LEFT: {}", from);
+                processMessage(new ServerMessage(ServerMessage.USER_LEFT, getUser(from)));
+            }
+        }
     }
 
     private class MyPacketListener implements PacketListener {
