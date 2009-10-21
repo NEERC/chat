@@ -42,36 +42,6 @@ public abstract class Message {
      * Message from user
      */
     protected static final int USER_MESSAGE = 2;
-    /**
-     * Message with login information
-     */
-    protected static final int LOGIN_MESSAGE = 3;
-    /**
-     * Response to login information. Contains entry information:
-     * Users, assigned tasks etc.
-     */
-    protected static final int WELCOME_MESSAGE = 4;
-    /**
-     * Message with NEERC clock
-     */
-    protected static final int TIMER_MESSAGE = 5;
-    /**
-     * Message with update to the users list
-     */
-    protected static final int UPDATE_USERS_LIST_MESSAGE = 6;
-    /**
-     * Message identifying End Of Stream
-     */
-    protected static final int EOF_MESSAGE = 1000;
-    /**
-     * Message used to check connection alive
-     */
-    protected static final int PING_MESSAGE = 1001;
-
-    /**
-     * Message used to send custom information
-     */
-    protected static final int CUSTOM_MESSAGE = 10000;
 
     /**
      * Message timestamp.
@@ -79,8 +49,7 @@ public abstract class Message {
     private Date timestamp;
 
     /**
-     * Stores message type. Either {@link #SERVER_MESSAGE}, {@link #TASK_MESSAGE}, {@link #USER_MESSAGE},
-     * {@link #LOGIN_MESSAGE} or {@link #WELCOME_MESSAGE}.
+     * Stores message type.
      */
     private int type;
     /**
@@ -161,9 +130,13 @@ public abstract class Message {
         return serialized;
     }
 
-    protected abstract void serialize(Config message);
+    protected void serialize(Config message) {
+        throw new UnsupportedOperationException();
+    }
 
-    protected abstract void deserialize(Config message);
+    protected void deserialize(Config message) {
+        throw new UnsupportedOperationException();
+    }
 
     public abstract String asString();
 

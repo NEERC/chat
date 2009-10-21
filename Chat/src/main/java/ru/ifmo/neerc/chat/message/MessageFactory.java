@@ -94,12 +94,6 @@ public class MessageFactory {
     private Message createMessage(int messageType) {
         Message message = null;
         switch (messageType) {
-            case Message.SERVER_MESSAGE:
-                message = new ServerMessage();
-                break;
-            case Message.USER_MESSAGE:
-                message = new UserMessage();
-                break;
             case Message.TASK_MESSAGE:
                 message = new TaskMessage();
                 break;

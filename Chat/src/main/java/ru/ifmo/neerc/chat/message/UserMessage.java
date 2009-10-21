@@ -19,7 +19,6 @@
  */
 package ru.ifmo.neerc.chat.message;
 
-import ru.ifmo.ips.config.Config;
 import ru.ifmo.neerc.chat.UserEntry;
 import ru.ifmo.neerc.chat.UserRegistry;
 
@@ -28,42 +27,18 @@ import ru.ifmo.neerc.chat.UserRegistry;
  */
 public class UserMessage extends Message {
     private int from;
-    private UserText text;
-    private static final String TAG_USER = "user";
-    private static final String ATTR_FROM = "@from";
-    private static final String ATTR_TO = "@to";
+    private String text;
 
-    public UserMessage() {
+    public UserMessage(int from, String text) {
         super(USER_MESSAGE);
-    }
-
-    public UserMessage(UserText text) {
-        this(-1, text);
-    }
-
-    public UserMessage(int from, UserText text) {
-        this(from, -1, text);
-    }
-
-    public UserMessage(int from, int to, UserText text) {
-        super(USER_MESSAGE, to);
-        this.text = text;
         this.from = from;
+        this.text = text;
     }
 
-    public void serialize(Config message) {
-        Config userNode = message.createNode(TAG_USER);
-        userNode.setProperty(ATTR_FROM, "" + from);
-        userNode.setProperty(ATTR_TO, "" + getDestination());
-        message.setProperty(TAG_USER, text.asString());
-    }
-
-    public void deserialize(Config message) {
-        Config userElement = message.getNode(TAG_USER);
-        from = userElement.getInt(ATTR_FROM);
-        setDestination(userElement.getInt(ATTR_TO));
-        text = new UserText();
-        text.fromString(message.getProperty(TAG_USER));
+    public UserMessage(int from, int to, String text) {
+        super(USER_MESSAGE, to);
+        this.from = from;
+        this.text = text;
     }
 
     public String asString() {
@@ -71,30 +46,25 @@ public class UserMessage extends Message {
         StringBuilder route = getDestination() < 0 ? new StringBuilder().append(fromName)
                 : new StringBuilder().append(fromName).append(">").append(
                 UserRegistry.getInstance().search(getDestination()).getName());
-        return route.append(": ").append(text.getText()).toString();
-    }
-
-    public void setFrom(int from) {
-        setSerialized(null);
-        this.from = from;
+        return route.append(": ").append(getText()).toString();
     }
 
     public int getFrom() {
         return from;
     }
 
-    public UserText getText() {
+    public String getText() {
         return text;
     }
 
     public boolean isImportant() {
         try {
             char c = '.';
-            if (text != null && text.getText() != null && text.getText().length() > 0) {
-                c = text.getText().charAt(0);
+            if (getText() != null && getText().length() > 0) {
+                c = getText().charAt(0);
             }
             UserEntry userEntry = UserRegistry.getInstance().search(from);
-            return (c == '#' || c == '\uFFFD' || /* c == '�' */ c == '!' || c == '?') && userEntry != null && userEntry.isPower();
+            return (c == '#' || c == '\uFFFD' || c == '!' || c == '?') && userEntry != null && userEntry.isPower();
         } catch (Exception e) {
             return false;
         }

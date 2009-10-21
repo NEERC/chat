@@ -66,7 +66,7 @@ public class ChatMessage {
 
     public static ChatMessage createUserMessage(UserMessage userMessage) {
         UserEntry user = UserRegistry.getInstance().search(userMessage.getFrom());
-        String text = userMessage.getText().getText();
+        String text = userMessage.getText();
         return new ChatMessage(
                 USER_MESSAGE,
                 text,

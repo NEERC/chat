@@ -5,7 +5,9 @@ import org.jivesoftware.smack.filter.PacketTypeFilter;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smackx.muc.*;
+import org.jivesoftware.smackx.muc.DiscussionHistory;
+import org.jivesoftware.smackx.muc.MultiUserChat;
+import org.jivesoftware.smackx.muc.Occupant;
 import org.jivesoftware.smackx.packet.DelayInformation;
 import org.jivesoftware.smackx.packet.MUCUser;
 import org.slf4j.Logger;
@@ -162,7 +164,7 @@ public class XmppChat implements Chat {
         try {
             if (message instanceof UserMessage) {
                 UserMessage userMessage = (UserMessage) message;
-                muc.sendMessage(userMessage.getText().getText());
+                muc.sendMessage(userMessage.getText());
             } else if (message instanceof TaskMessage) {
                 TaskMessage taskMessage = (TaskMessage) message;
                 byte[] bytes = MessageFactory.getInstance().serialize(taskMessage);
@@ -263,10 +265,22 @@ public class XmppChat implements Chat {
             boolean avail = presence.isAvailable();
             if (avail) {
                 LOG.debug("JOINED: {}", from);
-                processMessage(new ServerMessage(ServerMessage.USER_JOINED, getUser(from)));
+
+                UserEntry user = getUser(from);
+                UserRegistry.getInstance().putOnline(user, true);
+
+                processMessage(new ServerMessage(
+                        "User " + user.getName() + " has joined chat"
+                ));
             } else {
                 LOG.debug("LEFT: {}", from);
-                processMessage(new ServerMessage(ServerMessage.USER_LEFT, getUser(from)));
+
+                UserEntry user = getUser(from);
+                UserRegistry.getInstance().putOnline(user, false);
+
+                processMessage(new ServerMessage(
+                        "User " + user.getName() + " has left chat"
+                ));
             }
         }
     }
@@ -307,7 +321,7 @@ public class XmppChat implements Chat {
             } else {
                 message = new UserMessage(
                         user.getId(),
-                        new UserText(xmppMessage.getBody())
+                        xmppMessage.getBody()
                 );
             }
 
@@ -319,32 +333,6 @@ public class XmppChat implements Chat {
             lastActivity = timestamp;
 
             processMessage(message);
-        }
-    }
-
-    private class MyUserStatusListener extends DefaultUserStatusListener {
-        @Override
-        public void moderatorGranted() {
-            LOG.debug("Moderator granted");
-        }
-
-        @Override
-        public void moderatorRevoked() {
-            LOG.debug("Moderator revoked");
-        }
-    }
-
-    private class MyParticipantStatusListener extends DefaultParticipantStatusListener {
-        @Override
-        public void joined(String participant) {
-            LOG.debug("JOINED: {}", participant);
-            processMessage(new ServerMessage(ServerMessage.USER_JOINED, getUser(participant)));
-        }
-
-        @Override
-        public void left(String participant) {
-            LOG.debug("LEFT: {}", participant);
-            processMessage(new ServerMessage(ServerMessage.USER_LEFT, getUser(participant)));
         }
     }
 }

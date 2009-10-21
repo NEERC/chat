@@ -16,7 +16,10 @@
 package ru.ifmo.neerc.chat.client;
 
 import ru.ifmo.neerc.chat.*;
-import ru.ifmo.neerc.chat.message.*;
+import ru.ifmo.neerc.chat.message.Message;
+import ru.ifmo.neerc.chat.message.ServerMessage;
+import ru.ifmo.neerc.chat.message.TaskMessage;
+import ru.ifmo.neerc.chat.message.UserMessage;
 
 import javax.swing.*;
 import javax.swing.text.AttributeSet;
@@ -208,7 +211,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     }
 
     private void send(String text) {
-        // ansure that null won't be here
+        // ensure that null won't be here
         text = String.valueOf(text);
 
         int toPos = text.indexOf(">");
@@ -222,7 +225,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
             }
         }
 
-        chat.write(new UserMessage(user.getId(), destination, new UserText(text)));
+        chat.write(new UserMessage(user.getId(), destination, text));
         inputArea.setText("");
     }
 
@@ -231,21 +234,9 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         ChatMessage chatMessage = null;
         if (message instanceof ServerMessage) {
             ServerMessage serverMessage = (ServerMessage) message;
-
-            switch (serverMessage.getEventType()) {
-                case ServerMessage.USER_JOINED:
-                    chatMessage = ChatMessage.createServerMessage(
-                            "User " + serverMessage.getUser().getName() + " has joined chat"
-                    );
-                    UserRegistry.getInstance().putOnline(serverMessage.getUser(), true);
-                    break;
-                case ServerMessage.USER_LEFT:
-                    chatMessage = ChatMessage.createServerMessage(
-                            "User " + serverMessage.getUser().getName() + " has left chat"
-                    );
-                    UserRegistry.getInstance().putOnline(serverMessage.getUser(), false);
-                    break;
-            }
+            chatMessage = ChatMessage.createServerMessage(
+                    serverMessage.getText()
+            );
         } else if (message instanceof UserMessage) {
             chatMessage = ChatMessage.createUserMessage((UserMessage) message);
         } else if (message instanceof TaskMessage) {
@@ -308,8 +299,4 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         }
     }
 
-    public void connectionLost() {
-        JOptionPane.showMessageDialog(this, "Connection lost. Exiting...");
-        System.exit(1);
-    }
 }

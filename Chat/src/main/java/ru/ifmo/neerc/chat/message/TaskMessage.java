@@ -58,6 +58,7 @@ public class TaskMessage extends Message {
         return (taskMsgType == COMPLETE || entry.isPower());
     }
 
+    @Override
     protected void serialize(Config message) {
         Config node = message.createNode(NODE_TASK);
         node.setProperty(ATTR_TYPE, "" + taskMsgType);
@@ -75,6 +76,7 @@ public class TaskMessage extends Message {
         }
     }
 
+    @Override
     protected void deserialize(Config message) {
         Config node = message.getNode(NODE_TASK);
         taskMsgType = node.getInt(ATTR_TYPE);
