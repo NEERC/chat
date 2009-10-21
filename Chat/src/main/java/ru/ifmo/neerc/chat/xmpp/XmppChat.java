@@ -66,9 +66,9 @@ public class XmppChat implements Chat {
 
         // Create a MultiUserChat using an XMPPConnection for a room
         muc = new MultiUserChat(connection, ROOM);
-        registerRoomListeners(muc);
+        muc.addMessageListener(new MyMessageListener());
 
-        registerConnectionListeners(connection);
+        connection.addPacketListener(new MyPresenceListener(), new PacketTypeFilter(Presence.class));
 
         join();
 
@@ -117,36 +117,6 @@ public class XmppChat implements Chat {
                     history,
                     SmackConfiguration.getPacketReplyTimeout()
             );
-
-            LOG.debug("JOINED: {}", muc.isJoined());
-
-            /*
-            try {
-                for (Affiliate affiliate : muc.getOwners()) {
-                    String jid = affiliate.getJid();
-                    final String nick = jid.substring(0, jid.indexOf('@'));
-                    final String affiliation = affiliate.getAffiliation();
-                    LOG.debug("Nick: {} Affiliation: {}", nick, affiliation);
-                    adapter.getUser(nick, affiliation);
-                }
-
-                for (Affiliate affiliate : muc.getAdmins()) {
-                    String jid = affiliate.getJid();
-                    final String nick = jid.substring(0, jid.indexOf('@'));
-                    final String affiliation = affiliate.getAffiliation();
-                    LOG.debug("Nick: {} Affiliation: {}", nick, affiliation);
-                }
-                for (Affiliate affiliate : muc.getMembers()) {
-                    String jid = affiliate.getJid();
-                    final String nick = jid.substring(0, jid.indexOf('@'));
-                    final String affiliation = affiliate.getAffiliation();
-                    LOG.debug("Nick: {} Affiliation: {}", nick, affiliation);
-                    adapter.getUser(nick, affiliation);
-                }
-            } catch (XMPPException e) {
-                LOG.error("Unable to retrieve room users", e);
-            }
-            */
         } catch (XMPPException e) {
             LOG.error("Unable to join room", e);
         }
@@ -154,9 +124,9 @@ public class XmppChat implements Chat {
 
     public void debugConnection() {
         LOG.debug("User: {}", connection.getUser());
-        LOG.debug("Connected: {}", getConnection().isConnected());
-        LOG.debug("Authenticated: {}", getConnection().isAuthenticated());
-        LOG.debug("Joined: {}", getMultiUserChat().isJoined());
+        LOG.debug("Connected: {}", connection.isConnected());
+        LOG.debug("Authenticated: {}", connection.isAuthenticated());
+        LOG.debug("Joined: {}", muc.isJoined());
     }
 
     @Override
@@ -209,25 +179,6 @@ public class XmppChat implements Chat {
         return userEntry;
     }
 
-    public void registerConnectionListeners(XMPPConnection conn) {
-        conn.addPacketListener(new MyPresenceListener(), new PacketTypeFilter(Presence.class));
-    }
-
-    public void registerRoomListeners(MultiUserChat chat) {
-        chat.addMessageListener(new MyMessageListener());
-
-        /*
-        LOG.debug("Occupants count = " + chat.getOccupantsCount());
-        Iterator<String> occupants = chat.getOccupants();
-        while (occupants.hasNext()) {
-            String user = occupants.next();
-            Occupant occupant = chat.getOccupant(user);
-            LOG.debug(DebugUtils.occupantToString(occupant));
-            UserRegistry.getInstance().putOnline(getUser(user), true);
-        }
-        */
-    }
-
     public void processMessage(Message message) {
         messageListener.processMessage(message);
     }
@@ -238,20 +189,15 @@ public class XmppChat implements Chat {
                 return;
             }
             Presence presence = (Presence) packet;
-
-            String from = packet.getFrom();
-            boolean avail = presence.isAvailable();
-
-            UserEntry user = getUser(from);
-
-            MUCUser mucExtension = (MUCUser) packet.getExtension("x", "http://jabber.org/protocol/muc#user");
+            final String from = presence.getFrom();
+            final UserEntry user = getUser(from);
+            final MUCUser mucExtension = (MUCUser) packet.getExtension("x", "http://jabber.org/protocol/muc#user");
             if (mucExtension != null) {
                 MUCUser.Item item = mucExtension.getItem();
                 LOG.debug(from + " " + DebugUtils.userItemToString(item));
                 UserRegistry.getInstance().setRole(user, item.getRole());
             }
-
-            if (avail) {
+            if (presence.isAvailable()) {
                 LOG.debug("JOINED: {}", from);
                 UserRegistry.getInstance().putOnline(user);
                 processMessage(new ServerMessage(
