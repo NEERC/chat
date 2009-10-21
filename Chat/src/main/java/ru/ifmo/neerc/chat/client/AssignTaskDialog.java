@@ -19,10 +19,10 @@
  */
 package ru.ifmo.neerc.chat.client;
 
-import ru.ifmo.neerc.chat.Task;
-import ru.ifmo.neerc.chat.UserEntry;
-import ru.ifmo.neerc.chat.UserRegistry;
 import ru.ifmo.neerc.chat.message.TaskMessage;
+import ru.ifmo.neerc.chat.task.Task;
+import ru.ifmo.neerc.chat.user.UserEntry;
+import ru.ifmo.neerc.chat.user.UserRegistry;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;

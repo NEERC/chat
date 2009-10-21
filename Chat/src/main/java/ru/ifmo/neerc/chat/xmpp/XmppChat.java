@@ -12,10 +12,11 @@ import org.jivesoftware.smackx.packet.DelayInformation;
 import org.jivesoftware.smackx.packet.MUCUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.ifmo.neerc.chat.UserEntry;
-import ru.ifmo.neerc.chat.UserRegistry;
 import ru.ifmo.neerc.chat.client.Chat;
 import ru.ifmo.neerc.chat.message.*;
+import ru.ifmo.neerc.chat.message.MessageListener;
+import ru.ifmo.neerc.chat.user.UserEntry;
+import ru.ifmo.neerc.chat.user.UserRegistry;
 
 import java.util.Arrays;
 import java.util.Calendar;
@@ -39,9 +40,9 @@ public class XmppChat implements Chat {
     private String name;
     private String password = System.getProperty("password", "12345");
 
-    ru.ifmo.neerc.chat.MessageListener messageListener;
+    MessageListener messageListener;
 
-    public XmppChat(String name, ru.ifmo.neerc.chat.MessageListener messageListener) {
+    public XmppChat(String name, MessageListener messageListener) {
         this.messageListener = messageListener;
         this.name = name;
         // Create the configuration for this new connection

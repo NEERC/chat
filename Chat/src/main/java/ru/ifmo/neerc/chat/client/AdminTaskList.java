@@ -19,7 +19,13 @@
  */
 package ru.ifmo.neerc.chat.client;
 
-import ru.ifmo.neerc.chat.*;
+import ru.ifmo.neerc.chat.task.Task;
+import ru.ifmo.neerc.chat.task.TaskRegistry;
+import ru.ifmo.neerc.chat.task.TaskRegistryListener;
+import ru.ifmo.neerc.chat.task.TaskResult;
+import ru.ifmo.neerc.chat.user.UserEntry;
+import ru.ifmo.neerc.chat.user.UserRegistry;
+import ru.ifmo.neerc.chat.user.UserRegistryListener;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -148,7 +154,7 @@ public class AdminTaskList extends JTable {
                 super.setForeground(table.getForeground());
                 super.setBackground(table.getBackground());
             }
-            
+
             setFont(table.getFont());
 
             if (hasFocus) {
@@ -162,11 +168,11 @@ public class AdminTaskList extends JTable {
             }
 
             if (value instanceof Task) {
-                Task task = (Task)value;
+                Task task = (Task) value;
                 setText(task.getDescription());
                 setIcon(TaskList.getIcon(task.getVisualState()));
             } else if (value instanceof TaskObject) {
-                TaskObject taskObject = (TaskObject)value;
+                TaskObject taskObject = (TaskObject) value;
                 setIcon(TaskList.getIcon(taskObject.getVisualState()));
                 setText(taskObject.getMessage());
             } else {

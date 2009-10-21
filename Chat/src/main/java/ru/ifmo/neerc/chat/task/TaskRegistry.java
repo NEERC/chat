@@ -17,10 +17,13 @@
 /**
  * Date: 27.10.2004
  */
-package ru.ifmo.neerc.chat;
+package ru.ifmo.neerc.chat.task;
 
 import ru.ifmo.neerc.chat.message.Message;
+import ru.ifmo.neerc.chat.message.MessageListener;
 import ru.ifmo.neerc.chat.message.TaskMessage;
+import ru.ifmo.neerc.chat.user.UserEntry;
+import ru.ifmo.neerc.chat.user.UserRegistryListener;
 
 import java.util.*;
 
@@ -28,14 +31,15 @@ import java.util.*;
  * @author Matvey Kazakov
  */
 public class TaskRegistry implements UserRegistryListener, MessageListener {
-    
+
     private static TaskRegistry instance = new TaskRegistry();
 
     public static TaskRegistry getInstance() {
         return instance;
     }
 
-    private TaskRegistry() {}
+    private TaskRegistry() {
+    }
 
     private Map<Integer, Task> taskById = new HashMap<Integer, Task>();
 
@@ -43,17 +47,17 @@ public class TaskRegistry implements UserRegistryListener, MessageListener {
 
     public synchronized void registerTask(Task task) {
         taskById.put(task.getId(), task);
-		for (TaskRegistryListener listener : listeners) {
-			listener.taskAdded(task);
-		}
+        for (TaskRegistryListener listener : listeners) {
+            listener.taskAdded(task);
+        }
     }
 
     public synchronized void deleteTask(int taskId) {
         Task task = taskById.remove(taskId);
         if (task != null) {
-			for (TaskRegistryListener listener : listeners) {
-				listener.taskDeleted(task);
-			}
+            for (TaskRegistryListener listener : listeners) {
+                listener.taskDeleted(task);
+            }
         }
     }
 
@@ -101,18 +105,18 @@ public class TaskRegistry implements UserRegistryListener, MessageListener {
     }
 
     private void fireTaskChanged(Task task) {
-		for (TaskRegistryListener listener : listeners) {
-			listener.taskChanged(task);
-		}
+        for (TaskRegistryListener listener : listeners) {
+            listener.taskChanged(task);
+        }
     }
-    
+
     private static int TASK_ID = 0;
 
     public synchronized Task createTask(String taskDescription, int type) {
         int maxId = 0;
-		for (int id : taskById.keySet()) {
-			maxId = Math.max(id, maxId);
-		}
+        for (int id : taskById.keySet()) {
+            maxId = Math.max(id, maxId);
+        }
         return new Task(newTaskID(maxId), taskDescription, type);
     }
 
@@ -123,9 +127,9 @@ public class TaskRegistry implements UserRegistryListener, MessageListener {
 
     public synchronized void init(Task[] list) {
         if (list != null) {
-			for (Task aList : list) {
-				registerTask(aList);
-			}
+            for (Task aList : list) {
+                registerTask(aList);
+            }
         }
     }
 
@@ -136,7 +140,7 @@ public class TaskRegistry implements UserRegistryListener, MessageListener {
 
     public void processMessage(Message message) {
         if (message instanceof TaskMessage) {
-            TaskMessage taskMessage = (TaskMessage)message;
+            TaskMessage taskMessage = (TaskMessage) message;
             int taskId = taskMessage.getTaskId();
             int userId = taskMessage.getUser();
             switch (taskMessage.getTaskMsgType()) {

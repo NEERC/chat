@@ -15,11 +15,12 @@
 */
 package ru.ifmo.neerc.chat.client;
 
-import ru.ifmo.neerc.chat.*;
-import ru.ifmo.neerc.chat.message.Message;
-import ru.ifmo.neerc.chat.message.ServerMessage;
-import ru.ifmo.neerc.chat.message.TaskMessage;
-import ru.ifmo.neerc.chat.message.UserMessage;
+import ru.ifmo.neerc.chat.message.*;
+import ru.ifmo.neerc.chat.task.TaskRegistry;
+import ru.ifmo.neerc.chat.user.UserEntry;
+import ru.ifmo.neerc.chat.user.UserRegistry;
+import ru.ifmo.neerc.chat.utils.ChatLogger;
+import ru.ifmo.neerc.chat.utils.DateUtils;
 
 import javax.swing.*;
 import javax.swing.text.AttributeSet;

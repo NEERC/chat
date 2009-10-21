@@ -19,8 +19,9 @@
  */
 package ru.ifmo.neerc.chat.client;
 
-import ru.ifmo.neerc.chat.*;
 import ru.ifmo.neerc.chat.message.TaskMessage;
+import ru.ifmo.neerc.chat.task.*;
+import ru.ifmo.neerc.chat.user.UserEntry;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;

@@ -1,4 +1,4 @@
-package ru.ifmo.neerc.chat;
+package ru.ifmo.neerc.chat.utils;
 
 import java.util.Date;
 

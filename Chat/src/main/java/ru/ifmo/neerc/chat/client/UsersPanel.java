@@ -19,9 +19,9 @@
  */
 package ru.ifmo.neerc.chat.client;
 
-import ru.ifmo.neerc.chat.UserEntry;
-import ru.ifmo.neerc.chat.UserRegistry;
-import ru.ifmo.neerc.chat.UserRegistryListener;
+import ru.ifmo.neerc.chat.user.UserEntry;
+import ru.ifmo.neerc.chat.user.UserRegistry;
+import ru.ifmo.neerc.chat.user.UserRegistryListener;
 
 import javax.swing.*;
 import java.awt.*;
@@ -89,9 +89,9 @@ public class UsersPanel extends JPanel {
     }
 
     private class UserListCellRenderer extends DefaultListCellRenderer {
-        
+
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            UserEntry entry = (UserEntry)value;
+            UserEntry entry = (UserEntry) value;
             Color foreground;
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
@@ -100,7 +100,7 @@ public class UsersPanel extends JPanel {
                 setBackground(list.getBackground());
                 foreground = list.getForeground();
             }
-            
+
             if (!entry.isOnline()) {
                 foreground = Color.lightGray;
             }

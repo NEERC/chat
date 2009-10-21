@@ -17,13 +17,15 @@
 /**
  * Date: 27.10.2004
  */
-package ru.ifmo.neerc.chat;
+package ru.ifmo.neerc.chat.user;
 
 /**
  * @author Matvey Kazakov
  */
-public interface TaskRegistryListener {
-    void taskAdded(Task task);
-    void taskDeleted(Task taskId);
-    void taskChanged(Task taskId);
+public interface UserRegistryListener {
+    void userAdded(UserEntry userEntry);
+
+    void userRemoved(UserEntry userEntry);
+
+    void userChanged(UserEntry userEntry);
 }

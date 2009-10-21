@@ -18,7 +18,7 @@
  *
  * $Id$
  */
-package ru.ifmo.neerc.chat;
+package ru.ifmo.neerc.chat.task;
 
 import ru.ifmo.ips.config.Config;
 
@@ -27,13 +27,9 @@ import ru.ifmo.ips.config.Config;
  *
  * @author Matvey Kazakov
  */
-public class TodoTaskResult extends TaskResult{
-    
-    public static final int STATE_NEW = 0;
-    public static final int STATE_INPROGRESS = 1;
-    public static final int STATE_DONE = 2;
-    
-    private int state = STATE_NEW;
+public class ConfirmTaskResult extends TaskResult {
+
+    private int done = 0;
     private static final String ATT_TODOVAL = "@todoval";
 
     public String toString() {
@@ -41,29 +37,24 @@ public class TodoTaskResult extends TaskResult{
     }
 
     public void serialize(Config node) {
-        node.setProperty(ATT_TODOVAL, String.valueOf(state));
+        node.setProperty(ATT_TODOVAL, String.valueOf(done));
     }
 
     public void deserialize(Config node) {
-        state = node.getInt(ATT_TODOVAL);
+        done = node.getInt(ATT_TODOVAL);
     }
 
     public boolean actionSupported(int action) {
-        return (state == STATE_NEW || state == STATE_DONE) && action == TaskFactory.ACTION_START || 
-                state == STATE_INPROGRESS && action == TaskFactory.ACTION_DONE;
+        return action == TaskFactory.ACTION_DONE;
     }
 
     public void performAction(int action, Object... param) {
-        if (action == TaskFactory.ACTION_START) {
-            state = STATE_INPROGRESS;
-        } else if (action == TaskFactory.ACTION_DONE) {
-            state = STATE_DONE;
+        if (action == TaskFactory.ACTION_DONE) {
+            done = 1 - done;
         }
     }
 
     public int getVisualState() {
-        return state == STATE_NEW ? TaskFactory.VSTATE_NEW : 
-                state == STATE_INPROGRESS ? TaskFactory.VSTATE_INPROGRESS :
-                TaskFactory.VSTATE_DONE;
+        return done == 0 ? TaskFactory.VSTATE_NEW : TaskFactory.VSTATE_DONE;
     }
 }

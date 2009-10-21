@@ -17,11 +17,12 @@
 /**
  * Date: 27.10.2004
  */
-package ru.ifmo.neerc.chat;
+package ru.ifmo.neerc.chat.task;
 
 import ru.ifmo.ips.config.Config;
 import ru.ifmo.ips.config.ConfigException;
 import ru.ifmo.neerc.chat.message.UserText;
+import ru.ifmo.neerc.chat.user.UserRegistry;
 
 import java.util.HashMap;
 import java.util.HashSet;

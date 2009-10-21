@@ -17,7 +17,7 @@
 /**
  * Date: 17.09.2005
  */
-package ru.ifmo.neerc.chat;
+package ru.ifmo.neerc.chat.utils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

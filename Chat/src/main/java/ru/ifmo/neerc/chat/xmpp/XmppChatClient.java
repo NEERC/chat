@@ -18,10 +18,10 @@ package ru.ifmo.neerc.chat.xmpp;
 import org.jivesoftware.smack.ConnectionListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.ifmo.neerc.chat.UserEntry;
-import ru.ifmo.neerc.chat.UserRegistry;
 import ru.ifmo.neerc.chat.client.AbstractChatClient;
 import ru.ifmo.neerc.chat.message.ServerMessage;
+import ru.ifmo.neerc.chat.user.UserEntry;
+import ru.ifmo.neerc.chat.user.UserRegistry;
 
 import javax.swing.*;
 import java.awt.*;

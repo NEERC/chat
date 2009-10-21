@@ -19,11 +19,11 @@
  */
 package ru.ifmo.neerc.chat.client;
 
-import ru.ifmo.neerc.chat.Task;
-import ru.ifmo.neerc.chat.TaskFactory;
-import ru.ifmo.neerc.chat.TaskRegistry;
-import ru.ifmo.neerc.chat.TaskRegistryListener;
 import ru.ifmo.neerc.chat.message.TaskMessage;
+import ru.ifmo.neerc.chat.task.Task;
+import ru.ifmo.neerc.chat.task.TaskFactory;
+import ru.ifmo.neerc.chat.task.TaskRegistry;
+import ru.ifmo.neerc.chat.task.TaskRegistryListener;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;

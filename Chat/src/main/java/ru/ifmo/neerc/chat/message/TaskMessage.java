@@ -20,7 +20,11 @@
 package ru.ifmo.neerc.chat.message;
 
 import ru.ifmo.ips.config.Config;
-import ru.ifmo.neerc.chat.*;
+import ru.ifmo.neerc.chat.task.Task;
+import ru.ifmo.neerc.chat.task.TaskRegistry;
+import ru.ifmo.neerc.chat.task.TaskResult;
+import ru.ifmo.neerc.chat.user.UserEntry;
+import ru.ifmo.neerc.chat.user.UserRegistry;
 
 /**
  * @author Matvey Kazakov

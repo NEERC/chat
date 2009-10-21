@@ -23,8 +23,12 @@ package ru.ifmo.neerc.chat.client;
 import ru.ifmo.ips.config.Config;
 import ru.ifmo.ips.config.ConfigException;
 import ru.ifmo.ips.config.XMLConfig;
-import ru.ifmo.neerc.chat.*;
 import ru.ifmo.neerc.chat.message.TaskMessage;
+import ru.ifmo.neerc.chat.task.Task;
+import ru.ifmo.neerc.chat.task.TaskFactory;
+import ru.ifmo.neerc.chat.task.TaskRegistry;
+import ru.ifmo.neerc.chat.user.UserEntry;
+import ru.ifmo.neerc.chat.user.UserRegistry;
 
 import javax.swing.*;
 import java.awt.*;

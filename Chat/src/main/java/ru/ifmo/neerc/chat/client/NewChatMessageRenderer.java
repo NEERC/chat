@@ -19,7 +19,7 @@ package ru.ifmo.neerc.chat.client;
  * Date: 28.10.2005
  */
 
-import ru.ifmo.neerc.chat.UserEntry;
+import ru.ifmo.neerc.chat.user.UserEntry;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -29,7 +29,6 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**

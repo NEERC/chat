@@ -19,9 +19,9 @@
  */
 package ru.ifmo.neerc.chat.client;
 
-import ru.ifmo.neerc.chat.UserEntry;
-import ru.ifmo.neerc.chat.UserRegistry;
 import ru.ifmo.neerc.chat.message.UserMessage;
+import ru.ifmo.neerc.chat.user.UserEntry;
+import ru.ifmo.neerc.chat.user.UserRegistry;
 
 import java.text.CharacterIterator;
 import java.text.SimpleDateFormat;

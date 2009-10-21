@@ -17,7 +17,7 @@
 /**
  * Date: 25.10.2004
  */
-package ru.ifmo.neerc.chat;
+package ru.ifmo.neerc.chat.user;
 
 import ru.ifmo.ips.config.Config;
 
@@ -31,16 +31,16 @@ public class UserEntry implements Comparable {
     private static final String ATTR_POWER = "@power";
     private static final String USER_NODE = "user";
     private static final String ATTR_ONLINE = "@online";
-    
-    
+
+
     private int id;
     private String name;
     private boolean power;
     private String group;
     private boolean online = false;
-    
+
     private static int LAST_ID = 0;
-    
+
     public void genId() {
         id = LAST_ID++;
     }
@@ -95,10 +95,10 @@ public class UserEntry implements Comparable {
             return false;
         }
 
-        final UserEntry userEntry = (UserEntry)o;
+        final UserEntry userEntry = (UserEntry) o;
 
-		return id == userEntry.id;
-	}
+        return id == userEntry.id;
+    }
 
     public int hashCode() {
         return id;
@@ -141,7 +141,7 @@ public class UserEntry implements Comparable {
     }
 
     public int compareTo(Object o) {
-        UserEntry userEntry = (UserEntry)o;
+        UserEntry userEntry = (UserEntry) o;
         String name = getName();
         if (name == null) {
             name = "";

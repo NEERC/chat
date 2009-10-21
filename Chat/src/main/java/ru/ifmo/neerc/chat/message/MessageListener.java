@@ -15,15 +15,20 @@
 */
 // $Id$
 /**
- * Date: 27.10.2004
+ * Date: 24.10.2004
  */
-package ru.ifmo.neerc.chat;
+package ru.ifmo.neerc.chat.message;
 
 /**
+ * Interface should be implemented by any class who wants to listen for chat messages.
+ *
  * @author Matvey Kazakov
  */
-public interface UserRegistryListener {
-    void userAdded(UserEntry userEntry);
-    void userRemoved(UserEntry userEntry);
-    void userChanged(UserEntry userEntry);
+public interface MessageListener {
+    /**
+     * Method is called when message is received.
+     *
+     * @param message message received
+     */
+    void processMessage(Message message);
 }

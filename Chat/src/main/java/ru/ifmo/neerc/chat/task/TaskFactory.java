@@ -18,7 +18,7 @@
  *
  * $Id$
  */
-package ru.ifmo.neerc.chat;
+package ru.ifmo.neerc.chat.task;
 
 /**
  * <code>TaskFactory</code> class
@@ -29,18 +29,18 @@ public class TaskFactory {
     public static final int ACTION_START = 0;
     public static final int ACTION_DONE = 1;
     public static final int ACTION_FAIL = 2;
-    
-    
+
+
     public static final int TASK_TODO = 0;
     public static final int TASK_REASON = 1;
     public static final int TASK_CONFIRM = 2;
     public static final int TASK_QUESTION = 3;
-    
+
     public static final int VSTATE_DONE = 0;
     public static final int VSTATE_INPROGRESS = 1;
     public static final int VSTATE_NEW = 2;
     public static final int VSTATE_FAIL = 3;
-    
+
     public static TaskResult create(int type) {
         switch (type) {
             case TASK_REASON:

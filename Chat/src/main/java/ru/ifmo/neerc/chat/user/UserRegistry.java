@@ -17,7 +17,7 @@
 /**
  * Date: 25.10.2004
  */
-package ru.ifmo.neerc.chat;
+package ru.ifmo.neerc.chat.user;
 
 import java.util.*;
 
@@ -30,13 +30,14 @@ public class UserRegistry {
     private Map<String, UserEntry> userByName = new HashMap<String, UserEntry>();
 
     private Collection<UserRegistryListener> listeners = new ArrayList<UserRegistryListener>();
-    
+
     private static UserRegistry instance = new UserRegistry();
 
     /**
      * Returns user registry instance
-	 * @return user registry instance
-	 */
+     *
+     * @return user registry instance
+     */
     public static UserRegistry getInstance() {
         return instance;
     }
@@ -44,7 +45,8 @@ public class UserRegistry {
     /**
      * Hide default constructor
      */
-    private UserRegistry() {}
+    private UserRegistry() {
+    }
 
     public synchronized boolean connectUser(UserEntry user) {
         if (userExists(user.getName())) {
@@ -56,7 +58,7 @@ public class UserRegistry {
             user.setId(oldUserEntry.getId());
             oldUserEntry.setPower(user.isPower());
             return true;
-        } 
+        }
         return false;
     }
 
@@ -70,9 +72,9 @@ public class UserRegistry {
             user.setOnline(oldEntry.isOnline());
         }
         userByName.put(user.getName(), user);
-		for (UserRegistryListener listener : listeners) {
-			listener.userAdded(user);
-		}
+        for (UserRegistryListener listener : listeners) {
+            listener.userAdded(user);
+        }
         return true;
     }
 
@@ -82,21 +84,21 @@ public class UserRegistry {
             return;
         }
         userEntry.setOnline(online);
-		for (UserRegistryListener listener : listeners) {
-			listener.userChanged(user);
-		}
+        for (UserRegistryListener listener : listeners) {
+            listener.userChanged(user);
+        }
     }
 
     public synchronized void init(UserEntry[] list) {
         UserEntry[] entries = serialize();
         Set<Integer> oldEntries = new HashSet<Integer>();
-		for (UserEntry entry1 : entries) {
-			oldEntries.add(entry1.getId());
-		}
-		for (UserEntry aList : list) {
-			register(aList);
-			oldEntries.remove(aList.getId());
-		}
+        for (UserEntry entry1 : entries) {
+            oldEntries.add(entry1.getId());
+        }
+        for (UserEntry aList : list) {
+            register(aList);
+            oldEntries.remove(aList.getId());
+        }
         for (Integer entry : oldEntries) {
             unregister(entry);
         }
@@ -107,9 +109,9 @@ public class UserRegistry {
         if (user != null) {
             userByName.remove(user.getName());
         }
-		for (UserRegistryListener listener : listeners) {
-			listener.userRemoved(user);
-		}
+        for (UserRegistryListener listener : listeners) {
+            listener.userRemoved(user);
+        }
     }
 
     public int getUserNumber() {

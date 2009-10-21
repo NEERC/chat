@@ -21,7 +21,7 @@ package ru.ifmo.neerc.chat.message;
 
 import ru.ifmo.ips.config.ConfigException;
 import ru.ifmo.ips.config.XMLConfig;
-import ru.ifmo.neerc.chat.ChatLogger;
+import ru.ifmo.neerc.chat.utils.ChatLogger;
 
 import java.io.*;
 

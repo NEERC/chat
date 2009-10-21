@@ -20,10 +20,10 @@
  */
 package ru.ifmo.neerc.chat.client;
 
-import ru.ifmo.neerc.chat.Task;
-import ru.ifmo.neerc.chat.TaskFactory;
-import ru.ifmo.neerc.chat.TaskRegistry;
-import ru.ifmo.neerc.chat.TaskRegistryListener;
+import ru.ifmo.neerc.chat.task.Task;
+import ru.ifmo.neerc.chat.task.TaskFactory;
+import ru.ifmo.neerc.chat.task.TaskRegistry;
+import ru.ifmo.neerc.chat.task.TaskRegistryListener;
 
 import javax.swing.*;
 import java.awt.*;
@@ -43,9 +43,9 @@ public class TaskList extends JList {
     private static final ImageIcon iconTaskStateFail = new ImageIcon(TaskList.class.getResource("res/task_state_fail.png"));
     private static final ImageIcon iconTaskStateInProgress = new ImageIcon(TaskList.class.getResource("res/task_state_inprogress.png"));
     private static final ImageIcon iconTaskStateDone = new ImageIcon(TaskList.class.getResource("res/task_state_done.gif"));
-    
+
     private static final Map<Integer, ImageIcon> icons;
-    
+
     static {
         Map<Integer, ImageIcon> map = new HashMap<Integer, ImageIcon>();
         map.put(TaskFactory.VSTATE_DONE, iconTaskStateDone);
@@ -54,7 +54,7 @@ public class TaskList extends JList {
         map.put(TaskFactory.VSTATE_NEW, iconTaskStateNew);
         icons = map;
     }
-    
+
     public static ImageIcon getIcon(int state) {
         return icons.get(state);
     }
@@ -104,7 +104,7 @@ public class TaskList extends JList {
 
     private class PersonalTaskListRenderer extends DefaultListCellRenderer {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            Task task = (Task)value;
+            Task task = (Task) value;
             setText(task.getDescription());
             setIcon(icons.get(task.getResult(userId).getVisualState()));
             if (isSelected) {
