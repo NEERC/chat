@@ -80,6 +80,9 @@ public class XmppChatClient extends AbstractChatClient {
             final String message = "Connection closed on error";
             setConnectionError(message);
             addMessage(ChatMessage.createServerMessage(message));
+            for (UserEntry user: UserRegistry.getInstance().getUsers()) {
+                UserRegistry.getInstance().putOnline(user, false);
+            }
         }
 
         @Override

@@ -253,8 +253,7 @@ public class XmppChat implements Chat {
 	        Presence presence = (Presence)packet;
 
             MUCUser mucExtension = (MUCUser) packet.getExtension("x", "http://jabber.org/protocol/muc#user");
-            if (mucExtension != null)
-            {
+            if (mucExtension != null) {
 	            String newAffiliation = mucExtension.getItem().getAffiliation();
     	        String newRole = mucExtension.getItem().getRole();
         	    // TODO zibada: use this to update power status
@@ -265,8 +264,7 @@ public class XmppChat implements Chat {
             if (avail) {
                 LOG.debug("JOINED: {}", from);
                 processMessage(new ServerMessage(ServerMessage.USER_JOINED, getUser(from)));
-            }
-            else {
+            } else {
                 LOG.debug("LEFT: {}", from);
                 processMessage(new ServerMessage(ServerMessage.USER_LEFT, getUser(from)));
             }
