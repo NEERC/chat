@@ -316,7 +316,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 
     private final ArrayList<ChatMessage> messagesToShow = new ArrayList<ChatMessage>();
 
-    private void addMessage(ChatMessage msg) {
+    protected void addMessage(ChatMessage msg) {
         synchronized (messagesToShow) {
             messagesToShow.add(msg);
         }

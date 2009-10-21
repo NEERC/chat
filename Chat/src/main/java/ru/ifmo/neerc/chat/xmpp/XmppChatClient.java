@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import ru.ifmo.neerc.chat.UserEntry;
 import ru.ifmo.neerc.chat.UserRegistry;
 import ru.ifmo.neerc.chat.client.AbstractChatClient;
-import ru.ifmo.neerc.chat.message.Message;
+import ru.ifmo.neerc.chat.client.ChatMessage;
 
 import javax.swing.*;
 import java.awt.*;
@@ -41,17 +41,18 @@ public class XmppChatClient extends AbstractChatClient {
     public XmppChatClient() {
         final String name = System.getProperty("username");
 
-        user = new UserEntry(0, name, false); // TODO power
+        user = new UserEntry(0, name, true); // TODO power
         UserRegistry.getInstance().register(user);
         UserRegistry.getInstance().putOnline(user, true);
 
-        chat = new XmppChat(name, new ChatMessageListener());
+        chat = new XmppChat(name, this);
 
         setupUI();
 
         ((XmppChat) chat).getConnection().addConnectionListener(new MyConnectionListener());
         if (((XmppChat) chat).getMultiUserChat().isJoined()) {
-            setConnectionStatus("Connected");
+            final String message = "Connected";
+            setConnectionStatus(message);
         } else {
             setConnectionError("Unable to connect");
         }
@@ -66,22 +67,19 @@ public class XmppChatClient extends AbstractChatClient {
         });
     }
 
-    private class ChatMessageListener extends XmppAdapter {
-        @Override
-        public void processMessage(Message message) {
-            XmppChatClient.this.processMessage(message);
-        }
-    }
-
     private class MyConnectionListener implements ConnectionListener {
         @Override
         public void connectionClosed() {
-            setConnectionError("Connection closed");
+            final String message = "Connection closed";
+            setConnectionError(message);
+            addMessage(ChatMessage.createServerMessage(message));
         }
 
         @Override
         public void connectionClosedOnError(Exception e) {
-            setConnectionError("Connection closed on error");
+            final String message = "Connection closed on error";
+            setConnectionError(message);
+            addMessage(ChatMessage.createServerMessage(message));
         }
 
         @Override
@@ -91,7 +89,9 @@ public class XmppChatClient extends AbstractChatClient {
 
         @Override
         public void reconnectionSuccessful() {
-            setConnectionStatus("Reconnected");
+            final String message = "Reconnected";
+            setConnectionStatus(message);
+            addMessage(ChatMessage.createServerMessage(message));
         }
 
         @Override
@@ -100,17 +100,26 @@ public class XmppChatClient extends AbstractChatClient {
         }
     }
 
-    private void setConnectionStatus(String status) {
-        LOG.info("Connection status: " + status);
-        connectionStatus.setForeground(Color.BLUE);
+    private void setConnectionStatus(String status, boolean isError) {
+        if (status.equals(connectionStatus.getText())) {
+            return;
+        }
+        if (!isError) {
+            LOG.info("Connection status: " + status);
+            connectionStatus.setForeground(Color.BLUE);
+        } else {
+            LOG.error("Connection status: " + status);
+            connectionStatus.setForeground(Color.RED);
+        }
         connectionStatus.setText(status);
-        this.setEnabled(true);
+    }
+
+    private void setConnectionStatus(String status) {
+        setConnectionStatus(status, false);
     }
 
     private void setConnectionError(String error) {
-        LOG.error("Connection status: " + error);
-        connectionStatus.setForeground(Color.RED);
-        connectionStatus.setText(error);
-        this.setEnabled(false);
+        setConnectionStatus(error, true);
     }
+
 }
