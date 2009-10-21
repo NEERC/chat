@@ -95,10 +95,14 @@ public abstract class XmppAdapter implements PacketListener, MessageListener {
                     new UserText(xmppMessage.getBody())
             );
         }
-        message.setTimestamp(timestamp);
-        if (timestamp != null) {
-            lastActivity = timestamp;
+
+        if (timestamp == null) {
+            timestamp = new Date();
         }
+
+        message.setTimestamp(timestamp);
+        lastActivity = timestamp;
+
         processMessage(message);
     }
 
