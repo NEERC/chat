@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 import ru.ifmo.neerc.chat.UserEntry;
 import ru.ifmo.neerc.chat.UserRegistry;
 import ru.ifmo.neerc.chat.client.AbstractChatClient;
-import ru.ifmo.neerc.chat.client.ChatMessage;
+import ru.ifmo.neerc.chat.message.ServerMessage;
 
 import javax.swing.*;
 import java.awt.*;
@@ -66,14 +66,14 @@ public class XmppChatClient extends AbstractChatClient {
         public void connectionClosed() {
             final String message = "Connection closed";
             setConnectionError(message);
-            addMessage(ChatMessage.createServerMessage(message));
+            processMessage(new ServerMessage(message));
         }
 
         @Override
         public void connectionClosedOnError(Exception e) {
             final String message = "Connection closed on error";
             setConnectionError(message);
-            addMessage(ChatMessage.createServerMessage(message));
+            processMessage(new ServerMessage(message));
             for (UserEntry user : UserRegistry.getInstance().getUsers()) {
                 UserRegistry.getInstance().putOnline(user, false);
             }
@@ -88,7 +88,7 @@ public class XmppChatClient extends AbstractChatClient {
         public void reconnectionSuccessful() {
             final String message = "Reconnected";
             setConnectionStatus(message);
-            addMessage(ChatMessage.createServerMessage(message));
+            processMessage(new ServerMessage(message));
         }
 
         @Override
