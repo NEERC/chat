@@ -11,6 +11,8 @@ import ru.ifmo.neerc.chat.message.MessageFactory;
 import ru.ifmo.neerc.chat.message.TaskMessage;
 import ru.ifmo.neerc.chat.message.UserMessage;
 
+import java.util.Calendar;
+
 /**
  * @author Evgeny Mandrikov
  */
@@ -88,7 +90,10 @@ public class XmppChat implements Chat {
             if (adapter.getLastActivity() != null) {
                 history.setSince(adapter.getLastActivity());
             } else {
-                history.setMaxStanzas(100); // TODO
+                Calendar calendar = Calendar.getInstance();
+                calendar.set(Calendar.HOUR_OF_DAY, 0);
+                calendar.set(Calendar.MINUTE, 0);
+                history.setSince(calendar.getTime());
             }
             muc.join(
                     name, // nick
