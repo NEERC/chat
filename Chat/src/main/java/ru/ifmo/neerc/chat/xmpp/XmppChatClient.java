@@ -104,11 +104,13 @@ public class XmppChatClient extends AbstractChatClient {
         LOG.info("Connection status: " + status);
         connectionStatus.setForeground(Color.BLUE);
         connectionStatus.setText(status);
+        this.setEnabled(true);
     }
 
     private void setConnectionError(String error) {
         LOG.error("Connection status: " + error);
         connectionStatus.setForeground(Color.RED);
         connectionStatus.setText(error);
+        this.setEnabled(false);
     }
 }

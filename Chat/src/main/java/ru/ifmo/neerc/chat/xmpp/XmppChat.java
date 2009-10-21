@@ -17,39 +17,74 @@ import ru.ifmo.neerc.chat.message.UserMessage;
 public class XmppChat implements Chat {
     private static final Logger LOG = LoggerFactory.getLogger(XmppChat.class);
 
+    // TODO make this configurable
+    private static final String SERVER_HOST = "10.90.93.204";
+    private static final int SERVER_PORT = 5222;
+    private static final String ROOM = "neerc@conference.localhost";
+
     private MultiUserChat muc;
     private XMPPConnection connection;
 
     private XmppAdapter adapter;
 
+    // TODO make this configurable
+    private String name;
+    private String password = "12345";
+
     public XmppChat(String name, XmppAdapter adapter) {
+        this.name = name;
         this.adapter = adapter;
-        try {
-            // Create the configuration for this new connection
-            ConnectionConfiguration config = new ConnectionConfiguration("localhost", 5222); // TODO make this configurable
-            config.setCompressionEnabled(false);
-            config.setSASLAuthenticationEnabled(true);
-            config.setReconnectionAllowed(true);
+        // Create the configuration for this new connection
+        ConnectionConfiguration config = new ConnectionConfiguration(SERVER_HOST, SERVER_PORT);
+        config.setCompressionEnabled(false);
+        config.setSASLAuthenticationEnabled(true);
+        config.setReconnectionAllowed(true);
 //            config.setDebuggerEnabled(true);
 
-            SASLAuthentication.supportSASLMechanism("PLAIN", 0);
+        SASLAuthentication.supportSASLMechanism("PLAIN", 0);
 
-            connection = new XMPPConnection(config);
-            // Connect to the server
+        connection = new XMPPConnection(config);
+        // Connect to the server
+        try {
             connection.connect();
+        } catch (XMPPException e) {
+            LOG.error("Unable to connect", e);
+            throw new RuntimeException(e);
+        }
 
-            // Log into the server
-            // You have to specify your Jabber ID addres WITHOUT @jabber.org at the end
-            // TODO make this configurable
-            connection.login(name, "12345", connection.getHost());
+        authenticate();
 
-            LOG.debug("AUTHENTICATED: " + connection.isAuthenticated());
+        // Create a MultiUserChat using an XMPPConnection for a room
+        muc = new MultiUserChat(connection, ROOM);
+        adapter.registerListeners(muc);
 
-            // Create a MultiUserChat using an XMPPConnection for a room
-            // TODO make this configurable
-            muc = new MultiUserChat(connection, "neerc@conference.localhost");
+        join();
 
-            // Joins the new room and retrieve history
+        debugConnection();
+
+        connection.addConnectionListener(new DefaultConnectionListener() {
+            @Override
+            public void reconnectionSuccessful() {
+                authenticate();
+                join();
+                debugConnection();
+            }
+        });
+    }
+
+    private void authenticate() {
+        // Log into the server
+        // You have to specify your Jabber ID addres WITHOUT @jabber.org at the end
+        try {
+            connection.login(name, password, connection.getHost());
+        } catch (XMPPException e) {
+            LOG.error("Unable to authenticate", e);
+        }
+    }
+
+    private void join() {
+        try {
+            // Joins the new room and retrieves history
             DiscussionHistory history = new DiscussionHistory();
             history.setMaxStanzas(100); // TODO set since
             muc.join(
@@ -58,13 +93,16 @@ public class XmppChat implements Chat {
                     history,
                     SmackConfiguration.getPacketReplyTimeout()
             );
-
-            LOG.debug("JOINED: " + muc.isJoined());
-
-            adapter.registerListeners(muc);
         } catch (XMPPException e) {
-            LOG.error("Unable to connect", e);
+            LOG.error("Unable to join room", e);
         }
+    }
+
+    public void debugConnection() {
+        LOG.debug("User: {}", connection.getUser());
+        LOG.debug("Connected: {}", getConnection().isConnected());
+        LOG.debug("Authenticated: {}", getConnection().isAuthenticated());
+        LOG.debug("Joined: {}", getMultiUserChat().isJoined());
     }
 
     @Override
