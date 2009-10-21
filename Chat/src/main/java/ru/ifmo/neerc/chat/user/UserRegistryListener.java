@@ -23,9 +23,5 @@ package ru.ifmo.neerc.chat.user;
  * @author Matvey Kazakov
  */
 public interface UserRegistryListener {
-    void userAdded(UserEntry userEntry);
-
-    void userRemoved(UserEntry userEntry);
-
     void userChanged(UserEntry userEntry);
 }

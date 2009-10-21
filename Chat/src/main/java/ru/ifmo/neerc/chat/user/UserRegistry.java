@@ -25,109 +25,78 @@ import java.util.*;
  * @author Matvey Kazakov
  */
 public class UserRegistry {
+    private static final UserRegistry INSTANCE = new UserRegistry();
 
     private Map<Integer, UserEntry> userById = new HashMap<Integer, UserEntry>();
     private Map<String, UserEntry> userByName = new HashMap<String, UserEntry>();
 
     private Collection<UserRegistryListener> listeners = new ArrayList<UserRegistryListener>();
 
-    private static UserRegistry instance = new UserRegistry();
-
     /**
-     * Returns user registry instance
+     * Returns user registry instance.
      *
      * @return user registry instance
      */
     public static UserRegistry getInstance() {
-        return instance;
+        return INSTANCE;
     }
 
     /**
-     * Hide default constructor
+     * Hide default constructor.
      */
     private UserRegistry() {
-    }
-
-    public synchronized boolean connectUser(UserEntry user) {
-        if (userExists(user.getName())) {
-            UserEntry oldUserEntry = userByName.get(user.getName());
-            if (oldUserEntry.isOnline()) {
-                return false;
-            }
-            oldUserEntry.setOnline(true);
-            user.setId(oldUserEntry.getId());
-            oldUserEntry.setPower(user.isPower());
-            return true;
-        }
-        return false;
     }
 
     public Collection<UserEntry> getUsers() {
         return Collections.unmodifiableCollection(userById.values());
     }
 
-    public synchronized boolean register(UserEntry user) {
-        UserEntry oldEntry = userById.put(user.getId(), user);
-        if (oldEntry != null) {
-            user.setOnline(oldEntry.isOnline());
-        }
-        userByName.put(user.getName(), user);
-        for (UserRegistryListener listener : listeners) {
-            listener.userAdded(user);
-        }
-        return true;
+    private String getNick(String jid) {
+        return jid.substring(jid.indexOf('/') + 1);
     }
 
-    public synchronized void putOnline(UserEntry user, boolean online) {
+    public synchronized UserEntry findOrRegister(String jid) {
+        final String nick = getNick(jid);
+        UserEntry user = findByName(nick);
+        if (user == null) {
+            user = new UserEntry(
+                    getUserNumber() + 1,
+                    nick,
+                    false
+            );
+            userByName.put(user.getName(), user);
+            userById.put(user.getId(), user);
+        }
+        notifyListeners(user);
+        return user;
+    }
+
+    private synchronized void putOnline(UserEntry user, boolean online) {
         UserEntry userEntry = search(user.getId());
         if (userEntry == null) {
             return;
         }
         userEntry.setOnline(online);
-        userChanged(user);
+        notifyListeners(user);
     }
 
-    public synchronized void putOffline(UserEntry user) {
-        putOnline(user, false);
+    public void putOnline(String jid) {
+        putOnline(findOrRegister(jid), true);
     }
 
-    public synchronized void putOnline(UserEntry user) {
-        putOnline(user, true);
+    public void putOffline(String jid) {
+        putOnline(findOrRegister(jid), false);
     }
 
-    public synchronized void setRole(UserEntry user, String role) {
+    public synchronized void setRole(String jid, String role) {
+        UserEntry user = findOrRegister(jid);
         user.setPower("moderator".equalsIgnoreCase(role));
-        userChanged(user);
+        notifyListeners(user);
     }
 
-    private void userChanged(UserEntry user) {
+    private void notifyListeners(UserEntry user) {
         for (UserRegistryListener listener : listeners) {
             listener.userChanged(user);
-        }
-    }
-
-    public synchronized void init(UserEntry[] list) {
-        UserEntry[] entries = serialize();
-        Set<Integer> oldEntries = new HashSet<Integer>();
-        for (UserEntry entry1 : entries) {
-            oldEntries.add(entry1.getId());
-        }
-        for (UserEntry aList : list) {
-            register(aList);
-            oldEntries.remove(aList.getId());
-        }
-        for (Integer entry : oldEntries) {
-            unregister(entry);
-        }
-    }
-
-    private void unregister(int id) {
-        UserEntry user = userById.remove(id);
-        if (user != null) {
-            userByName.remove(user.getName());
-        }
-        for (UserRegistryListener listener : listeners) {
-            listener.userRemoved(user);
         }
     }
 
@@ -139,12 +108,16 @@ public class UserRegistry {
         return userById.values().toArray(new UserEntry[userById.size()]);
     }
 
+    /**
+     * Searches user by id.
+     *
+     * @param id user id
+     * @return user
+     * @deprecated use JIDs
+     */
+    @Deprecated
     public synchronized UserEntry search(int id) {
         return userById.get(id);
-    }
-
-    private boolean userExists(String name) {
-        return userByName.get(name) != null;
     }
 
     public synchronized void addListener(UserRegistryListener listenerUser) {

@@ -74,15 +74,7 @@ public class UsersPanel extends JPanel {
             return userEntries[index];
         }
 
-        public void userAdded(UserEntry userEntry) {
-            update();
-        }
-
         public void userChanged(UserEntry userEntry) {
-            update();
-        }
-
-        public void userRemoved(UserEntry userEntry) {
             update();
         }
 

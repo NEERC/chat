@@ -94,15 +94,8 @@ public class AdminTaskList extends JTable {
             fireTableRowsUpdated(index, index);
         }
 
-        public void userAdded(UserEntry userEntry) {
-            updateTasks();
-        }
-
-        public void userRemoved(UserEntry userEntry) {
-            updateTasks();
-        }
-
         public void userChanged(UserEntry userEntry) {
+            updateTasks();
         }
 
         private void updateTasks() {

@@ -61,13 +61,7 @@ public class TaskRegistry implements UserRegistryListener, MessageListener {
         }
     }
 
-    public void userAdded(UserEntry userEntry) {
-    }
-
     public void userChanged(UserEntry userEntry) {
-    }
-
-    public synchronized void userRemoved(UserEntry userEntry) {
     }
 
     public synchronized void assignTask(int taskId, int userId) {

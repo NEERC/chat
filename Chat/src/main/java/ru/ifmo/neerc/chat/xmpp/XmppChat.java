@@ -162,23 +162,6 @@ public class XmppChat implements Chat {
 
     private Date lastActivity = null;
 
-    public UserEntry getUser(String user) {
-        final UserRegistry userRegistry = UserRegistry.getInstance();
-        final String nick = user.substring(user.indexOf('/') + 1);
-        UserEntry userEntry = userRegistry.findByName(nick);
-        if (userEntry == null) {
-            final int id = userRegistry.getUserNumber() + 1;
-            LOG.debug("Added {} with id {}", new Object[]{user, id});
-            userEntry = new UserEntry(
-                    id,
-                    nick,
-                    false
-            );
-            userRegistry.register(userEntry);
-        }
-        return userEntry;
-    }
-
     public void processMessage(Message message) {
         messageListener.processMessage(message);
     }
@@ -189,23 +172,25 @@ public class XmppChat implements Chat {
                 return;
             }
             Presence presence = (Presence) packet;
+            // Filter presence by room name
             final String from = presence.getFrom();
-            final UserEntry user = getUser(from);
+            if (!from.startsWith(ROOM)) {
+                return;
+            }
+            final UserEntry user = UserRegistry.getInstance().findOrRegister(from);
             final MUCUser mucExtension = (MUCUser) packet.getExtension("x", "http://jabber.org/protocol/muc#user");
             if (mucExtension != null) {
                 MUCUser.Item item = mucExtension.getItem();
                 LOG.debug(from + " " + DebugUtils.userItemToString(item));
-                UserRegistry.getInstance().setRole(user, item.getRole());
+                UserRegistry.getInstance().setRole(from, item.getRole());
             }
             if (presence.isAvailable()) {
-                LOG.debug("JOINED: {}", from);
-                UserRegistry.getInstance().putOnline(user);
+                UserRegistry.getInstance().putOnline(from);
                 processMessage(new ServerMessage(
                         "User " + user.getName() + " has joined chat"
                 ));
             } else {
-                LOG.debug("LEFT: {}", from);
-                UserRegistry.getInstance().putOffline(user);
+                UserRegistry.getInstance().putOffline(from);
                 processMessage(new ServerMessage(
                         "User " + user.getName() + " has left chat"
                 ));
@@ -222,7 +207,7 @@ public class XmppChat implements Chat {
 
             org.jivesoftware.smack.packet.Message xmppMessage = (org.jivesoftware.smack.packet.Message) packet;
 
-            UserEntry user = getUser(xmppMessage.getFrom());
+            UserEntry user = UserRegistry.getInstance().findOrRegister(xmppMessage.getFrom());
             Date timestamp = null;
 
             for (PacketExtension extension : xmppMessage.getExtensions()) {
