@@ -1,13 +1,13 @@
 package ru.ifmo.neerc.chat.xmpp;
 
 import org.jivesoftware.smack.*;
-import org.jivesoftware.smack.packet.Packet;
-import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smack.filter.PacketTypeFilter;
+import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.PacketExtension;
+import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.muc.*;
-import org.jivesoftware.smackx.packet.MUCUser;
 import org.jivesoftware.smackx.packet.DelayInformation;
+import org.jivesoftware.smackx.packet.MUCUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.ifmo.neerc.chat.UserEntry;
@@ -247,17 +247,17 @@ public class XmppChat implements Chat {
 
     private class MyPresenceListener implements PacketListener {
         public void processPacket(Packet packet) {
-	        if (!(packet instanceof Presence)) {
-    	    	return;
-	        }
-	        Presence presence = (Presence)packet;
+            if (!(packet instanceof Presence)) {
+                return;
+            }
+            Presence presence = (Presence) packet;
 
             MUCUser mucExtension = (MUCUser) packet.getExtension("x", "http://jabber.org/protocol/muc#user");
             if (mucExtension != null) {
-	            String newAffiliation = mucExtension.getItem().getAffiliation();
-    	        String newRole = mucExtension.getItem().getRole();
-        	    // TODO zibada: use this to update power status
-        	}
+                String newAffiliation = mucExtension.getItem().getAffiliation();
+                String newRole = mucExtension.getItem().getRole();
+                // TODO zibada: use this to update power status
+            }
 
             String from = packet.getFrom();
             boolean avail = presence.isAvailable();
