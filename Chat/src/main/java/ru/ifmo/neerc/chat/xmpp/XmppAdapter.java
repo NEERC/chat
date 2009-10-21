@@ -29,11 +29,13 @@ public abstract class XmppAdapter implements PacketListener, MessageListener {
 
     private MultiUserChat chat;
 
-    private UserEntry getUser(String user, String role) {
+    private Date lastActivity = null;
+
+    public UserEntry getUser(String user, String role) {
         final UserRegistry userRegistry = UserRegistry.getInstance();
         final String nick = user.substring(user.indexOf('/') + 1);
         UserEntry userEntry = userRegistry.findByName(nick);
-        final boolean power = "moderator".equalsIgnoreCase(role);
+        final boolean power = "moderator".equalsIgnoreCase(role) || "owner".equalsIgnoreCase(role);
         if (userEntry == null) {
             final int id = userRegistry.getUserNumber() + 1;
             LOG.debug("Added {} {} with id {}", new Object[]{role, user, id});
@@ -94,6 +96,9 @@ public abstract class XmppAdapter implements PacketListener, MessageListener {
             );
         }
         message.setTimestamp(timestamp);
+        if (timestamp != null) {
+            lastActivity = timestamp;
+        }
         processMessage(message);
     }
 
@@ -142,5 +147,9 @@ public abstract class XmppAdapter implements PacketListener, MessageListener {
             LOG.debug("LEFT: {}", participant);
             processMessage(new ServerMessage(ServerMessage.USER_LEFT, getUser(participant)));
         }
+    }
+
+    public Date getLastActivity() {
+        return lastActivity;
     }
 }

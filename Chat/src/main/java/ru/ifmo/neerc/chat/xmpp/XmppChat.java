@@ -20,6 +20,7 @@ public class XmppChat implements Chat {
     private static final String SERVER_HOST = System.getProperty("server.host", "localhost");
     private static final int SERVER_PORT = Integer.parseInt(System.getProperty("server.port", "5222"));
     private static final String ROOM = "neerc@conference.localhost";
+    private static final boolean DEBUG = Boolean.parseBoolean(System.getProperty("smack.debug", "false"));
 
     private MultiUserChat muc;
     private XMPPConnection connection;
@@ -37,7 +38,7 @@ public class XmppChat implements Chat {
         config.setCompressionEnabled(true);
         config.setSASLAuthenticationEnabled(true);
         config.setReconnectionAllowed(true);
-//        config.setDebuggerEnabled(true);
+        config.setDebuggerEnabled(DEBUG);
 
         SASLAuthentication.supportSASLMechanism("PLAIN", 0);
 
@@ -84,13 +85,47 @@ public class XmppChat implements Chat {
         try {
             // Joins the new room and retrieves history
             DiscussionHistory history = new DiscussionHistory();
-            history.setMaxStanzas(100); // TODO set since to last message timestamp
+            if (adapter.getLastActivity() != null) {
+                history.setSince(adapter.getLastActivity());
+            } else {
+                history.setMaxStanzas(100); // TODO
+            }
             muc.join(
                     name, // nick
                     "",   // password
                     history,
                     SmackConfiguration.getPacketReplyTimeout()
             );
+
+            LOG.debug("JOINED: {}", muc.isJoined());
+
+            /*
+            try {
+                for (Affiliate affiliate : muc.getOwners()) {
+                    String jid = affiliate.getJid();
+                    final String nick = jid.substring(0, jid.indexOf('@'));
+                    final String affiliation = affiliate.getAffiliation();
+                    LOG.debug("Nick: {} Affiliation: {}", nick, affiliation);
+                    adapter.getUser(nick, affiliation);
+                }
+
+                for (Affiliate affiliate : muc.getAdmins()) {
+                    String jid = affiliate.getJid();
+                    final String nick = jid.substring(0, jid.indexOf('@'));
+                    final String affiliation = affiliate.getAffiliation();
+                    LOG.debug("Nick: {} Affiliation: {}", nick, affiliation);
+                }
+                for (Affiliate affiliate : muc.getMembers()) {
+                    String jid = affiliate.getJid();
+                    final String nick = jid.substring(0, jid.indexOf('@'));
+                    final String affiliation = affiliate.getAffiliation();
+                    LOG.debug("Nick: {} Affiliation: {}", nick, affiliation);
+                    adapter.getUser(nick, affiliation);
+                }
+            } catch (XMPPException e) {
+                LOG.error("Unable to retrieve room users", e);
+            }
+            */
         } catch (XMPPException e) {
             LOG.error("Unable to join room", e);
         }
