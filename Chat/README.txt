@@ -6,13 +6,10 @@ Copyright (C) 2009 NEERC team
 Directory Structure
 ~~~~~~~~~~~~~~~~~~~
 
-  src       - java source code files
-  resources - non-source-code files included into delivey .jar files
-              such as GUI images, HTMLs, etc.
+  src       - source code files & resources
   etc       - auxiliary files (run-scripts, configurations) included
               into delivery units besides .jar files
-  test      - java unit-tests
-  target    - temporary directory created by build.xml that contains
+  target    - temporary directory created by Maven that contains
               compiled .class files and delivery units
 
 
@@ -24,6 +21,6 @@ with external configuration XMLs and run-scripts.
 
 The following software is required in order to create a delivery unit:
 
- * J2SE SDK 1.5 or later
- * Apache Ant
+ * J2SE SDK 1.6 or later
+ * Apache Maven
 
