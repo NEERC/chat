@@ -79,16 +79,6 @@ public class TaskPanel extends JPanel {
         enableButtons();
     }
 
-    static JDialog createPowerDialog(Frame frame, TaskRegistry taskRegistry, UserEntry user, ClientReader clientReader) {
-        JDialog dialog = new JDialog(frame);
-        dialog.setTitle("Tasks");
-        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        dialog.setContentPane(new TaskPanel(taskRegistry, user, clientReader));
-        dialog.setSize(300, 300);
-        dialog.setLocationRelativeTo(frame);
-        return dialog;
-    }
-
     private void enableButtons() {
         Task task = null;
         try {

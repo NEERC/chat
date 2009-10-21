@@ -13,10 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-// $Id: ChatClient.java,v 1.13 2007/10/28 07:32:12 matvey Exp $
-/**
- * Date: 24.10.2004
- */
 package ru.ifmo.neerc.chat.xmpp;
 
 import org.jivesoftware.smack.ConnectionListener;
@@ -31,8 +27,6 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * Fork of {@link ru.ifmo.neerc.chat.client.ChatClient}.
- *
  * @author Evgeny Mandrikov
  */
 public class XmppChatClient extends AbstractChatClient {
@@ -80,7 +74,7 @@ public class XmppChatClient extends AbstractChatClient {
             final String message = "Connection closed on error";
             setConnectionError(message);
             addMessage(ChatMessage.createServerMessage(message));
-            for (UserEntry user: UserRegistry.getInstance().getUsers()) {
+            for (UserEntry user : UserRegistry.getInstance().getUsers()) {
                 UserRegistry.getInstance().putOnline(user, false);
             }
         }

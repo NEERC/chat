@@ -22,7 +22,6 @@ package ru.ifmo.neerc.chat.message;
 import ru.ifmo.ips.config.ConfigException;
 import ru.ifmo.ips.config.XMLConfig;
 import ru.ifmo.neerc.chat.ChatLogger;
-import ru.ifmo.neerc.chat.plugin.CustomMessage;
 
 import java.io.*;
 
@@ -101,26 +100,9 @@ public class MessageFactory {
             case Message.USER_MESSAGE:
                 message = new UserMessage();
                 break;
-            case Message.LOGIN_MESSAGE:
-                message = new LoginMessage();
-                break;
-            case Message.WELCOME_MESSAGE:
-                message = new WelcomeMessage();
-                break;
-            case Message.TIMER_MESSAGE:
-                message = new TimerMessage();
-                break;
             case Message.TASK_MESSAGE:
                 message = new TaskMessage();
                 break;
-            case Message.UPDATE_USERS_LIST_MESSAGE:
-                message = new UserListUpdateMessage();
-                break;
-            case Message.PING_MESSAGE:
-                message = new PingMessage();
-                break;
-            case Message.CUSTOM_MESSAGE:
-                message = new CustomMessage();
         }
         return message;
     }

@@ -13,15 +13,10 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-// $Id: ChatClient.java,v 1.13 2007/10/28 07:32:12 matvey Exp $
-/**
- * Date: 24.10.2004
- */
 package ru.ifmo.neerc.chat.client;
 
 import ru.ifmo.neerc.chat.*;
 import ru.ifmo.neerc.chat.message.*;
-import ru.ifmo.neerc.chat.plugin.CustomMessage;
 
 import javax.swing.*;
 import javax.swing.text.AttributeSet;
@@ -129,7 +124,6 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
             tasks.setFocusable(false);
             tasks.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-//                    AdminTaskPanel.createPowerDialog(ChatClient.this, taskRegistry, clientReader).setVisible(true);
                     powerSplitter.setOrientation(1 - powerSplitter.getOrientation());
                 }
             });
@@ -280,14 +274,6 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
                     }
                     break;
             }
-        } else if (message instanceof TimerMessage) {
-            final TimerMessage timerMessage = (TimerMessage) message;
-            ticker.updateStatus(timerMessage.getTotal(), timerMessage.getTime(), timerMessage.getStatus());
-        } else if (message instanceof UserListUpdateMessage) {
-            ChatLogger.logDebug("User list update is received");
-            UserRegistry.getInstance().init(((UserListUpdateMessage) message).getEntries());
-        } else if (message instanceof CustomMessage) {
-//            pluginManager.processMessage(message);
         }
 
         if (chatMessage != null) {
