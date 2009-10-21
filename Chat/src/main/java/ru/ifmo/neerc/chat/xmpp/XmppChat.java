@@ -223,10 +223,7 @@ public class XmppChat implements Chat {
     }
 
     public void registerRoomListeners(MultiUserChat chat) {
-        chat.addMessageListener(new MyPacketListener());
-
-        // chat.addParticipantStatusListener(new MyParticipantStatusListener());
-        // chat.addUserStatusListener(new MyUserStatusListener());
+        chat.addMessageListener(new MyMessageListener());
 
         LOG.debug("Occupants count = " + chat.getOccupantsCount());
         Iterator<String> occupants = chat.getOccupants();
@@ -285,11 +282,10 @@ public class XmppChat implements Chat {
         }
     }
 
-    private class MyPacketListener implements PacketListener {
+    private class MyMessageListener implements PacketListener {
         @Override
         public void processPacket(Packet packet) {
             if (!(packet instanceof org.jivesoftware.smack.packet.Message)) {
-                // TODO Godin: maybe throw exception?
                 return;
             }
 
