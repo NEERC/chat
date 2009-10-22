@@ -12,6 +12,7 @@
     </description>
 
     <modules>
+        <module>shared</module>
         <module>Chat</module>
         <module>Openfire</module>
     </modules>
