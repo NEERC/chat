@@ -232,7 +232,7 @@ public class XmppChat implements Chat {
                 LOG.debug("Found taskMessage: " + message.asString());
             } else {
                 message = new UserMessage(
-                        user.getId(),
+                        xmppMessage.getFrom(),
                         xmppMessage.getBody()
                 );
             }

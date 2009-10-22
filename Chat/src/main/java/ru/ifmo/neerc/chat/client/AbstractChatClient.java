@@ -226,7 +226,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
             }
         }
 
-        chat.write(new UserMessage(user.getId(), destination, text));
+        chat.write(new UserMessage(user.getJid(), destination, text));
         inputArea.setText("");
     }
 

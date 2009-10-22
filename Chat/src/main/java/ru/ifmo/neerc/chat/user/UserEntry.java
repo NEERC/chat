@@ -26,12 +26,15 @@ public class UserEntry implements Comparable {
     @Deprecated
     private int id;
 
+    private String jid;
+
     private String name;
     private boolean power;
     private String group;
     private boolean online = false;
 
-    public UserEntry(int id, String name, boolean power) {
+    public UserEntry(String jid, int id, String name, boolean power) {
+        this.jid = jid;
         this.id = id;
         this.name = name;
         this.power = power;
@@ -39,6 +42,10 @@ public class UserEntry implements Comparable {
 
     public int getId() {
         return id;
+    }
+
+    public String getJid() {
+        return jid;
     }
 
     public String getName() {

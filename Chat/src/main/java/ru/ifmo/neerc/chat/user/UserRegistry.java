@@ -60,6 +60,7 @@ public class UserRegistry {
         UserEntry user = findByName(nick);
         if (user == null) {
             user = new UserEntry(
+                    jid,
                     getUserNumber() + 1,
                     nick,
                     false
@@ -72,11 +73,7 @@ public class UserRegistry {
     }
 
     private synchronized void putOnline(UserEntry user, boolean online) {
-        UserEntry userEntry = search(user.getId());
-        if (userEntry == null) {
-            return;
-        }
-        userEntry.setOnline(online);
+        user.setOnline(online);
         notifyListeners(user);
     }
 

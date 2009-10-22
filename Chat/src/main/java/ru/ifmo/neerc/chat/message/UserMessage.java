@@ -26,31 +26,32 @@ import ru.ifmo.neerc.chat.user.UserRegistry;
  * @author Matvey Kazakov
  */
 public class UserMessage extends Message {
-    private int from;
     private String text;
 
-    public UserMessage(int from, String text) {
+    private String jid;
+
+    public UserMessage(String jid, String text) {
         super(USER_MESSAGE);
-        this.from = from;
+        this.jid = jid;
         this.text = text;
     }
 
-    public UserMessage(int from, int to, String text) {
-        super(USER_MESSAGE, to);
-        this.from = from;
+    public UserMessage(String jid, int destination, String text) {
+        super(USER_MESSAGE, destination);
+        this.jid = jid;
         this.text = text;
+    }
+
+    public String getJid() {
+        return jid;
     }
 
     public String asString() {
-        String fromName = UserRegistry.getInstance().search(from).getName();
+        String fromName = UserRegistry.getInstance().findOrRegister(jid).getName();
         StringBuilder route = getDestination() < 0 ? new StringBuilder().append(fromName)
                 : new StringBuilder().append(fromName).append(">").append(
-                UserRegistry.getInstance().search(getDestination()).getName());
+                UserRegistry.getInstance().findOrRegister(jid).getName());
         return route.append(": ").append(getText()).toString();
-    }
-
-    public int getFrom() {
-        return from;
     }
 
     public String getText() {
@@ -63,7 +64,7 @@ public class UserMessage extends Message {
             if (getText() != null && getText().length() > 0) {
                 c = getText().charAt(0);
             }
-            UserEntry userEntry = UserRegistry.getInstance().search(from);
+            UserEntry userEntry = UserRegistry.getInstance().findOrRegister(jid);
             return (c == '#' || c == '\uFFFD' || c == '!' || c == '?') && userEntry != null && userEntry.isPower();
         } catch (Exception e) {
             return false;
@@ -72,9 +73,5 @@ public class UserMessage extends Message {
 
     public boolean isPrivate() {
         return getDestination() >= 0;
-    }
-
-    public boolean shouldBeSentTo(int id) {
-        return super.shouldBeSentTo(id) || from == id;
     }
 }
