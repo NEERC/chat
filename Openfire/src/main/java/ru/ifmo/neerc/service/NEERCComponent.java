@@ -16,6 +16,10 @@
 package ru.ifmo.neerc.service;
 
 import org.dom4j.Element;
+import org.jivesoftware.openfire.XMPPServer;
+import org.jivesoftware.openfire.muc.MUCRoom;
+import org.jivesoftware.openfire.muc.MultiUserChatManager;
+import org.jivesoftware.openfire.muc.MultiUserChatService;
 import org.xmpp.component.Component;
 import org.xmpp.component.ComponentException;
 import org.xmpp.component.ComponentManager;
@@ -47,8 +51,6 @@ public class NEERCComponent implements Component {
      * Namespace of the packet extension.
      */
     public static final String NAMESPACE = "http://neerc.ifmo.ru/protocol/neerc";
-//    public static final String NAMESPACE_USERS = NAMESPACE + "#users";
-//    public static final String NAMESPACE_TIMER = NAMESPACE + "#timer";
     public static final String NAME = "neerc";
 
     public NEERCComponent() {
@@ -57,26 +59,38 @@ public class NEERCComponent implements Component {
     }
 
     private void initUsers() {
-//        XMPPServer server = XMPPServer.getInstance(); 
-//        MultiUserChatService service = server.getMultiUserChatManager().getMultiUserChatServices().get(0);
-//        MUCRoom room = service.getChatRoom("neerc");
-        // TODO: get from MUC or own database
-        users.findOrRegister("admin").setPower(true);
-        users.findOrRegister("matvey").setPower(true);
-        users.findOrRegister("admin").setGroup("Admins");
-        users.findOrRegister("matvey").setGroup("Admins");
-        users.findOrRegister("hall1").setGroup("Halls");
-        users.findOrRegister("hall2").setGroup("Halls");
-        users.findOrRegister("hall3").setGroup("Halls");
-        users.findOrRegister("hall4").setGroup("Halls");
-        users.findOrRegister("hall5").setGroup("Halls");
-        users.findOrRegister("hall6").setGroup("Halls");
-        users.findOrRegister("hall7").setGroup("Halls");
+        XMPPServer server = XMPPServer.getInstance(); 
+        MultiUserChatService service = server.getMultiUserChatManager().getMultiUserChatServices().get(0);
+        MUCRoom room = service.getChatRoom("neerc");
+        if (room == null) {
+           componentManager.getLog().error("no neerc room in MUC");
+           return;
+        }
 
-        users.findOrRegister("godin").setGroup("Admins");
+        for (String jid: room.getOwners()) {
+            String username = getUsernameFromJID(jid);
+            UserEntry user = users.findOrRegister(username);
+            user.setPower(true);
+            user.setGroup("Admins");
+        }
+        for (String jid: room.getAdmins()) {
+            String username = getUsernameFromJID(jid);
+            UserEntry user = users.findOrRegister(username);
+            user.setPower(true);
+            user.setGroup("Admins");
+        }
+        for (String jid: room.getMembers()) {
+            String username = getUsernameFromJID(jid);
+            UserEntry user = users.findOrRegister(username);
+            user.setGroup("Users");
+        }
     }
 
-
+    private String getUsernameFromJID(String jid) {
+        int pos = jid.indexOf('@');
+        return pos == -1 ? jid : jid.substring(0, pos);
+    }
+    
     public Collection<UserEntry> getUsers() {
         return users.getUsers();
     }
