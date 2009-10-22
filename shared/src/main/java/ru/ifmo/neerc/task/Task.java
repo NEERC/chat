@@ -7,29 +7,34 @@ import java.util.*;
  */
 public class Task {
 
+    private String id;
+
     private String type;
 
     private String title;
 
     private Map<String, TaskStatus> statuses = new HashMap<String, TaskStatus>();
 
-    public Task() {
+    public Task(String type, String title) {
+        this.title = title;
+        this.type = type;
+    }
+
+    public Task(String id, String type, String title) {
+        this(type, title);
+        this.id = id;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getType() {
         return type;
     }
 
-    public void setType(String type) {
-        this.type = type;
-    }
-
     public String getTitle() {
         return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public Map<String, TaskStatus> getStatuses() {

@@ -1,8 +1,12 @@
 package ru.ifmo.neerc.task;
 
 import org.dom4j.Element;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.xmpp.packet.IQ;
+import org.xmpp.packet.Message;
+import org.xmpp.packet.PacketExtension;
+import ru.ifmo.neerc.service.XmlUtils;
 
 import java.util.Map;
 
@@ -13,26 +17,28 @@ public class TaskTest {
 
     @Test
     public void test() {
-        Task task = new Task();
-        task.setTitle("Do some work");
-
+        Task task = new Task("0", "todo", "Do some work");
         task.setStatus("godin", "fail", ":(");
         task.setStatus("hall3", "success", ":)");
 
-        IQ iq = new IQ();
-        Element taskElement = iq.getElement().addElement("task");
-        taskElement.addAttribute("title", task.getTitle());
-        taskElement.addAttribute("type", task.getType());
+        Message message = new Message();
+        PacketExtension extension = new PacketExtension("x", XmlUtils.NAMESPACE_TASKS);
+        message.addExtension(extension);
+        XmlUtils.taskToXml(extension.getElement(), task);
+        System.out.println(message.toXML());
 
+        Task d = XmlUtils.taskFromXml(extension.getElement());
+        Assert.assertEquals(d.getId(), task.getId());
+        Assert.assertEquals(d.getType(), task.getType());
+        Assert.assertEquals(d.getTitle(), task.getTitle());
+
+        Assert.assertEquals(d.getStatuses().size(), task.getStatuses().size());
         for (Map.Entry<String, TaskStatus> entry : task.getStatuses().entrySet()) {
+            TaskStatus ds = d.getStatuses().get(entry.getKey());
             TaskStatus status = entry.getValue();
-            Element statusElement = taskElement.addElement("status");
-            statusElement.addAttribute("from", entry.getKey());
-            statusElement.addAttribute("type", status.getType());
-            statusElement.addAttribute("type", status.getValue());
+            Assert.assertEquals(ds.getType(), status.getType());
+            Assert.assertEquals(ds.getValue(), status.getValue());
         }
-
-        System.out.println(iq.toXML());
     }
 
 }

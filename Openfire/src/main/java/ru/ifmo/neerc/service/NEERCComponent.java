@@ -17,37 +17,39 @@ package ru.ifmo.neerc.service;
 
 import org.dom4j.Element;
 import org.xmpp.component.Component;
+import org.xmpp.component.ComponentException;
 import org.xmpp.component.ComponentManager;
 import org.xmpp.component.ComponentManagerFactory;
-import org.xmpp.packet.IQ;
-import org.xmpp.packet.JID;
-import org.xmpp.packet.Packet;
-import org.xmpp.packet.PacketError;
-
+import org.xmpp.packet.*;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
-
-import java.sql.SQLException;
+import ru.ifmo.neerc.task.Task;
+import ru.ifmo.neerc.task.TaskRegistry;
+import ru.ifmo.neerc.task.TaskRegistryListener;
 
 /**
  * @author Dmitriy Trofimov
  */
 public class NEERCComponent implements Component {
 
-    ComponentManager componentManager = null;
-    UserRegistry users = UserRegistry.getInstance();
+    private String myName;
+    private ComponentManager componentManager = null;
+    private UserRegistry users = UserRegistry.getInstance();
+    private TaskRegistry tasks = TaskRegistry.getInstance();
 
     /**
      * Namespace of the packet extension.
      */
     public static final String NAMESPACE = "http://neerc.ifmo.ru/protocol/neerc";
     public static final String NAMESPACE_USERS = NAMESPACE + "#users";
+    public static final String NAMESPACE_TIMER = NAMESPACE + "#timer";
     public static final String NAME = "neerc";
 
     public NEERCComponent() {
         this.componentManager = ComponentManagerFactory.getComponentManager();
+        myName = NAME + "." + componentManager.getServerName();
     }
-    
+
     private void initUsers() {
         // TODO: get from MUC or own database
         users.findOrRegister("admin").setPower(true);
@@ -61,14 +63,22 @@ public class NEERCComponent implements Component {
         users.findOrRegister("hall5").setGroup("Halls");
         users.findOrRegister("hall6").setGroup("Halls");
         users.findOrRegister("hall7").setGroup("Halls");
+
+        users.findOrRegister("godin").setGroup("Admins");
     }
-    
+
 
     public void initialize(JID jid, ComponentManager componentManager) {
         initUsers();
+        tasks.addListener(new MyTaskRegistryListener());
     }
 
     public void start() {
+        Message message = new Message();
+        message.setFrom(myName);
+        message.setTo("admin@" + componentManager.getServerName());
+        message.setBody("NEERC Service start");
+        sendPacket(message);
     }
 
     public void shutdown() {
@@ -80,12 +90,22 @@ public class NEERCComponent implements Component {
         componentManager.getLog().debug("neerc got packet: " + packet.toXML());
         if (packet instanceof IQ) {
             // Handle disco packets
-            IQ iq = (IQ)packet;
+            IQ iq = (IQ) packet;
             // Ignore IQs of type ERROR or RESULT
             if (IQ.Type.error == iq.getType() || IQ.Type.result == iq.getType()) {
                 return;
             }
             processIQ(iq);
+        } else if (packet instanceof Message) {
+            Message message = (Message) packet;
+            processMessage(message);
+        }
+    }
+
+    private void processMessage(Message message) {
+        PacketExtension extension = message.getExtension("x", XmlUtils.NAMESPACE_TASKS);
+        if (extension != null) {
+            tasks.update(XmlUtils.taskFromXml(extension.getElement()));
         }
     }
 
@@ -106,28 +126,26 @@ public class NEERCComponent implements Component {
                 identity.addAttribute("name", "NEERC service");
                 childElement.addElement("feature").addAttribute("var", "http://jabber.org/protocol/disco#info");
                 childElement.addElement("feature").addAttribute("var", NAMESPACE_USERS);
-
+                childElement.addElement("feature").addAttribute("var", XmlUtils.NAMESPACE_TASKS);
+                childElement.addElement("feature").addAttribute("var", NAMESPACE_TIMER);
             }
         } else if (NAMESPACE_USERS.equals(namespace)) {
-            for (UserEntry user: users.getUsers()) {
-                Element userElement = childElement.addElement("user");
-                userElement.addAttribute("name", user.getName());
-                userElement.addAttribute("group", user.getGroup());
-                userElement.addAttribute("power", user.isPower() ? "yes" : "no");
+            for (UserEntry user : users.getUsers()) {
+                XmlUtils.userToXml(childElement, user);
             }
-        // TODO: add other actions
+        } else if (XmlUtils.NAMESPACE_TASKS.equals(namespace)) {
+            for (Task task : tasks.getTasks()) {
+                XmlUtils.taskToXml(childElement, task);
+            }
+        } else if (NAMESPACE_TIMER.equals(namespace)) {
+            // TODO
+            reply.setError(PacketError.Condition.service_unavailable);
         } else {
             // Answer an error since the server can't handle the requested
             // namespace
             reply.setError(PacketError.Condition.service_unavailable);
         }
-        
-        try {
-            componentManager.sendPacket(this, reply);
-        }
-        catch (Exception e) {
-            componentManager.getLog().error(e);
-        }
+        sendPacket(reply);
         componentManager.getLog().debug("neerc sent packet: " + reply.toXML());
     }
 
@@ -139,4 +157,34 @@ public class NEERCComponent implements Component {
     public String getName() {
         return "NEERC";
     }
+
+    private void sendPacket(Packet packet) {
+        try {
+            componentManager.sendPacket(this, packet);
+        } catch (ComponentException e) {
+            componentManager.getLog().error(e);
+        }
+    }
+
+    private class MyTaskRegistryListener implements TaskRegistryListener {
+        private Message createMessage(String to, Task task) {
+            Message message = new Message();
+            message.setFrom(myName);
+            message.setBody("Task '" + task.getTitle() + "' (" + task.getId() + ") changed");
+            message.setTo(to);
+            PacketExtension extension = new PacketExtension("x", XmlUtils.NAMESPACE_TASKS);
+            XmlUtils.taskToXml(extension.getElement(), task);
+            message.addExtension(extension);
+            return message;
+        }
+
+        @Override
+        public void taskChanged(Task task) {
+            // Broadcast
+            for (UserEntry user : users.getUsers()) {
+                sendPacket(createMessage(user.getName() + "@" + componentManager.getServerName(), task));
+            }
+        }
+    }
+
 }
