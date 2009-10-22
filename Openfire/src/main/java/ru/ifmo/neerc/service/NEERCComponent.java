@@ -23,10 +23,13 @@ import org.xmpp.component.ComponentManagerFactory;
 import org.xmpp.packet.*;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
+import ru.ifmo.neerc.service.query.*;
 import ru.ifmo.neerc.task.Task;
 import ru.ifmo.neerc.task.TaskRegistry;
 import ru.ifmo.neerc.task.TaskRegistryListener;
 import ru.ifmo.neerc.utils.XmlUtils;
+
+import java.util.*;
 
 /**
  * @author Dmitriy Trofimov
@@ -38,12 +41,14 @@ public class NEERCComponent implements Component {
     private UserRegistry users = UserRegistry.getInstance();
     private TaskRegistry tasks = TaskRegistry.getInstance();
 
+    private HashMap<String, QueryHandler> handlers = new HashMap<String, QueryHandler>();
+
     /**
      * Namespace of the packet extension.
      */
     public static final String NAMESPACE = "http://neerc.ifmo.ru/protocol/neerc";
-    public static final String NAMESPACE_USERS = NAMESPACE + "#users";
-    public static final String NAMESPACE_TIMER = NAMESPACE + "#timer";
+//    public static final String NAMESPACE_USERS = NAMESPACE + "#users";
+//    public static final String NAMESPACE_TIMER = NAMESPACE + "#timer";
     public static final String NAME = "neerc";
 
     public NEERCComponent() {
@@ -52,6 +57,9 @@ public class NEERCComponent implements Component {
     }
 
     private void initUsers() {
+//        XMPPServer server = XMPPServer.getInstance(); 
+//        MultiUserChatService service = server.getMultiUserChatManager().getMultiUserChatServices().get(0);
+//        MUCRoom room = service.getChatRoom("neerc");
         // TODO: get from MUC or own database
         users.findOrRegister("admin").setPower(true);
         users.findOrRegister("matvey").setPower(true);
@@ -69,8 +77,28 @@ public class NEERCComponent implements Component {
     }
 
 
+    public Collection<UserEntry> getUsers() {
+        return users.getUsers();
+    }
+    
+    public Collection<Task> getTasks() {
+        return tasks.getTasks();
+    }
+
+    private void initHandlers() {
+        handlers.put("users", new UsersQueryHandler());
+        handlers.put("tasks", new TasksQueryHandler());
+        // TODO: moar of 'em
+    }
+
+    public UserEntry getSender(Packet packet) {
+        // TODO: identify sender and get his UserEntry
+        return null;
+    }
+
     public void initialize(JID jid, ComponentManager componentManager) {
         initUsers();
+        initHandlers();
         tasks.addListener(new MyTaskRegistryListener());
     }
 
@@ -112,7 +140,7 @@ public class NEERCComponent implements Component {
 
     private void processIQ(IQ iq) {
         IQ reply = IQ.createResultIQ(iq);
-        // TODO: identify sender and get his UserEntry
+        UserEntry sender = getSender(iq);
 
         String namespace = iq.getChildElement().getNamespaceURI();
         Element childElement = iq.getChildElement().createCopy();
@@ -126,21 +154,19 @@ public class NEERCComponent implements Component {
                 identity.addAttribute("type", "generic");
                 identity.addAttribute("name", "NEERC service");
                 childElement.addElement("feature").addAttribute("var", "http://jabber.org/protocol/disco#info");
-                childElement.addElement("feature").addAttribute("var", NAMESPACE_USERS);
-                childElement.addElement("feature").addAttribute("var", XmlUtils.NAMESPACE_TASKS);
-                childElement.addElement("feature").addAttribute("var", NAMESPACE_TIMER);
+                for (String key: handlers.keySet()) {
+                    childElement.addElement("feature").addAttribute("var", NAMESPACE + "#" + key);
+                }
             }
-        } else if (NAMESPACE_USERS.equals(namespace)) {
-            for (UserEntry user : users.getUsers()) {
-                XmlUtils.userToXml(childElement, user);
+        } else if (namespace.startsWith(NAMESPACE + '#')) {
+            String query = namespace.substring(NAMESPACE.length() + 1);
+            if (!handlers.containsKey(query)) {
+                componentManager.getLog().info("neerc got unknown query " + query);
+                reply.setError(PacketError.Condition.service_unavailable);
+            } else {
+                QueryHandler handler = handlers.get(query);
+                handler.processQuery(this, iq, reply, sender);
             }
-        } else if (XmlUtils.NAMESPACE_TASKS.equals(namespace)) {
-            for (Task task : tasks.getTasks()) {
-                XmlUtils.taskToXml(childElement, task);
-            }
-        } else if (NAMESPACE_TIMER.equals(namespace)) {
-            // TODO
-            reply.setError(PacketError.Condition.service_unavailable);
         } else {
             // Answer an error since the server can't handle the requested
             // namespace
