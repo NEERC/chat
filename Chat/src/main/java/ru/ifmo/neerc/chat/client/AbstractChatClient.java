@@ -300,4 +300,8 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         }
     }
 
+    protected void addToModel(ChatMessage message) {
+        outputArea.addToModel(message);
+    }
+
 }

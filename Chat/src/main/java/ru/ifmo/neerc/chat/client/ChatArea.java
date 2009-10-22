@@ -26,8 +26,8 @@ import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.util.ArrayList;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 
 /**
  * @author Matvey Kazakov
@@ -37,7 +37,7 @@ public class ChatArea extends JTable {
     private static final int MAXIMUM_LINES = 100;
     private ChatModel model;
     private static final int TIME_COLUMN_WIDTH = 60;
-    private TableCellRenderer cellRenderer= new NewChatMessageRenderer();
+    private TableCellRenderer cellRenderer = new NewChatMessageRenderer();
 
     public ChatArea() {
         model = new ChatModel();
@@ -62,6 +62,10 @@ public class ChatArea extends JTable {
         });
     }
 
+    public void addToModel(final ChatMessage message) {
+        model.add(message);
+    }
+
     public void addMessage(final ChatMessage message) {
         final int index = model.add(message);
         try {
@@ -72,7 +76,7 @@ public class ChatArea extends JTable {
                     int height = tableCellRendererComponent.getPreferredSize().height;
                     synchronized (ChatArea.this) {
                         setRowHeight(index, height);
-                        Rectangle cellRectPrev = getCellRect(index-1, 2, true);
+                        Rectangle cellRectPrev = getCellRect(index - 1, 2, true);
                         Rectangle cellRect = getCellRect(index, 2, true);
                         cellRect.setSize(tableCellRendererComponent.getPreferredSize());
                         Rectangle visibleRect = getVisibleRect();

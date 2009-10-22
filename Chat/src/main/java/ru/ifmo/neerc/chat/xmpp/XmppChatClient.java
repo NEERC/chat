@@ -19,6 +19,7 @@ import org.jivesoftware.smack.ConnectionListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.ifmo.neerc.chat.client.AbstractChatClient;
+import ru.ifmo.neerc.chat.client.ChatMessage;
 import ru.ifmo.neerc.chat.message.Message;
 import ru.ifmo.neerc.chat.message.MessageFactory;
 import ru.ifmo.neerc.chat.message.ServerMessage;
@@ -160,7 +161,8 @@ public class XmppChatClient extends AbstractChatClient {
 
         @Override
         public void historyMessageReceived(String jid, String message, Date timestamp) {
-            processMessage(new UserMessage(jid, message, timestamp));
+            addToModel(ChatMessage.createUserMessage(new UserMessage(jid, message, timestamp)));
+//            processMessage(new UserMessage(jid, message, timestamp));
         }
 
         @Override
