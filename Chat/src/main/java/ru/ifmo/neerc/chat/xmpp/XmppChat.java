@@ -12,13 +12,12 @@ import org.jivesoftware.smackx.packet.MUCUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.ifmo.neerc.chat.client.Chat;
-import ru.ifmo.neerc.chat.message.*;
-import ru.ifmo.neerc.chat.message.MessageListener;
-import ru.ifmo.neerc.chat.user.UserEntry;
-import ru.ifmo.neerc.chat.user.UserRegistry;
+import ru.ifmo.neerc.chat.message.Message;
+import ru.ifmo.neerc.chat.message.MessageFactory;
+import ru.ifmo.neerc.chat.message.TaskMessage;
+import ru.ifmo.neerc.chat.message.UserMessage;
 import ru.ifmo.neerc.chat.utils.DebugUtils;
 
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -39,11 +38,15 @@ public class XmppChat implements Chat {
     private String name;
     private String password = System.getProperty("password", "12345");
 
-    MessageListener messageListener;
+    private MUCListener mucListener;
+    private Date lastActivity = null;
 
-    public XmppChat(String name, MessageListener messageListener) {
-        this.messageListener = messageListener;
+    public XmppChat(
+            String name,
+            MUCListener mucListener
+    ) {
         this.name = name;
+        this.mucListener = mucListener;
         // Create the configuration for this new connection
         ConnectionConfiguration config = new ConnectionConfiguration(SERVER_HOST, SERVER_PORT);
         config.setCompressionEnabled(true);
@@ -142,8 +145,6 @@ public class XmppChat implements Chat {
                 msg.setProperty("taskMessage", bytes);
                 msg.setBody("Task");
                 muc.sendMessage(msg);
-
-                processMessage(message);
             } else {
                 throw new UnsupportedOperationException(message.getClass().getSimpleName());
             }
@@ -160,12 +161,6 @@ public class XmppChat implements Chat {
         return connection;
     }
 
-    private Date lastActivity = null;
-
-    public void processMessage(Message message) {
-        messageListener.processMessage(message);
-    }
-
     private class MyPresenceListener implements PacketListener {
         public void processPacket(Packet packet) {
             if (!(packet instanceof Presence)) {
@@ -177,23 +172,16 @@ public class XmppChat implements Chat {
             if (!from.startsWith(ROOM)) {
                 return;
             }
-            final UserEntry user = UserRegistry.getInstance().findOrRegister(from);
             final MUCUser mucExtension = (MUCUser) packet.getExtension("x", "http://jabber.org/protocol/muc#user");
             if (mucExtension != null) {
                 MUCUser.Item item = mucExtension.getItem();
                 LOG.debug(from + " " + DebugUtils.userItemToString(item));
-                UserRegistry.getInstance().setRole(from, item.getRole());
+                mucListener.roleChanged(from, item.getRole());
             }
             if (presence.isAvailable()) {
-                UserRegistry.getInstance().putOnline(from);
-                processMessage(new ServerMessage(
-                        "User " + user.getName() + " has joined chat"
-                ));
+                mucListener.joined(from);
             } else {
-                UserRegistry.getInstance().putOffline(from);
-                processMessage(new ServerMessage(
-                        "User " + user.getName() + " has left chat"
-                ));
+                mucListener.left(from);
             }
         }
     }
@@ -207,9 +195,7 @@ public class XmppChat implements Chat {
 
             org.jivesoftware.smack.packet.Message xmppMessage = (org.jivesoftware.smack.packet.Message) packet;
 
-            UserEntry user = UserRegistry.getInstance().findOrRegister(xmppMessage.getFrom());
             Date timestamp = null;
-
             for (PacketExtension extension : xmppMessage.getExtensions()) {
                 if ("jabber:x:delay".equals(extension.getNamespace())) {
                     DelayInformation delayInformation = (DelayInformation) extension;
@@ -222,29 +208,31 @@ public class XmppChat implements Chat {
                 }
             }
 
-            Message message;
+            boolean history = true;
+            if (timestamp == null) {
+                timestamp = new Date();
+                history = false;
+            }
 
             Object taskMessageProperty = xmppMessage.getProperty("taskMessage");
             if (taskMessageProperty != null) {
-                byte[] bytes = (byte[]) taskMessageProperty;
-                bytes = Arrays.copyOf(bytes, bytes.length - 1); // TODO Godin: WTF?
-                message = MessageFactory.getInstance().deserialize(bytes);
-                LOG.debug("Found taskMessage: " + message.asString());
+                mucListener.taskReceived((byte[]) taskMessageProperty, timestamp);
             } else {
-                message = new UserMessage(
-                        xmppMessage.getFrom(),
-                        xmppMessage.getBody()
-                );
+                if (history) {
+                    mucListener.historyMessageReceived(
+                            xmppMessage.getFrom(),
+                            xmppMessage.getBody(),
+                            timestamp
+                    );
+                } else {
+                    mucListener.messageReceived(
+                            xmppMessage.getFrom(),
+                            xmppMessage.getBody(),
+                            timestamp
+                    );
+                }
             }
-
-            if (timestamp == null) {
-                timestamp = new Date();
-            }
-
-            message.setTimestamp(timestamp);
             lastActivity = timestamp;
-
-            processMessage(message);
         }
     }
 }

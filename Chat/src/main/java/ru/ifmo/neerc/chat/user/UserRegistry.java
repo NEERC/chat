@@ -67,8 +67,8 @@ public class UserRegistry {
             );
             userByName.put(user.getName(), user);
             userById.put(user.getId(), user);
+            notifyListeners(user);
         }
-        notifyListeners(user);
         return user;
     }
 

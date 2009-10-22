@@ -19,12 +19,17 @@ import org.jivesoftware.smack.ConnectionListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.ifmo.neerc.chat.client.AbstractChatClient;
+import ru.ifmo.neerc.chat.message.Message;
+import ru.ifmo.neerc.chat.message.MessageFactory;
 import ru.ifmo.neerc.chat.message.ServerMessage;
+import ru.ifmo.neerc.chat.message.UserMessage;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
+import java.util.Date;
 
 /**
  * @author Evgeny Mandrikov
@@ -40,11 +45,12 @@ public class XmppChatClient extends AbstractChatClient {
         userRegistry.putOnline(name);
         userRegistry.setRole(name, "moderator");
 
-        chat = new XmppChat(name, this);
+        MyListener listener = new MyListener();
+        chat = new XmppChat(name, listener);
 
         setupUI();
 
-        ((XmppChat) chat).getConnection().addConnectionListener(new MyConnectionListener());
+        ((XmppChat) chat).getConnection().addConnectionListener(listener);
         if (((XmppChat) chat).getMultiUserChat().isJoined()) {
             final String message = "Connected";
             setConnectionStatus(message);
@@ -62,7 +68,33 @@ public class XmppChatClient extends AbstractChatClient {
         });
     }
 
-    private class MyConnectionListener implements ConnectionListener {
+    private void setConnectionStatus(String status, boolean isError) {
+        if (status.equals(connectionStatus.getText())) {
+            return;
+        }
+        if (!isError) {
+            LOG.info("Connection status: " + status);
+            connectionStatus.setForeground(Color.BLUE);
+        } else {
+            LOG.error("Connection status: " + status);
+            connectionStatus.setForeground(Color.RED);
+        }
+        connectionStatus.setText(status);
+    }
+
+    private void setConnectionStatus(String status) {
+        setConnectionStatus(status, false);
+    }
+
+    private void setConnectionError(String error) {
+        setConnectionStatus(error, true);
+    }
+
+    private String getNick(String participant) {
+        return UserRegistry.getInstance().findOrRegister(participant).getName();
+    }
+
+    private class MyListener implements MUCListener, ConnectionListener {
         @Override
         public void connectionClosed() {
             final String message = "Connection closed";
@@ -96,28 +128,48 @@ public class XmppChatClient extends AbstractChatClient {
         public void reconnectionFailed(Exception e) {
             setConnectionError("Reconnection failed");
         }
-    }
 
-    private void setConnectionStatus(String status, boolean isError) {
-        if (status.equals(connectionStatus.getText())) {
-            return;
+        @Override
+        public void joined(String participant) {
+            UserRegistry.getInstance().putOnline(participant);
+            processMessage(new ServerMessage(
+                    "User " + getNick(participant) + " has joined chat"
+            ));
         }
-        if (!isError) {
-            LOG.info("Connection status: " + status);
-            connectionStatus.setForeground(Color.BLUE);
-        } else {
-            LOG.error("Connection status: " + status);
-            connectionStatus.setForeground(Color.RED);
+
+        @Override
+        public void left(String participant) {
+            UserRegistry.getInstance().putOffline(participant);
+            processMessage(new ServerMessage(
+                    "User " + getNick(participant) + " has left chat"
+            ));
         }
-        connectionStatus.setText(status);
-    }
 
-    private void setConnectionStatus(String status) {
-        setConnectionStatus(status, false);
-    }
+        @Override
+        public void roleChanged(String jid, String role) {
+            UserRegistry.getInstance().setRole(jid, role);
+            processMessage(new ServerMessage(
+                    "User " + getNick(jid) + " now " + role
+            ));
+        }
 
-    private void setConnectionError(String error) {
-        setConnectionStatus(error, true);
-    }
+        @Override
+        public void messageReceived(String jid, String message, Date timestamp) {
+            processMessage(new UserMessage(jid, message, timestamp));
+        }
 
+        @Override
+        public void historyMessageReceived(String jid, String message, Date timestamp) {
+            processMessage(new UserMessage(jid, message, timestamp));
+        }
+
+        @Override
+        public void taskReceived(byte[] bytes, Date timestamp) {
+            bytes = Arrays.copyOf(bytes, bytes.length - 1); // TODO Godin: WTF?
+            Message message = MessageFactory.getInstance().deserialize(bytes);
+            LOG.debug("Found taskMessage: " + message.asString());
+            message.setTimestamp(timestamp);
+            processMessage(message);
+        }
+    }
 }

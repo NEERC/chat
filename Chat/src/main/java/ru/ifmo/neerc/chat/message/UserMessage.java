@@ -22,6 +22,8 @@ package ru.ifmo.neerc.chat.message;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
 
+import java.util.Date;
+
 /**
  * @author Matvey Kazakov
  */
@@ -30,16 +32,17 @@ public class UserMessage extends Message {
 
     private String jid;
 
-    public UserMessage(String jid, String text) {
-        super(USER_MESSAGE);
-        this.jid = jid;
-        this.text = text;
-    }
-
     public UserMessage(String jid, int destination, String text) {
         super(USER_MESSAGE, destination);
         this.jid = jid;
         this.text = text;
+    }
+
+    public UserMessage(String jid, String text, Date timestamp) {
+        super(USER_MESSAGE);
+        this.jid = jid;
+        this.text = text;
+        setTimestamp(timestamp);
     }
 
     public String getJid() {
