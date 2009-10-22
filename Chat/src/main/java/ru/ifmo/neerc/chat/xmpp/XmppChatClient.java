@@ -19,6 +19,7 @@ import org.jivesoftware.smack.ConnectionListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.ifmo.neerc.chat.client.AbstractChatClient;
+import ru.ifmo.neerc.chat.client.Chat;
 import ru.ifmo.neerc.chat.client.ChatMessage;
 import ru.ifmo.neerc.chat.message.Message;
 import ru.ifmo.neerc.chat.message.MessageFactory;
@@ -38,6 +39,8 @@ import java.util.Date;
 public class XmppChatClient extends AbstractChatClient {
     private static final Logger LOG = LoggerFactory.getLogger(XmppChatClient.class);
 
+    private XmppChat xmppChat;
+
     public XmppChatClient() {
         final String name = System.getProperty("username");
 
@@ -46,13 +49,14 @@ public class XmppChatClient extends AbstractChatClient {
         userRegistry.putOnline(name);
         userRegistry.setRole(name, "moderator");
 
-        MyListener listener = new MyListener();
-        chat = new XmppChat(name, listener);
-
+        chat = new MyChat();
         setupUI();
 
-        ((XmppChat) chat).getConnection().addConnectionListener(listener);
-        if (((XmppChat) chat).getMultiUserChat().isJoined()) {
+        MyListener listener = new MyListener();
+        xmppChat = new XmppChat(name, listener);
+
+        xmppChat.getConnection().addConnectionListener(listener);
+        if (xmppChat.getMultiUserChat().isJoined()) {
             final String message = "Connected";
             setConnectionStatus(message);
         } else {
@@ -93,6 +97,13 @@ public class XmppChatClient extends AbstractChatClient {
 
     private String getNick(String participant) {
         return UserRegistry.getInstance().findOrRegister(participant).getName();
+    }
+
+    private class MyChat implements Chat {
+        @Override
+        public void write(Message message) {
+            xmppChat.write(message);
+        }
     }
 
     private class MyListener implements MUCListener, ConnectionListener {
@@ -149,9 +160,13 @@ public class XmppChatClient extends AbstractChatClient {
         @Override
         public void roleChanged(String jid, String role) {
             UserRegistry.getInstance().setRole(jid, role);
+            String nick = getNick(jid);
             processMessage(new ServerMessage(
-                    "User " + getNick(jid) + " now " + role
+                    "User " + nick + " now " + role
             ));
+            if (nick.equals(user.getName())) {
+                taskPanel.toolBar.setVisible("moderator".equals(role));
+            }
         }
 
         @Override

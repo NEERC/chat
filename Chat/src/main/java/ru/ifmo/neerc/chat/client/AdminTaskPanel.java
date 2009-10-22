@@ -51,6 +51,8 @@ public class AdminTaskPanel extends JPanel {
     private JButton btnAssignTask;
     private JButton btnRemoveTask;
 
+    public Component toolBar;
+
     public AdminTaskPanel(Frame owner, TaskRegistry taskRegistry, Chat clientReader) {
         super(new BorderLayout());
         this.owner = owner;
@@ -78,7 +80,9 @@ public class AdminTaskPanel extends JPanel {
         });
 
         add(new JScrollPane(taskList), BorderLayout.CENTER);
-        add(createToolBar(), BorderLayout.WEST);
+        toolBar = createToolBar();
+        toolBar.setVisible(false);
+        add(toolBar, BorderLayout.WEST);
         enableButtons();
     }
 

@@ -64,21 +64,23 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     public AbstractChatClient() {
     }
 
+    protected AdminTaskPanel taskPanel;
+
     protected void setupUI() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainPanel = createMainPanel();
-        if (!user.isPower()) {
-            setContentPane(mainPanel);
-            setSize(800, 600);
-        } else {
-            powerSplitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-            powerSplitter.setTopComponent(mainPanel);
-            powerSplitter.setBottomComponent(new AdminTaskPanel(this, taskRegistry, chat));
-            powerSplitter.setResizeWeight(1.0);
-            powerSplitter.setDividerLocation(600);
-            setContentPane(powerSplitter);
-            setSize(800, 800);
-        }
+        taskPanel = new AdminTaskPanel(this, taskRegistry, chat);
+//        if (!user.isPower()) {
+//            setContentPane(mainPanel);
+//        } else {
+        powerSplitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        powerSplitter.setTopComponent(mainPanel);
+        powerSplitter.setBottomComponent(taskPanel);
+        powerSplitter.setResizeWeight(1.0);
+        powerSplitter.setDividerLocation(600);
+        setContentPane(powerSplitter);
+//        }
+        setSize(800, 800);
         setLocationRelativeTo(null);
     }
 
@@ -123,17 +125,17 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
         toolBar.setRollover(true);
-        if (user.isPower()) {
-            JButton tasks = new JButton(new ImageIcon(AbstractChatClient.class.getResource("res/btn_tasks.gif")));
-            tasks.setFocusable(false);
-            tasks.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    powerSplitter.setOrientation(1 - powerSplitter.getOrientation());
-                }
-            });
+//        if (user.isPower()) {
+        JButton tasks = new JButton(new ImageIcon(AbstractChatClient.class.getResource("res/btn_tasks.gif")));
+        tasks.setFocusable(false);
+        tasks.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                powerSplitter.setOrientation(1 - powerSplitter.getOrientation());
+            }
+        });
 
-            toolBar.add(tasks);
-        }
+        toolBar.add(tasks);
+//        }
         JButton about = new JButton(new ImageIcon(AbstractChatClient.class.getResource("res/btn_about.gif")));
         about.setFocusable(false);
         about.addActionListener(new ActionListener() {
