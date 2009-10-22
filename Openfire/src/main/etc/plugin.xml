@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<plugin>
+    <class>ru.ifmo.neerc.service.NEERCService</class>
+    <name>NEERC Service</name>
+    <description>Provides NEERC specific services</description>
+    <author>Dmitriy Trofimov</author>
+    <version>1.0</version>    
+</plugin>
