@@ -1,19 +1,19 @@
-package ru.ifmo.neerc.task;
+package ru.ifmo.neerc.utils;
 
-import org.dom4j.Element;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import org.xmpp.packet.IQ;
 import org.xmpp.packet.Message;
 import org.xmpp.packet.PacketExtension;
-import ru.ifmo.neerc.service.XmlUtils;
+import ru.ifmo.neerc.utils.XmlUtils;
+import ru.ifmo.neerc.task.Task;
+import ru.ifmo.neerc.task.TaskStatus;
 
 import java.util.Map;
 
 /**
  * @author Evgeny Mandrikov
  */
-public class TaskTest {
+public final class XmlUtilsTest {
 
     @Test
     public void test() {

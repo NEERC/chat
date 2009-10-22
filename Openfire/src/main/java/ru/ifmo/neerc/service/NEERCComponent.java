@@ -26,6 +26,7 @@ import ru.ifmo.neerc.chat.user.UserRegistry;
 import ru.ifmo.neerc.task.Task;
 import ru.ifmo.neerc.task.TaskRegistry;
 import ru.ifmo.neerc.task.TaskRegistryListener;
+import ru.ifmo.neerc.utils.XmlUtils;
 
 /**
  * @author Dmitriy Trofimov

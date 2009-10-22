@@ -1,4 +1,4 @@
-package ru.ifmo.neerc.service;
+package ru.ifmo.neerc.utils;
 
 import org.dom4j.Element;
 import ru.ifmo.neerc.chat.user.UserEntry;
