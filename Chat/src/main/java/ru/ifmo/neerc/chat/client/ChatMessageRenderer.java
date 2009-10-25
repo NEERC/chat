@@ -57,7 +57,7 @@ class ChatMessageRenderer implements TableCellRenderer {
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         ChatMessage message = (ChatMessage)value;
         JComponent component;
-        if (message != null && message.getType() == ChatMessage.USER_MESSAGE) {
+        if (message != null && message.getType() == ChatMessage.Type.USER_MESSAGE) {
             component = userMessagePanel;
             userLabel.setText(message.getUser().getName());
             timeLabel.setText(message.getTime());
@@ -74,7 +74,7 @@ class ChatMessageRenderer implements TableCellRenderer {
             component = infoMessageLabel;
             assert message != null; // todo: is this correct?
             infoMessageLabel.setText(message.getText());
-            if (message.getType() == ChatMessage.TASK_MESSAGE) {
+            if (message.getType() == ChatMessage.Type.TASK_MESSAGE) {
                 infoMessageLabel.setForeground(Color.red);
             } else {
                 infoMessageLabel.setForeground(Color.blue);

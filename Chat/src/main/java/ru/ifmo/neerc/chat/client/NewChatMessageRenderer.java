@@ -95,17 +95,17 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
 
     private void updateRenderer(ChatMessage message) {
         switch (message.getType()) {
-            case ChatMessage.SERVER_MESSAGE:
+            case SERVER_MESSAGE:
                 setFont(adaptee.getFont().deriveFont(Font.BOLD));
                 setForeground(Color.blue);
                 setText(">>>>>   " + message.getText() + "   <<<<<");
                 break;
-            case ChatMessage.TASK_MESSAGE:
+            case TASK_MESSAGE:
                 setFont(adaptee.getFont().deriveFont(Font.BOLD).deriveFont(20.0f));
                 setForeground(Color.red);
                 setText(message.getText());
                 break;
-            case ChatMessage.USER_MESSAGE:
+            case USER_MESSAGE:
                 UserEntry user = message.getUser();
                 String messageText = message.getText();
                 if (user.isPower()) {

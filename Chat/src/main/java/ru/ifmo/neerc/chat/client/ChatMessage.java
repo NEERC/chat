@@ -34,11 +34,13 @@ import java.util.Date;
 public class ChatMessage {
     public static final String LOG_TIME_FORMAT = "yyyy.MM.dd HH:mm:ss";
 
-    public static final int SERVER_MESSAGE = 0;
-    public static final int USER_MESSAGE = 1;
-    public static final int TASK_MESSAGE = 2;
+	public static enum Type {
+		SERVER_MESSAGE,
+		USER_MESSAGE,
+		TASK_MESSAGE,
+	}
 
-    private int type;
+    private Type type;
     private String text;
     private UserEntry user;
     private boolean priv;
@@ -47,7 +49,7 @@ public class ChatMessage {
 
     private boolean special;
 
-    private ChatMessage(int type, String text, UserEntry user, boolean special, boolean priv, Date timestamp) {
+    private ChatMessage(Type type, String text, UserEntry user, boolean special, boolean priv, Date timestamp) {
         this.special = special;
         this.type = type;
         this.text = text;
@@ -57,18 +59,18 @@ public class ChatMessage {
     }
 
     public static ChatMessage createServerMessage(String text) {
-        return new ChatMessage(SERVER_MESSAGE, text, null, false, false, null);
+        return new ChatMessage(Type.SERVER_MESSAGE, text, null, false, false, null);
     }
 
     public static ChatMessage createTaskMessage(String text, Date timestamp) {
-        return new ChatMessage(TASK_MESSAGE, text, null, true, false, timestamp);
+        return new ChatMessage(Type.TASK_MESSAGE, text, null, true, false, timestamp);
     }
 
     public static ChatMessage createUserMessage(UserMessage userMessage) {
         UserEntry user = UserRegistry.getInstance().findOrRegister(userMessage.getJid());
         String text = userMessage.getText();
         return new ChatMessage(
-                USER_MESSAGE,
+                Type.USER_MESSAGE,
                 text,
                 user,
                 userMessage.isImportant(),
@@ -77,7 +79,7 @@ public class ChatMessage {
         );
     }
 
-    public int getType() {
+    public Type getType() {
         return type;
     }
 

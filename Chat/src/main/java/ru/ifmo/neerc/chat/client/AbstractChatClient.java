@@ -42,7 +42,6 @@ import java.util.Date;
  */
 public abstract class AbstractChatClient extends JFrame implements MessageListener {
 
-    public static final String DEFAULT_CONFIG_FILE = "client.xml";
     public ChatArea outputArea;
     public ChatArea outputAreaJury;
     public JTextArea inputArea;
@@ -53,10 +52,11 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     protected int localHistorySize;
     private static final int MAX_MESSAGE_LENGTH = 200;
 
-    private TimerTicker ticker = new TimerTicker(neercTimer);
-    private JPanel mainPanel;
-    private JSplitPane powerSplitter;
+	private JSplitPane powerSplitter;
 
+	private boolean isBeepOn = false;
+
+//    private TimerTicker ticker = new TimerTicker(neercTimer); todo: what about timer plugin?
 //    private PluginManager pluginManager;
 
     protected Chat chat;
@@ -68,7 +68,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 
     protected void setupUI() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        mainPanel = createMainPanel();
+	    JPanel mainPanel = createMainPanel();
         taskPanel = new AdminTaskPanel(this, taskRegistry, chat);
 //        if (!user.isPower()) {
 //            setContentPane(mainPanel);
@@ -125,7 +125,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
         toolBar.setRollover(true);
-//        if (user.isPower()) {
+
         JButton tasks = new JButton(new ImageIcon(AbstractChatClient.class.getResource("res/btn_tasks.gif")));
         tasks.setFocusable(false);
         tasks.addActionListener(new ActionListener() {
@@ -133,9 +133,8 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
                 powerSplitter.setOrientation(1 - powerSplitter.getOrientation());
             }
         });
-
         toolBar.add(tasks);
-//        }
+
         JButton about = new JButton(new ImageIcon(AbstractChatClient.class.getResource("res/btn_about.gif")));
         about.setFocusable(false);
         about.addActionListener(new ActionListener() {
@@ -143,9 +142,20 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
                 new AboutBox(AbstractChatClient.this).setVisible(true);
             }
         });
-
-
         toolBar.add(about);
+
+	    final ImageIcon beepOnImage = new ImageIcon(AbstractChatClient.class.getResource("res/btn_beep_on.png"));
+	    final ImageIcon beepOffImage = new ImageIcon(AbstractChatClient.class.getResource("res/btn_beep_off.png"));
+	    final JButton mute = new JButton(beepOffImage);
+	    mute.setFocusable(false);
+	    mute.addActionListener(new ActionListener() {
+		    public void actionPerformed(ActionEvent e) {
+			    isBeepOn = !isBeepOn;
+			    mute.setIcon(isBeepOn ? beepOnImage : beepOffImage);
+		    }
+	    });
+	    toolBar.add(mute);
+
 //        java.util.List<ChatPlugin> plugins = pluginManager.getPlugins();
 //        if (plugins.size() > 0) {
 //            toolBar.addSeparator();
@@ -159,6 +169,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 //                toolBar.add(button);
 //            }
 //        }
+
         toolBar.add(Box.createHorizontalGlue());
         toolBar.add(connectionStatus);
         toolBar.add(neercTimer);
@@ -261,6 +272,9 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
                                 }
                             }).start();
                         }
+	                    if (isBeepOn) {
+		                    System.out.println('\u0007'); // PC-speaker beep
+	                    }
                         chatMessage = ChatMessage.createTaskMessage(
                                 "!!! New task '" + description + "' has been assigned to you !!!",
                                 timestamp
