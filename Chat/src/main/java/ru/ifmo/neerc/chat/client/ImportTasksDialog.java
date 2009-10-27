@@ -20,21 +20,17 @@
  */
 package ru.ifmo.neerc.chat.client;
 
-import ru.ifmo.ips.config.Config;
-import ru.ifmo.ips.config.ConfigException;
-import ru.ifmo.ips.config.XMLConfig;
-import ru.ifmo.neerc.chat.message.TaskMessage;
-import ru.ifmo.neerc.chat.task.Task;
-import ru.ifmo.neerc.chat.task.TaskFactory;
-import ru.ifmo.neerc.chat.task.TaskRegistry;
-import ru.ifmo.neerc.chat.user.UserEntry;
-import ru.ifmo.neerc.chat.user.UserRegistry;
-
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.StringReader;
+import javax.swing.*;
+
+import ru.ifmo.ips.config.*;
+import ru.ifmo.neerc.chat.message.TaskMessage;
+import ru.ifmo.neerc.chat.task.*;
+import ru.ifmo.neerc.chat.user.UserEntry;
+import ru.ifmo.neerc.chat.user.UserRegistry;
 
 /**
  * <code>ImportTasksDialog</code> class
@@ -96,7 +92,7 @@ public class ImportTasksDialog extends JDialog {
                 String description = taskNode.getProperty("@desc");
                 int type = convertType(taskNode.getProperty("@type"));
                 Task task = registry.createTask(description, type);
-                clientReader.write(new TaskMessage(TaskMessage.CREATE, -1, task, null));
+                clientReader.write(new TaskMessage(TaskMessage.Type.CREATE, -1, task, null));
                 Config[] assignNodes;
                 try {
                     assignNodes = taskNode.getNodeList("assign");
@@ -109,12 +105,12 @@ public class ImportTasksDialog extends JDialog {
                     if (userName != null) {
                         UserEntry user = UserRegistry.getInstance().findByName(userName);
                         if (user != null) {
-                            clientReader.write(new TaskMessage(TaskMessage.ASSIGN, user.getId(), task, null));
+                            clientReader.write(new TaskMessage(TaskMessage.Type.ASSIGN, user.getId(), task, null));
                         }
                     } else if (groupName != null) {
                         UserEntry[] users = UserRegistry.getInstance().findByGroupName(groupName);
                         for (UserEntry user : users) {
-                            clientReader.write(new TaskMessage(TaskMessage.ASSIGN, user.getId(), task, null));
+                            clientReader.write(new TaskMessage(TaskMessage.Type.ASSIGN, user.getId(), task, null));
                         }
                     }
                 }

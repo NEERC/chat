@@ -19,16 +19,16 @@
  */
 package ru.ifmo.neerc.chat.client;
 
-import ru.ifmo.neerc.chat.message.TaskMessage;
-import ru.ifmo.neerc.chat.task.*;
-import ru.ifmo.neerc.chat.user.UserEntry;
-
-import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import ru.ifmo.neerc.chat.message.TaskMessage;
+import ru.ifmo.neerc.chat.task.*;
+import ru.ifmo.neerc.chat.user.UserEntry;
 
 /**
  * @author Matvey Kazakov
@@ -124,7 +124,7 @@ public class TaskPanel extends JPanel {
         } else {
             taskResult.performAction(action);
         }
-        clientReader.write(new TaskMessage(TaskMessage.COMPLETE, userId, task, taskResult));
+        clientReader.write(new TaskMessage(TaskMessage.Type.COMPLETE, userId, task, taskResult));
         enableButtons();
     }
 

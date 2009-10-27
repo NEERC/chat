@@ -25,17 +25,30 @@ import ru.ifmo.neerc.chat.task.TaskRegistry;
 import ru.ifmo.neerc.chat.task.TaskResult;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
+import static ru.ifmo.neerc.chat.message.TaskMessage.Type.*;
 
 /**
  * @author Matvey Kazakov
  */
 public class TaskMessage extends Message {
-    public static final int CREATE = 0;
-    public static final int ASSIGN = 1;
-    public static final int COMPLETE = 2;
-    public static final int DELETE = 3;
+	public static enum Type {
+		CREATE(0), ASSIGN(1), COMPLETE(2), DELETE(3);
+		public final int ID;
+		Type(int id) {
+			this.ID = id;
+		}
 
-    private int taskMsgType;
+		static Type valueOf(int id) {
+			for (Type t : values()) {
+				if (t.ID == id) {
+					return t;
+				}
+			}
+			throw new IllegalArgumentException("Unknown TaskMessage type ID: " + id);
+		}
+	}
+
+    private Type type;
     private int user, taskId;
     private Task task;
     private TaskResult answer;
@@ -50,31 +63,31 @@ public class TaskMessage extends Message {
         super(TASK_MESSAGE);
     }
 
-    public TaskMessage(int taskMsgType, int user, Task task, TaskResult answer) {
+    public TaskMessage(Type type, int user, Task task, TaskResult answer) {
         this();
-        this.taskMsgType = taskMsgType;
+        this.type = type;
         this.user = user;
         this.task = task;
         this.answer = answer;
     }
 
     public boolean allowed(UserEntry entry) {
-        return (taskMsgType == COMPLETE || entry.isPower());
+        return (type == COMPLETE || entry.isPower());
     }
 
     @Override
     protected void serialize(Config message) {
         Config node = message.createNode(NODE_TASK);
-        node.setProperty(ATTR_TYPE, "" + taskMsgType);
+        node.setProperty(ATTR_TYPE, "" + type.ID);
         node.setProperty(ATTR_USER, "" + user);
         if (user != -1) {
             node.setProperty(ATTR_USERNAME, UserRegistry.getInstance().search(user).getName());
         }
-        if (taskMsgType == CREATE) {
+        if (type == CREATE) {
             task.serialize(node);
         } else {
             node.setProperty(ATTR_TASK, String.valueOf(getTaskId()));
-            if (taskMsgType == COMPLETE) {
+            if (type == COMPLETE) {
                 answer.serialize(node.createNode(NODE_ANSWER));
             }
         }
@@ -83,19 +96,20 @@ public class TaskMessage extends Message {
     @Override
     protected void deserialize(Config message) {
         Config node = message.getNode(NODE_TASK);
-        taskMsgType = node.getInt(ATTR_TYPE);
+        int typeId = node.getInt(ATTR_TYPE);
+		type = Type.valueOf(typeId);
         user = node.getInt(ATTR_USER);
         if (user != -1) {
             String userName = node.getString(ATTR_USERNAME);
             user = UserRegistry.getInstance().findByName(userName).getId();
         }
-        if (taskMsgType == CREATE) {
+        if (type == CREATE) {
             task = new Task();
             task.deserialize(node);
         } else {
             taskId = node.getInt(ATTR_TASK);
             task = TaskRegistry.getInstance().findTask(taskId);
-            if (task != null && taskMsgType == COMPLETE) {
+            if (task != null && type == COMPLETE) {
                 answer = task.getResult(user);
                 if (answer != null) {
                     answer.deserialize(node.getNode(NODE_ANSWER));
@@ -106,7 +120,7 @@ public class TaskMessage extends Message {
 
     public String asString() {
         StringBuilder res = new StringBuilder("-----!!! Task '" + task.getDescription() + "' ");
-        switch (taskMsgType) {
+        switch (type) {
             case CREATE:
                 res.append("is created");
                 break;
@@ -123,8 +137,8 @@ public class TaskMessage extends Message {
         return res.toString();
     }
 
-    public int getTaskMsgType() {
-        return taskMsgType;
+    public Type getTaskMsgType() {
+        return type;
     }
 
     public int getUser() {

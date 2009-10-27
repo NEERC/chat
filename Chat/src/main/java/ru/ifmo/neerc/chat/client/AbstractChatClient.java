@@ -15,24 +15,19 @@
 */
 package ru.ifmo.neerc.chat.client;
 
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.Date;
+import javax.swing.*;
+import javax.swing.text.*;
+
 import ru.ifmo.neerc.chat.message.*;
 import ru.ifmo.neerc.chat.task.TaskRegistry;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
 import ru.ifmo.neerc.chat.utils.ChatLogger;
 import ru.ifmo.neerc.chat.utils.DateUtils;
-
-import javax.swing.*;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.PlainDocument;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * TODO: Log file
@@ -256,7 +251,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         } else if (message instanceof TaskMessage) {
             final TaskMessage taskMessage = (TaskMessage) message;
             switch (taskMessage.getTaskMsgType()) {
-                case TaskMessage.ASSIGN:
+                case ASSIGN:
                     if (taskMessage.getUser() == user.getId()) {
                         final String description = taskRegistry.findTask(taskMessage.getTaskId()).getDescription();
                         Date timestamp = taskMessage.getTimestamp();

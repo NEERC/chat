@@ -19,13 +19,11 @@
  */
 package ru.ifmo.neerc.chat.task;
 
-import ru.ifmo.neerc.chat.message.Message;
-import ru.ifmo.neerc.chat.message.MessageListener;
-import ru.ifmo.neerc.chat.message.TaskMessage;
+import java.util.*;
+
+import ru.ifmo.neerc.chat.message.*;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistryListener;
-
-import java.util.*;
 
 /**
  * @author Matvey Kazakov
@@ -138,16 +136,16 @@ public class TaskRegistry implements UserRegistryListener, MessageListener {
             int taskId = taskMessage.getTaskId();
             int userId = taskMessage.getUser();
             switch (taskMessage.getTaskMsgType()) {
-                case TaskMessage.ASSIGN:
+                case ASSIGN:
                     assignTask(taskId, userId);
                     break;
-                case TaskMessage.COMPLETE:
+                case COMPLETE:
                     completeTask(taskId, userId, taskMessage.getAnswer());
                     break;
-                case TaskMessage.CREATE:
+                case CREATE:
                     registerTask(taskMessage.getTask());
                     break;
-                case TaskMessage.DELETE:
+                case DELETE:
                     deleteTask(taskId);
                     break;
             }

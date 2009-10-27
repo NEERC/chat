@@ -19,18 +19,15 @@
  */
 package ru.ifmo.neerc.chat.client;
 
-import ru.ifmo.neerc.chat.message.TaskMessage;
-import ru.ifmo.neerc.chat.task.Task;
-import ru.ifmo.neerc.chat.task.TaskFactory;
-import ru.ifmo.neerc.chat.task.TaskRegistry;
-import ru.ifmo.neerc.chat.task.TaskRegistryListener;
-
-import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import ru.ifmo.neerc.chat.message.TaskMessage;
+import ru.ifmo.neerc.chat.task.*;
 
 /**
  * @author Matvey Kazakov
@@ -131,7 +128,7 @@ public class AdminTaskPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 Task[] tasks = getSelectedTasks();
                 for (Task task : tasks) {
-                    clientReader.write(new TaskMessage(TaskMessage.DELETE, -1, task, null));
+                    clientReader.write(new TaskMessage(TaskMessage.Type.DELETE, -1, task, null));
                 }
                 enableButtons();
             }
@@ -153,7 +150,7 @@ public class AdminTaskPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 String taskDescription = JOptionPane.showInputDialog(AdminTaskPanel.this, message);
                 if (taskDescription != null && taskDescription.trim().length() > 0) {
-                    clientReader.write(new TaskMessage(TaskMessage.CREATE, -1, registry.createTask(taskDescription, type), null));
+                    clientReader.write(new TaskMessage(TaskMessage.Type.CREATE, -1, registry.createTask(taskDescription, type), null));
                 }
                 enableButtons();
             }

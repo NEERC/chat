@@ -19,18 +19,18 @@
  */
 package ru.ifmo.neerc.chat.client;
 
-import ru.ifmo.neerc.chat.message.TaskMessage;
-import ru.ifmo.neerc.chat.task.Task;
-import ru.ifmo.neerc.chat.user.UserEntry;
-import ru.ifmo.neerc.chat.user.UserRegistry;
-
-import javax.swing.*;
-import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.List;
+import javax.swing.*;
+import javax.swing.tree.*;
+
+import ru.ifmo.neerc.chat.message.TaskMessage;
+import ru.ifmo.neerc.chat.task.Task;
+import ru.ifmo.neerc.chat.user.UserEntry;
+import ru.ifmo.neerc.chat.user.UserRegistry;
 
 /**
  * @author Matvey Kazakov
@@ -138,7 +138,7 @@ public class AssignTaskDialog extends JDialog {
         }
         for (UserEntry user : selectedUsers) {
             for (Task task : tasks) {
-                clientReader.write(new TaskMessage(TaskMessage.ASSIGN, user.getId(), task, null));
+                clientReader.write(new TaskMessage(TaskMessage.Type.ASSIGN, user.getId(), task, null));
             }
         }
         dispose();
