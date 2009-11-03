@@ -44,17 +44,24 @@ public final class TaskRegistry {
     }
 
     public void update(Task task) {
-        if (task.getId() == null) {
-            String id = genId();
-            task = new Task(id, task.getTitle(), task.getType());
+        String id = task.getId();
+        if (id == null) {
+            id = genId();
+            task.setId(id);
+            tasks.put(id, task);
+        } else {
             tasks.put(id, task);
         }
-
-        Task old = tasks.get(task.getId());
-        for (Map.Entry<String, TaskStatus> entry : task.getStatuses().entrySet()) {
-            TaskStatus taskStatus = entry.getValue();
-            old.setStatus(entry.getKey(), taskStatus.getType(), taskStatus.getValue());
-        }
         notifyListeners(task);
+    }
+
+    public List<Task> getAssignedTasks(String user) {
+        ArrayList<Task> list = new ArrayList<Task>();
+        for (Task task : tasks.values()) {
+            if (task.getStatuses().containsKey(user)) {
+                list.add(task);
+            }
+        }
+        return list;
     }
 }
