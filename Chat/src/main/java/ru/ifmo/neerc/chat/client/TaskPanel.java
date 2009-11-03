@@ -19,42 +19,35 @@
  */
 package ru.ifmo.neerc.chat.client;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import ru.ifmo.neerc.chat.task.TaskFactory;
+import ru.ifmo.neerc.chat.user.UserEntry;
+import ru.ifmo.neerc.chat.xmpp.TaskActions;
+import ru.ifmo.neerc.task.Task;
+import ru.ifmo.neerc.task.TaskRegistry;
+import ru.ifmo.neerc.task.TaskRegistryListener;
+import ru.ifmo.neerc.task.TaskStatus;
+
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
-import ru.ifmo.neerc.chat.message.TaskMessage;
-import ru.ifmo.neerc.chat.task.*;
-import ru.ifmo.neerc.chat.user.UserEntry;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  * @author Matvey Kazakov
  */
 public class TaskPanel extends JPanel {
-//    private static final ImageIcon iconTaskAdd = new ImageIcon(TaskPanel.class.getResource("res/task_add.gif"));
-//    private static final ImageIcon iconTaskAssign = new ImageIcon(TaskPanel.class.getResource("res/task_assign.gif"));
-//    private static final ImageIcon iconTaskRemove = new ImageIcon(TaskPanel.class.getResource("res/task_remove.gif"));
-
-
-    private static final ImageIcon iconActionDone = new ImageIcon(TaskPanel.class.getResource("res/task_action_complete.gif"));
-    private static final ImageIcon iconActionFail = new ImageIcon(TaskPanel.class.getResource("res/task_action_fail.png"));
-    private static final ImageIcon iconActionStart = new ImageIcon(TaskPanel.class.getResource("res/task_action_start.png"));
-
-    private int userId;
-    private Chat clientReader;
+    private String user;
     private JList taskList;
     private AbstractButton btnActionDone;
     private AbstractButton btnActionStart;
     private AbstractButton btnActionFail;
 
-    public TaskPanel(TaskRegistry taskRegistry, UserEntry user, Chat clientReader) {
+    public TaskPanel(TaskRegistry taskRegistry, UserEntry user) {
         super(new BorderLayout());
-        this.userId = user.getId();
-        this.clientReader = clientReader;
-        taskList = new TaskList(taskRegistry, userId);
+        this.user = user.getName();
+        taskList = new TaskList(taskRegistry, this.user);
 
         taskList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
@@ -62,14 +55,6 @@ public class TaskPanel extends JPanel {
             }
         });
         taskRegistry.addListener(new TaskRegistryListener() {
-            public void taskAdded(Task task) {
-                enableButtons();
-            }
-
-            public void taskDeleted(Task task) {
-                enableButtons();
-            }
-
             public void taskChanged(Task taskId) {
                 enableButtons();
             }
@@ -84,14 +69,24 @@ public class TaskPanel extends JPanel {
         Task task = null;
         try {
             task = (Task) taskList.getSelectedValue();
-        } catch (Exception e) {
+        } catch (Exception ignore) {
         }
-        enableButton(task != null && task.getResult(userId).actionSupported(TaskFactory.ACTION_FAIL), btnActionFail);
-        enableButton(task != null && task.getResult(userId).actionSupported(TaskFactory.ACTION_START), btnActionStart);
-        enableButton(task != null && task.getResult(userId).actionSupported(TaskFactory.ACTION_DONE), btnActionDone);
+
+        enableButton(
+                btnActionFail,
+                TaskActions.isActionSupported(task, user, TaskFactory.ACTION_FAIL)
+        );
+        enableButton(
+                btnActionStart,
+                TaskActions.isActionSupported(task, user, TaskFactory.ACTION_START)
+        );
+        enableButton(
+                btnActionDone,
+                TaskActions.isActionSupported(task, user, TaskFactory.ACTION_DONE)
+        );
     }
 
-    private void enableButton(boolean enable, Component btn) {
+    private void enableButton(Component btn, boolean enable) {
         if (btn != null) {
             btn.setEnabled(enable);
         }
@@ -101,9 +96,18 @@ public class TaskPanel extends JPanel {
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
         toolBar.setRollover(true);
-        btnActionDone = createButton(iconActionDone, TaskFactory.ACTION_DONE, "Task is done");
-        btnActionFail = createButton(iconActionFail, TaskFactory.ACTION_FAIL, "Task is failed due to...");
-        btnActionStart = createButton(iconActionStart, TaskFactory.ACTION_START, "Task is started");
+        btnActionDone = createButton(
+                TaskFactory.ACTION_DONE,
+                "Task is done"
+        );
+        btnActionFail = createButton(
+                TaskFactory.ACTION_FAIL,
+                "Task is failed due to..."
+        );
+        btnActionStart = createButton(
+                TaskFactory.ACTION_START,
+                "Task is started"
+        );
         toolBar.add(btnActionStart);
         toolBar.add(btnActionDone);
         toolBar.add(btnActionFail);
@@ -112,28 +116,33 @@ public class TaskPanel extends JPanel {
 
     private void performAction(int action) {
         Task task = (Task) taskList.getSelectedValue();
-        TaskResult taskResult = task.getResult(userId);
-        if (action == TaskFactory.ACTION_FAIL || action == TaskFactory.ACTION_DONE && taskResult instanceof QuestionTaskResult) {
-            String message = action == TaskFactory.ACTION_FAIL ? "Give the reason" : "Your answer is";
-            String reason = JOptionPane.showInputDialog(SwingUtilities.getWindowAncestor(this), message,
-                    taskResult.toString());
+        TaskStatus taskStatus = task.getStatuses().get(user);
+        if (action == TaskFactory.ACTION_FAIL) {
+            String message = "Give the reason";
+            String reason = JOptionPane.showInputDialog(
+                    SwingUtilities.getWindowAncestor(this),
+                    message,
+                    taskStatus.getValue()
+            );
             if (reason == null || reason.length() == 0) {
                 return;
             }
-            taskResult.performAction(action, reason);
+            // TODO
+//            taskResult.performAction(action, reason);
         } else {
-            taskResult.performAction(action);
+            // TODO
+//            taskResult.performAction(action);
         }
-        clientReader.write(new TaskMessage(TaskMessage.Type.COMPLETE, userId, task, taskResult));
+//        clientReader.write(new TaskMessage(TaskMessage.COMPLETE, userId, task, taskResult));
         enableButtons();
     }
 
-    private AbstractButton createButton(ImageIcon icon, final int action, String s) {
-        AbstractButton btn = new JButton(icon);
+    private AbstractButton createButton(final int action, final String toolTipText) {
+        AbstractButton btn = new JButton(TaskIcon.ACTION.get(action));
         btn.setFocusable(false);
         btn.setBorderPainted(false);
         btn.setRolloverEnabled(true);
-        btn.setToolTipText(s);
+        btn.setToolTipText(toolTipText);
         btn.setMargin(new Insets(0, 0, 0, 0));
         btn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {

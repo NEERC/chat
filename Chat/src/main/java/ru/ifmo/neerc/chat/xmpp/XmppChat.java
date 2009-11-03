@@ -17,6 +17,7 @@ import ru.ifmo.neerc.chat.message.MessageFactory;
 import ru.ifmo.neerc.chat.message.TaskMessage;
 import ru.ifmo.neerc.chat.message.UserMessage;
 import ru.ifmo.neerc.chat.utils.DebugUtils;
+import ru.ifmo.neerc.chat.xmpp.provider.NeercPacketExtensionProvider;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -71,7 +72,10 @@ public class XmppChat implements Chat {
         muc = new MultiUserChat(connection, ROOM);
         muc.addMessageListener(new MyMessageListener());
 
+        NeercPacketExtensionProvider.register();
+
         connection.addPacketListener(new MyPresenceListener(), new PacketTypeFilter(Presence.class));
+        connection.addPacketListener(new TaskPacketListener(), new PacketTypeFilter(org.jivesoftware.smack.packet.Message.class));
 
         join();
 

@@ -1,13 +1,15 @@
 package ru.ifmo.neerc.utils;
 
+import org.dom4j.Document;
+import org.dom4j.io.SAXReader;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.xmpp.packet.Message;
 import org.xmpp.packet.PacketExtension;
-import ru.ifmo.neerc.utils.XmlUtils;
 import ru.ifmo.neerc.task.Task;
 import ru.ifmo.neerc.task.TaskStatus;
 
+import java.io.ByteArrayInputStream;
 import java.util.Map;
 
 /**
@@ -39,6 +41,13 @@ public final class XmlUtilsTest {
             Assert.assertEquals(ds.getType(), status.getType());
             Assert.assertEquals(ds.getValue(), status.getValue());
         }
+    }
+
+    public static void main(String[] args) throws Exception {
+        SAXReader saxReader = new SAXReader();
+        String xml = "<x/>";
+        Document doc = saxReader.read(new ByteArrayInputStream(xml.getBytes()));
+        System.out.println(doc.getRootElement().getName());
     }
 
 }

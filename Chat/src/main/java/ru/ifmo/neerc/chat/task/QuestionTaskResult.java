@@ -29,6 +29,7 @@ import ru.ifmo.neerc.chat.message.UserText;
  *
  * @author Matvey Kazakov
  */
+@Deprecated
 public class QuestionTaskResult extends TaskResult {
 
     private boolean done = false;

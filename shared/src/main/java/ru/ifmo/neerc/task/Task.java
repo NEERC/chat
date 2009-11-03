@@ -1,6 +1,8 @@
 package ru.ifmo.neerc.task;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Evgeny Mandrikov
@@ -49,5 +51,9 @@ public class Task {
         }
         status.setType(type);
         status.setValue(value);
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

@@ -25,6 +25,7 @@ package ru.ifmo.neerc.chat.task;
  *
  * @author Matvey Kazakov
  */
+@Deprecated
 public class TaskFactory {
     public static final int ACTION_START = 0;
     public static final int ACTION_DONE = 1;

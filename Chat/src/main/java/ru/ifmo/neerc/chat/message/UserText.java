@@ -26,8 +26,9 @@ import java.io.UnsupportedEncodingException;
 /**
  * @author Matvey Kazakov
  */
+@Deprecated
 public class UserText {
-    
+
     private String text;
 
     public UserText(String text) {
@@ -44,7 +45,7 @@ public class UserText {
     public void setText(String text) {
         this.text = text;
     }
-    
+
     public String asString() {
         try {
             return Base64.encode(text.getBytes("UTF8"));
@@ -52,7 +53,7 @@ public class UserText {
             return "";
         }
     }
-    
+
     public void fromString(String str) {
         try {
             text = new String(Base64.decode(new StringBuffer(str)), "UTF8");

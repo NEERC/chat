@@ -20,16 +20,14 @@
  */
 package ru.ifmo.neerc.chat.client;
 
-import ru.ifmo.neerc.chat.task.Task;
-import ru.ifmo.neerc.chat.task.TaskFactory;
-import ru.ifmo.neerc.chat.task.TaskRegistry;
-import ru.ifmo.neerc.chat.task.TaskRegistryListener;
+import ru.ifmo.neerc.task.Task;
+import ru.ifmo.neerc.task.TaskRegistry;
+import ru.ifmo.neerc.task.TaskRegistryListener;
+import ru.ifmo.neerc.task.TaskStatus;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * <code>TaskList</code> class
@@ -38,30 +36,12 @@ import java.util.Map;
  */
 public class TaskList extends JList {
     private TaskRegistry registry;
-    private int userId;
-    private static final ImageIcon iconTaskStateNew = new ImageIcon(TaskList.class.getResource("res/task_state_new.gif"));
-    private static final ImageIcon iconTaskStateFail = new ImageIcon(TaskList.class.getResource("res/task_state_fail.png"));
-    private static final ImageIcon iconTaskStateInProgress = new ImageIcon(TaskList.class.getResource("res/task_state_inprogress.png"));
-    private static final ImageIcon iconTaskStateDone = new ImageIcon(TaskList.class.getResource("res/task_state_done.gif"));
 
-    private static final Map<Integer, ImageIcon> icons;
+    private String user;
 
-    static {
-        Map<Integer, ImageIcon> map = new HashMap<Integer, ImageIcon>();
-        map.put(TaskFactory.VSTATE_DONE, iconTaskStateDone);
-        map.put(TaskFactory.VSTATE_FAIL, iconTaskStateFail);
-        map.put(TaskFactory.VSTATE_INPROGRESS, iconTaskStateInProgress);
-        map.put(TaskFactory.VSTATE_NEW, iconTaskStateNew);
-        icons = map;
-    }
-
-    public static ImageIcon getIcon(int state) {
-        return icons.get(state);
-    }
-
-    public TaskList(TaskRegistry taskRegistry, int userId) {
+    public TaskList(TaskRegistry taskRegistry, String user) {
+        this.user = user;
         this.registry = taskRegistry;
-        this.userId = userId;
         TaskListModel dataModel = new TaskListModel();
         this.registry.addListener(dataModel);
         setModel(dataModel);
@@ -70,17 +50,11 @@ public class TaskList extends JList {
     }
 
     private class TaskListModel extends AbstractListModel implements TaskRegistryListener {
+        private static final long serialVersionUID = -3486815875540806367L;
+
         private ArrayList<Task> tasks;
 
         public TaskListModel() {
-            updateTasks();
-        }
-
-        public void taskAdded(Task task) {
-            updateTasks();
-        }
-
-        public void taskDeleted(Task taskId) {
             updateTasks();
         }
 
@@ -89,7 +63,7 @@ public class TaskList extends JList {
         }
 
         private void updateTasks() {
-            tasks = new ArrayList<Task>(registry.getAssignedTasks(userId));
+            tasks = new ArrayList<Task>(registry.getAssignedTasks(user));
             fireContentsChanged(this, 0, tasks.size());
         }
 
@@ -105,8 +79,11 @@ public class TaskList extends JList {
     private class PersonalTaskListRenderer extends DefaultListCellRenderer {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             Task task = (Task) value;
-            setText(task.getDescription());
-            setIcon(icons.get(task.getResult(userId).getVisualState()));
+            setText(task.getTitle());
+            TaskStatus taskStatus = task.getStatuses().get(user);
+            if (taskStatus != null) {
+                setIcon(TaskIcon.STATUS.get(taskStatus.getType()));
+            }
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
                 setForeground(list.getSelectionForeground());

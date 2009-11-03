@@ -32,6 +32,7 @@ import java.util.Set;
 /**
  * @author Matvey Kazakov
  */
+@Deprecated
 public class Task implements Comparable<Task> {
     private UserText description = new UserText();
     private Set<Integer> assignedUsers = new HashSet<Integer>();

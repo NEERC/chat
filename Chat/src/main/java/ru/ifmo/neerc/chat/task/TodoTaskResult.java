@@ -27,6 +27,7 @@ import ru.ifmo.ips.config.Config;
  *
  * @author Matvey Kazakov
  */
+@Deprecated
 public class TodoTaskResult extends TaskResult {
 
     public static final int STATE_NEW = 0;

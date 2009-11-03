@@ -27,6 +27,7 @@ import ru.ifmo.ips.config.Config;
  *
  * @author Matvey Kazakov
  */
+@Deprecated
 public class ConfirmTaskResult extends TaskResult {
 
     private int done = 0;

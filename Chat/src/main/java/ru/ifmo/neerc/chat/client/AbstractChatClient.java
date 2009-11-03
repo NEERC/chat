@@ -15,19 +15,24 @@
 */
 package ru.ifmo.neerc.chat.client;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.Date;
-import javax.swing.*;
-import javax.swing.text.*;
-
 import ru.ifmo.neerc.chat.message.*;
 import ru.ifmo.neerc.chat.task.TaskRegistry;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
 import ru.ifmo.neerc.chat.utils.ChatLogger;
 import ru.ifmo.neerc.chat.utils.DateUtils;
+
+import javax.swing.*;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.PlainDocument;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * TODO: Log file
@@ -47,9 +52,9 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     protected int localHistorySize;
     private static final int MAX_MESSAGE_LENGTH = 200;
 
-	private JSplitPane powerSplitter;
+    private JSplitPane powerSplitter;
 
-	private boolean isBeepOn = false;
+    private boolean isBeepOn = false;
 
 //    private TimerTicker ticker = new TimerTicker(neercTimer); todo: what about timer plugin?
 //    private PluginManager pluginManager;
@@ -63,8 +68,8 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 
     protected void setupUI() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	    JPanel mainPanel = createMainPanel();
-        taskPanel = new AdminTaskPanel(this, taskRegistry, chat);
+        JPanel mainPanel = createMainPanel();
+        taskPanel = new AdminTaskPanel(this, ru.ifmo.neerc.task.TaskRegistry.getInstance());
 //        if (!user.isPower()) {
 //            setContentPane(mainPanel);
 //        } else {
@@ -99,7 +104,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 
         JPanel controlPanel = new JPanel(new BorderLayout());
         UsersPanel users = new UsersPanel(user);
-        TaskPanel personalTasks = new TaskPanel(taskRegistry, user, chat);
+        TaskPanel personalTasks = new TaskPanel(ru.ifmo.neerc.task.TaskRegistry.getInstance(), user);
         JSplitPane controlSplitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, users, personalTasks);
         setupSplitter(controlSplitter);
         controlSplitter.setResizeWeight(1);
@@ -139,17 +144,17 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         });
         toolBar.add(about);
 
-	    final ImageIcon beepOnImage = new ImageIcon(AbstractChatClient.class.getResource("res/btn_beep_on.png"));
-	    final ImageIcon beepOffImage = new ImageIcon(AbstractChatClient.class.getResource("res/btn_beep_off.png"));
-	    final JButton mute = new JButton(beepOffImage);
-	    mute.setFocusable(false);
-	    mute.addActionListener(new ActionListener() {
-		    public void actionPerformed(ActionEvent e) {
-			    isBeepOn = !isBeepOn;
-			    mute.setIcon(isBeepOn ? beepOnImage : beepOffImage);
-		    }
-	    });
-	    toolBar.add(mute);
+        final ImageIcon beepOnImage = new ImageIcon(AbstractChatClient.class.getResource("res/btn_beep_on.png"));
+        final ImageIcon beepOffImage = new ImageIcon(AbstractChatClient.class.getResource("res/btn_beep_off.png"));
+        final JButton mute = new JButton(beepOffImage);
+        mute.setFocusable(false);
+        mute.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                isBeepOn = !isBeepOn;
+                mute.setIcon(isBeepOn ? beepOnImage : beepOffImage);
+            }
+        });
+        toolBar.add(mute);
 
 //        java.util.List<ChatPlugin> plugins = pluginManager.getPlugins();
 //        if (plugins.size() > 0) {
@@ -267,9 +272,9 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
                                 }
                             }).start();
                         }
-	                    if (isBeepOn) {
-		                    System.out.println('\u0007'); // PC-speaker beep
-	                    }
+                        if (isBeepOn) {
+                            System.out.println('\u0007'); // PC-speaker beep
+                        }
                         chatMessage = ChatMessage.createTaskMessage(
                                 "!!! New task '" + description + "' has been assigned to you !!!",
                                 timestamp

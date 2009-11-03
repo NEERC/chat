@@ -27,6 +27,7 @@ import ru.ifmo.ips.config.Config;
  *
  * @author Matvey Kazakov
  */
+@Deprecated
 public abstract class TaskResult {
 
     public abstract String toString();

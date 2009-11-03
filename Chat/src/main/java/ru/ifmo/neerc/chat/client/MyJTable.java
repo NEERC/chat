@@ -31,9 +31,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 /**
  * @author Matvey Kazakov
@@ -114,11 +114,14 @@ public class MyJTable<T> extends JPanel {
     }
 
     class MyJTableModel extends AbstractTableModel {
+        private static final long serialVersionUID = 2818294672596122659L;
 
         int start = 0;
         int length = 0;
         int maxLength = 0;
         int size = 0;
+
+
         /*
             length = min(size, maxLength)
             start >= 0
@@ -201,7 +204,7 @@ public class MyJTable<T> extends JPanel {
                     savedStart = start;
                     savedLength = length;
                     updateRowSizes();
-                } while(savedLength != length || savedStart != start);
+                } while (savedLength != length || savedStart != start);
                 super.fireTableDataChanged();
                 resizeTableRows();
                 tableDataChangedLock = false;
@@ -268,7 +271,7 @@ public class MyJTable<T> extends JPanel {
                 }
             }
         }
-        
+
 
     }
 

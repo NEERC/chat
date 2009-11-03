@@ -19,42 +19,33 @@
  */
 package ru.ifmo.neerc.chat.client;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import ru.ifmo.neerc.chat.task.TaskFactory;
+import ru.ifmo.neerc.task.Task;
+import ru.ifmo.neerc.task.TaskRegistry;
+import ru.ifmo.neerc.task.TaskRegistryListener;
+
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
-import ru.ifmo.neerc.chat.message.TaskMessage;
-import ru.ifmo.neerc.chat.task.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  * @author Matvey Kazakov
  */
 public class AdminTaskPanel extends JPanel {
-    private static final ImageIcon iconTaskAddTodo = new ImageIcon(AdminTaskPanel.class.getResource("res/task_add_todo.png"));
-    private static final ImageIcon iconTaskAddConfirm = new ImageIcon(AdminTaskPanel.class.getResource("res/task_add_confirm.png"));
-    private static final ImageIcon iconTaskAddText = new ImageIcon(AdminTaskPanel.class.getResource("res/task_add_text.png"));
-    private static final ImageIcon iconTaskAddQuest = new ImageIcon(AdminTaskPanel.class.getResource("res/task_add_quest.png"));
-    private static final ImageIcon iconTaskAssign = new ImageIcon(AdminTaskPanel.class.getResource("res/task_assign.gif"));
-    private static final ImageIcon iconTaskRemove = new ImageIcon(AdminTaskPanel.class.getResource("res/task_remove.gif"));
-    private static final ImageIcon iconTaskImport = new ImageIcon(AdminTaskPanel.class.getResource("res/task_import.png"));
 
     private Frame owner;
-    private TaskRegistry registry;
-    private Chat clientReader;
     private AdminTaskList taskList;
     private JButton btnAssignTask;
     private JButton btnRemoveTask;
 
     public Component toolBar;
 
-    public AdminTaskPanel(Frame owner, TaskRegistry taskRegistry, Chat clientReader) {
+    public AdminTaskPanel(Frame owner, TaskRegistry taskRegistry) {
         super(new BorderLayout());
         this.owner = owner;
-        this.registry = taskRegistry;
-        this.clientReader = clientReader;
         taskList = new AdminTaskList(taskRegistry);
 
         taskList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -63,15 +54,7 @@ public class AdminTaskPanel extends JPanel {
             }
         });
         taskRegistry.addListener(new TaskRegistryListener() {
-            public void taskAdded(Task task) {
-                enableButtons();
-            }
-
-            public void taskDeleted(Task task) {
-                enableButtons();
-            }
-
-            public void taskChanged(Task taskId) {
+            public void taskChanged(Task task) {
                 enableButtons();
             }
         });
@@ -81,16 +64,6 @@ public class AdminTaskPanel extends JPanel {
         toolBar.setVisible(false);
         add(toolBar, BorderLayout.WEST);
         enableButtons();
-    }
-
-    static JDialog createPowerDialog(Frame frame, TaskRegistry taskRegistry, Chat clientReader) {
-        JDialog dialog = new JDialog(frame);
-        dialog.setTitle("Tasks");
-        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        dialog.setContentPane(new AdminTaskPanel(frame, taskRegistry, clientReader));
-        dialog.setSize(300, 300);
-        dialog.setLocationRelativeTo(frame);
-        return dialog;
     }
 
     private void enableButtons() {
@@ -110,47 +83,59 @@ public class AdminTaskPanel extends JPanel {
         toolBar.setFloatable(false);
         toolBar.setOrientation(JToolBar.VERTICAL);
         toolBar.setRollover(true);
-        toolBar.add(createAddTaskButton(iconTaskAddTodo, TaskFactory.TASK_TODO, "Add TODO"));
-        toolBar.add(createAddTaskButton(iconTaskAddConfirm, TaskFactory.TASK_CONFIRM, "Add Confirmation"));
-        toolBar.add(createAddTaskButton(iconTaskAddText, TaskFactory.TASK_REASON, "Add Ok/Fail Reason"));
-        toolBar.add(createAddTaskButton(iconTaskAddQuest, TaskFactory.TASK_QUESTION, "Add Question"));
-        btnAssignTask = createButton(iconTaskAssign, "Assign Task");
+
+        toolBar.add(createAddTaskButton(TaskFactory.TASK_TODO, "Add TODO"));
+        toolBar.add(createAddTaskButton(TaskFactory.TASK_CONFIRM, "Add Confirmation"));
+        toolBar.add(createAddTaskButton(TaskFactory.TASK_REASON, "Add Ok/Fail Reason"));
+        toolBar.add(createAddTaskButton(TaskFactory.TASK_QUESTION, "Add Question"));
+
+        btnAssignTask = createButton(TaskIcon.iconTaskAssign, "Assign Task");
         btnAssignTask.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Task[] tasks = getSelectedTasks();
-                new AssignTaskDialog(owner, clientReader, tasks).setVisible(true);
+                // TODO
+//                new AssignTaskDialog(owner, clientReader, tasks).setVisible(true);
                 enableButtons();
             }
         });
         toolBar.add(btnAssignTask);
-        btnRemoveTask = createButton(iconTaskRemove, "Delete task");
+
+        btnRemoveTask = createButton(TaskIcon.iconTaskRemove, "Delete task");
         btnRemoveTask.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Task[] tasks = getSelectedTasks();
                 for (Task task : tasks) {
-                    clientReader.write(new TaskMessage(TaskMessage.Type.DELETE, -1, task, null));
+                    // TODO
+//                    clientReader.write(new TaskMessage(TaskMessage.DELETE, -1, task, null));
                 }
                 enableButtons();
             }
         });
         toolBar.add(btnRemoveTask);
-        JButton btnImportTasks = createButton(iconTaskImport, "Import tasks");
-        btnImportTasks.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                new ImportTasksDialog(owner, clientReader).setVisible(true);
-            }
-        });
-        toolBar.add(btnImportTasks);
+
+        // TODO?
+//        JButton btnImportTasks = createButton(TaskIcon.iconTaskImport, "Import tasks");
+//        btnImportTasks.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                new ImportTasksDialog(owner, clientReader).setVisible(true);
+//            }
+//        });
+//        toolBar.add(btnImportTasks);
+
         return toolBar;
     }
 
-    private JButton createAddTaskButton(ImageIcon icon, final int type, final String message) {
-        JButton btnCreateTask = createButton(icon, message);
+    private JButton createAddTaskButton(final int type, final String message) {
+        JButton btnCreateTask = createButton(
+                TaskIcon.TYPE.get(type),
+                message
+        );
         btnCreateTask.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String taskDescription = JOptionPane.showInputDialog(AdminTaskPanel.this, message);
                 if (taskDescription != null && taskDescription.trim().length() > 0) {
-                    clientReader.write(new TaskMessage(TaskMessage.Type.CREATE, -1, registry.createTask(taskDescription, type), null));
+                    // TODO
+//                    clientReader.write(new TaskMessage(TaskMessage.CREATE, -1, registry.createTask(taskDescription, type), null));
                 }
                 enableButtons();
             }
@@ -158,10 +143,10 @@ public class AdminTaskPanel extends JPanel {
         return btnCreateTask;
     }
 
-    private JButton createButton(ImageIcon icon, String toolTip) {
+    private JButton createButton(final ImageIcon icon, final String toolTipText) {
         JButton btnCreateTask = new JButton(icon);
         btnCreateTask.setBorderPainted(false);
-        btnCreateTask.setToolTipText(toolTip);
+        btnCreateTask.setToolTipText(toolTipText);
         btnCreateTask.setMargin(new Insets(0, 0, 0, 0));
         return btnCreateTask;
     }

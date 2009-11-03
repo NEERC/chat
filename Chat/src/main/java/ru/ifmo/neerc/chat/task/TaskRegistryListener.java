@@ -22,6 +22,7 @@ package ru.ifmo.neerc.chat.task;
 /**
  * @author Matvey Kazakov
  */
+@Deprecated
 public interface TaskRegistryListener {
     void taskAdded(Task task);
 

@@ -19,15 +19,18 @@
  */
 package ru.ifmo.neerc.chat.task;
 
-import java.util.*;
-
-import ru.ifmo.neerc.chat.message.*;
+import ru.ifmo.neerc.chat.message.Message;
+import ru.ifmo.neerc.chat.message.MessageListener;
+import ru.ifmo.neerc.chat.message.TaskMessage;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistryListener;
+
+import java.util.*;
 
 /**
  * @author Matvey Kazakov
  */
+@Deprecated
 public class TaskRegistry implements UserRegistryListener, MessageListener {
 
     private static TaskRegistry instance = new TaskRegistry();

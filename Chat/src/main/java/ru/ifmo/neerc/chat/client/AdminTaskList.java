@@ -19,13 +19,13 @@
  */
 package ru.ifmo.neerc.chat.client;
 
-import ru.ifmo.neerc.chat.task.Task;
-import ru.ifmo.neerc.chat.task.TaskRegistry;
-import ru.ifmo.neerc.chat.task.TaskRegistryListener;
-import ru.ifmo.neerc.chat.task.TaskResult;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
 import ru.ifmo.neerc.chat.user.UserRegistryListener;
+import ru.ifmo.neerc.task.Task;
+import ru.ifmo.neerc.task.TaskRegistry;
+import ru.ifmo.neerc.task.TaskRegistryListener;
+import ru.ifmo.neerc.task.TaskStatus;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -52,6 +52,8 @@ public class AdminTaskList extends JTable {
     }
 
     private class TaskListModel extends AbstractTableModel implements TaskRegistryListener, UserRegistryListener {
+        private static final long serialVersionUID = 7990317100207622830L;
+
         private ArrayList<Task> tasks;
         private ArrayList<UserEntry> users;
 
@@ -73,25 +75,12 @@ public class AdminTaskList extends JTable {
             } else {
                 UserEntry currentUser = users.get(columnIndex - 1);
                 Task currentTask = tasks.get(rowIndex);
-                return new TaskObject(currentTask, currentUser);
+                return currentTask.getStatuses().get(currentUser.getName());
             }
         }
 
-        public void taskAdded(Task task) {
-            int size = tasks.size();
-            tasks.add(task);
-            fireTableRowsInserted(size, size);
-        }
-
-        public void taskDeleted(Task task) {
-            int index = tasks.indexOf(task);
-            tasks.remove(index);
-            fireTableRowsDeleted(index, index);
-        }
-
         public void taskChanged(Task task) {
-            int index = tasks.indexOf(task);
-            fireTableRowsUpdated(index, index);
+            updateTasks();
         }
 
         public void userChanged(UserEntry userEntry) {
@@ -107,32 +96,6 @@ public class AdminTaskList extends JTable {
 
         public String getColumnName(int column) {
             return (column == 0) ? "Task" : users.get(column - 1).getName();
-        }
-    }
-
-    private class TaskObject {
-        public static final int UNASSIGNED = 0;
-        public static final int ASSIGNED = 1;
-        public static final int COMPLETED = 2;
-        private int state;
-        private String message = null;
-
-        public TaskObject(Task task, UserEntry user) {
-            TaskResult taskResult = task.getResult(user.getId());
-            if (taskResult == null) {
-                state = -1;
-            } else {
-                state = taskResult.getVisualState();
-                message = taskResult.toString();
-            }
-        }
-
-        public int getVisualState() {
-            return state;
-        }
-
-        public String getMessage() {
-            return message;
         }
     }
 
@@ -162,16 +125,17 @@ public class AdminTaskList extends JTable {
 
             if (value instanceof Task) {
                 Task task = (Task) value;
-                setText(task.getDescription());
-                setIcon(TaskList.getIcon(task.getVisualState()));
-            } else if (value instanceof TaskObject) {
-                TaskObject taskObject = (TaskObject) value;
-                setIcon(TaskList.getIcon(taskObject.getVisualState()));
-                setText(taskObject.getMessage());
+                setText(task.getTitle());
+                setIcon(null);
+//                setIcon(TaskList.getIcon(task.getVisualState()));
+            } else if (value instanceof TaskStatus) {
+                TaskStatus status = (TaskStatus) value;
+                setIcon(TaskIcon.STATUS.get(status.getType()));
+                setText(status.getValue());
             } else {
+                setIcon(null);
                 setValue(value);
             }
-
             return this;
         }
     }

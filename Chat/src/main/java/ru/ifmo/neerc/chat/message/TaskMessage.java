@@ -25,28 +25,32 @@ import ru.ifmo.neerc.chat.task.TaskRegistry;
 import ru.ifmo.neerc.chat.task.TaskResult;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
-import static ru.ifmo.neerc.chat.message.TaskMessage.Type.*;
+
+import static ru.ifmo.neerc.chat.message.TaskMessage.Type.COMPLETE;
+import static ru.ifmo.neerc.chat.message.TaskMessage.Type.CREATE;
 
 /**
  * @author Matvey Kazakov
  */
+@Deprecated
 public class TaskMessage extends Message {
-	public static enum Type {
-		CREATE(0), ASSIGN(1), COMPLETE(2), DELETE(3);
-		public final int ID;
-		Type(int id) {
-			this.ID = id;
-		}
+    public static enum Type {
+        CREATE(0), ASSIGN(1), COMPLETE(2), DELETE(3);
+        public final int ID;
 
-		static Type valueOf(int id) {
-			for (Type t : values()) {
-				if (t.ID == id) {
-					return t;
-				}
-			}
-			throw new IllegalArgumentException("Unknown TaskMessage type ID: " + id);
-		}
-	}
+        Type(int id) {
+            this.ID = id;
+        }
+
+        static Type valueOf(int id) {
+            for (Type t : values()) {
+                if (t.ID == id) {
+                    return t;
+                }
+            }
+            throw new IllegalArgumentException("Unknown TaskMessage type ID: " + id);
+        }
+    }
 
     private Type type;
     private int user, taskId;
@@ -97,7 +101,7 @@ public class TaskMessage extends Message {
     protected void deserialize(Config message) {
         Config node = message.getNode(NODE_TASK);
         int typeId = node.getInt(ATTR_TYPE);
-		type = Type.valueOf(typeId);
+        type = Type.valueOf(typeId);
         user = node.getInt(ATTR_USER);
         if (user != -1) {
             String userName = node.getString(ATTR_USERNAME);

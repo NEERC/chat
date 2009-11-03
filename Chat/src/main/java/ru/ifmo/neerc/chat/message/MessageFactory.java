@@ -28,6 +28,7 @@ import java.io.*;
 /**
  * @author Matvey Kazakov
  */
+@Deprecated
 public class MessageFactory {
     private static MessageFactory instance = new MessageFactory();
     private static final String ATTR_TYPE = "@type";
