@@ -52,6 +52,10 @@ public class Task {
         status.setType(type);
         status.setValue(value);
     }
+    
+    public TaskStatus getStatus(String from) {
+        return statuses.get(from);
+    }
 
     public void setId(String id) {
         this.id = id;

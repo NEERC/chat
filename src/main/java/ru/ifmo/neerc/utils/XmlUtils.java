@@ -29,7 +29,7 @@ public final class XmlUtils {
         for (Map.Entry<String, TaskStatus> entry : task.getStatuses().entrySet()) {
             TaskStatus status = entry.getValue();
             Element statusElement = taskElement.addElement("status");
-            statusElement.addAttribute("from", entry.getKey());
+            statusElement.addAttribute("for", entry.getKey());
             statusElement.addAttribute("type", status.getType());
             statusElement.addAttribute("value", status.getValue());
         }
@@ -42,9 +42,7 @@ public final class XmlUtils {
         userElement.addAttribute("power", user.isPower() ? "yes" : "no");
     }
 
-    public static Task taskFromXml(Element element) {
-        Element taskElement = element.element("task");
-
+    public static Task taskFromXml(Element taskElement) {
         String id = taskElement.attributeValue("id");
         String type = taskElement.attributeValue("type");
         String title = taskElement.attributeValue("title");
@@ -53,7 +51,7 @@ public final class XmlUtils {
         for (Object childElement : taskElement.elements()) {
             Element child = (Element) childElement;
             if ("status".equals(child.getName())) {
-                String from = child.attributeValue("from");
+                String from = child.attributeValue("for");
                 type = child.attributeValue("type");
                 String value = child.attributeValue("value");
                 task.setStatus(from, type, value);

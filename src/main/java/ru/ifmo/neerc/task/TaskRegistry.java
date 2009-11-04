@@ -43,9 +43,15 @@ public final class TaskRegistry {
         return Long.toString(nextId++);
     }
 
+    public Task getById(String id) {
+        return tasks.get(id);
+    }
+    
     public void update(Task task) {
         String id = task.getId();
-        if (id == null) {
+        if ("remove".equals(task.getType())) {
+            tasks.remove(id);
+        } else if (id == null) {
             id = genId();
             task.setId(id);
             tasks.put(id, task);
