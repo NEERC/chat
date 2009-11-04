@@ -1,10 +1,12 @@
 package ru.ifmo.neerc.chat.xmpp;
 
 import org.jivesoftware.smack.*;
+import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.filter.PacketTypeFilter;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smackx.muc.DiscussionHistory;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.jivesoftware.smackx.packet.DelayInformation;
@@ -16,8 +18,12 @@ import ru.ifmo.neerc.chat.message.Message;
 import ru.ifmo.neerc.chat.message.MessageFactory;
 import ru.ifmo.neerc.chat.message.TaskMessage;
 import ru.ifmo.neerc.chat.message.UserMessage;
+import ru.ifmo.neerc.chat.user.UserEntry;
+import ru.ifmo.neerc.chat.user.UserRegistry;
 import ru.ifmo.neerc.chat.utils.DebugUtils;
 import ru.ifmo.neerc.chat.xmpp.provider.NeercPacketExtensionProvider;
+import ru.ifmo.neerc.chat.xmpp.provider.NeercIQProvider;
+import ru.ifmo.neerc.chat.xmpp.packet.*;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -32,6 +38,7 @@ public class XmppChat implements Chat {
     private static final int SERVER_PORT = Integer.parseInt(System.getProperty("server.port", "5222"));
     private static final String ROOM = "neerc@conference.localhost";
     private static final boolean DEBUG = Boolean.parseBoolean(System.getProperty("smack.debug", "false"));
+	private static final String NEERC_SERVICE = "neerc.localhost";
 
     private MultiUserChat muc;
     private XMPPConnection connection;
@@ -73,6 +80,7 @@ public class XmppChat implements Chat {
         muc.addMessageListener(new MyMessageListener());
 
         NeercPacketExtensionProvider.register();
+        NeercIQProvider.register();
 
         connection.addPacketListener(new MyPresenceListener(), new PacketTypeFilter(Presence.class));
         connection.addPacketListener(new TaskPacketListener(), new PacketTypeFilter(org.jivesoftware.smack.packet.Message.class));
@@ -127,6 +135,13 @@ public class XmppChat implements Chat {
         } catch (XMPPException e) {
             LOG.error("Unable to join room", e);
         }
+
+        try {
+            queryUsers();
+            queryTasks();
+        } catch (XMPPException e) {
+            LOG.error("Unable to communicate with NEERC service", e);
+        }
     }
 
     public void debugConnection() {
@@ -156,6 +171,42 @@ public class XmppChat implements Chat {
             LOG.error("Unable to write message", e);
         }
     }
+    
+	public IQ query(String what) throws XMPPException {
+		Packet packet = new NeercIQ(what);
+		packet.setTo(NEERC_SERVICE);
+		
+		PacketCollector collector = connection.createPacketCollector(
+			new PacketIDFilter(packet.getPacketID()));
+		connection.sendPacket(packet);
+
+		IQ response = (IQ)collector.nextResult(SmackConfiguration.getPacketReplyTimeout());
+		collector.cancel();
+		if (response == null) {
+			throw new XMPPException("No response from the server.");
+		} else if (response.getType() == IQ.Type.ERROR) {
+			throw new XMPPException(response.getError());
+		}
+		LOG.debug("parsed " + response.getClass().getName());
+		return response;
+    }
+	
+	public void queryUsers() throws XMPPException {
+		IQ iq = query("users");
+		if (!(iq instanceof NeercUserListIQ)) {
+		    throw new XMPPException("unparsed iq packet");
+		}
+		NeercUserListIQ packet = (NeercUserListIQ) iq;
+        UserRegistry registry = UserRegistry.getInstance();
+		for (UserEntry user: packet.getUsers()) {
+		    // TODO: replace with registry.add(UserEntry user)
+            UserEntry reguser = registry.findOrRegister(user.getName());
+            reguser.setPower(user.isPower());
+            reguser.setGroup(user.getGroup());
+		}
+	}
+	public void queryTasks() throws XMPPException {
+	}
 
     public MultiUserChat getMultiUserChat() {
         return muc;

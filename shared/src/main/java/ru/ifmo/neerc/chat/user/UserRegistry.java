@@ -52,7 +52,15 @@ public class UserRegistry {
     }
 
     private String getNick(String jid) {
-        return jid.substring(jid.indexOf('/') + 1);
+        int pos = jid.indexOf('/');
+        if (pos != -1) {
+            return jid.substring(pos + 1);
+        }
+        pos = jid.indexOf('@');
+        if (pos != -1) {
+            return jid.substring(0, pos);
+        }
+        return jid;
     }
 
     public synchronized UserEntry findOrRegister(String jid) {
