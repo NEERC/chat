@@ -13,6 +13,7 @@ import java.util.Map;
 public final class XmlUtils {
     public static final String NAMESPACE = "http://neerc.ifmo.ru/protocol/neerc";
     public static final String NAMESPACE_TASKS = NAMESPACE + "#tasks";
+    public static final String NAMESPACE_USERS = NAMESPACE + "#users";
 
     /**
      * Hide utility class contructor.
