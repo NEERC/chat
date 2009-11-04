@@ -50,7 +50,7 @@ public class NeercPacketExtensionProvider implements PacketExtensionProvider {
             if (eventType == XmlPullParser.START_TAG) {
                 if (parser.getName().equals("status")) {
                     task.setStatus(
-                            parser.getAttributeValue("", "from"),
+                            parser.getAttributeValue("", "for"),
                             parser.getAttributeValue("", "type"),
                             parser.getAttributeValue("", "value")
                     );

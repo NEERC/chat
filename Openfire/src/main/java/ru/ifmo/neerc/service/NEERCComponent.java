@@ -15,6 +15,7 @@
 */
 package ru.ifmo.neerc.service;
 
+import org.dom4j.DocumentFactory;
 import org.dom4j.Element;
 import org.jivesoftware.openfire.XMPPServer;
 import org.jivesoftware.openfire.muc.MUCRoom;
@@ -47,6 +48,7 @@ public class NEERCComponent implements Component {
 
     private HashMap<String, QueryHandler> handlers = new HashMap<String, QueryHandler>();
 
+	private DocumentFactory docFactory = DocumentFactory.getInstance();
     /**
      * Namespace of the packet extension.
      */
@@ -102,12 +104,14 @@ public class NEERCComponent implements Component {
     private void initHandlers() {
         handlers.put("users", new UsersQueryHandler());
         handlers.put("tasks", new TasksQueryHandler());
-        // TODO: moar of 'em
+        handlers.put("task", new TaskQueryHandler());
+        handlers.put("taskstatus", new TaskStatusQueryHandler());
+        // TODO: clock?
     }
 
     public UserEntry getSender(Packet packet) {
-        // TODO: identify sender and get his UserEntry
-        return null;
+        String userName = getUsernameFromJID(packet.getFrom().toBareJID());
+        return users.findByName(userName);
     }
 
     public void initialize(JID jid, ComponentManager componentManager) {
@@ -160,7 +164,7 @@ public class NEERCComponent implements Component {
         Element childElement = iq.getChildElement().createCopy();
         reply.setChildElement(childElement);
 
-        if ("http://jabber.org/protocol/disco#info".equals(namespace)) {
+	    if ("http://jabber.org/protocol/disco#info".equals(namespace)) {
             if (iq.getTo().getNode() == null) {
                 // Return service identity and features
                 Element identity = childElement.addElement("identity");
@@ -172,7 +176,9 @@ public class NEERCComponent implements Component {
                     childElement.addElement("feature").addAttribute("var", NAMESPACE + "#" + key);
                 }
             }
-        } else if (namespace.startsWith(NAMESPACE + '#')) {
+        } else if (sender == null) {
+	        reply.setError(PacketError.Condition.forbidden);
+	    } else if (namespace.startsWith(NAMESPACE + '#')) {
             String query = namespace.substring(NAMESPACE.length() + 1);
             if (!handlers.containsKey(query)) {
                 componentManager.getLog().info("neerc got unknown query " + query);
@@ -187,7 +193,6 @@ public class NEERCComponent implements Component {
             reply.setError(PacketError.Condition.service_unavailable);
         }
         sendPacket(reply);
-        componentManager.getLog().debug("neerc sent packet: " + reply.toXML());
     }
 
 
@@ -199,9 +204,10 @@ public class NEERCComponent implements Component {
         return "NEERC";
     }
 
-    private void sendPacket(Packet packet) {
+    public void sendPacket(Packet packet) {
         try {
             componentManager.sendPacket(this, packet);
+            componentManager.getLog().debug("neerc sent packet: " + packet.toXML());
         } catch (ComponentException e) {
             componentManager.getLog().error(e);
         }

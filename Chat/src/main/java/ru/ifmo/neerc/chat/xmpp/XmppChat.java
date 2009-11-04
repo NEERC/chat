@@ -24,6 +24,9 @@ import ru.ifmo.neerc.chat.utils.DebugUtils;
 import ru.ifmo.neerc.chat.xmpp.provider.NeercPacketExtensionProvider;
 import ru.ifmo.neerc.chat.xmpp.provider.NeercIQProvider;
 import ru.ifmo.neerc.chat.xmpp.packet.*;
+import ru.ifmo.neerc.task.Task;
+import ru.ifmo.neerc.task.TaskStatus;
+import ru.ifmo.neerc.task.TaskRegistry;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -205,8 +208,18 @@ public class XmppChat implements Chat {
             reguser.setGroup(user.getGroup());
 		}
 	}
+
 	public void queryTasks() throws XMPPException {
+		IQ iq = query("tasks");
+		if (!(iq instanceof NeercTaskListIQ)) {
+		    throw new XMPPException("unparsed iq packet");
+		}
+		NeercTaskListIQ packet = (NeercTaskListIQ) iq;
+		for (Task task: packet.getTasks()) {
+			TaskRegistry.getInstance().update(task);
+		}
 	}
+
 
     public MultiUserChat getMultiUserChat() {
         return muc;

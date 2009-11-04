@@ -16,6 +16,7 @@ public class NeercIQProvider implements IQProvider {
 		ProviderManager pm = ProviderManager.getInstance();
 		IQProvider provider = new NeercIQProvider();
 		pm.addIQProvider("query", XmlUtils.NAMESPACE_USERS, provider);
+		pm.addIQProvider("query", XmlUtils.NAMESPACE_TASKS, provider);
 	}
 
 	@Override
@@ -24,10 +25,12 @@ public class NeercIQProvider implements IQProvider {
 		NeercIQ packet;
 		if (XmlUtils.NAMESPACE_USERS.equals(namespace)) {
 			packet = new NeercUserListIQ();
+		} else if (XmlUtils.NAMESPACE_TASKS.equals(namespace)) {
+			packet = new NeercTaskListIQ();
 		} else {
 			throw new UnsupportedOperationException();
 		}
-		// TODO: task list, task update, clock, ...
+		// TODO: clock
 		packet.parse(parser);
 		return packet;
 	}
