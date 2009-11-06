@@ -31,8 +31,7 @@ import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 
 /**
  * @author Matvey Kazakov
@@ -57,12 +56,13 @@ public class AdminTaskList extends JTable {
         private static final long serialVersionUID = 7990317100207622830L;
 
         private ArrayList<Task> tasks;
+        private HashSet<String> taskIds;
         private ArrayList<UserEntry> users;
         private String username;
 
         public TaskListModel(String username) {
             this.username = username;
-            updateTasks();
+            updateTasks(false);
         }
 
         public int getColumnCount() {
@@ -84,29 +84,44 @@ public class AdminTaskList extends JTable {
         }
 
         public void taskChanged(Task task) {
-            updateTasks();
+            if (taskIds.contains(task.getId()) && !("remove".equals(task.getType()))) {
+                updateTasks(true);
+            } else {
+                updateTasks(false);
+            }
         }
 
         public void tasksReset() {
-            updateTasks();
+            updateTasks(false);
         }
 
         public void userChanged(UserEntry userEntry) {
-            updateTasks();
+            updateTasks(false);
         }
 
-        private void updateTasks() {
+        private void updateTasks(boolean softUpdate) {
             tasks = new ArrayList<Task>();
+            users = new ArrayList<UserEntry>();
+            taskIds = new HashSet<String>();
             boolean admin = UserRegistry.getInstance().findByName(username).isPower();
             for (Task task: registry.getTasks()) {
                 TaskStatus ourStatus = task.getStatus(username);
                 if (admin || ourStatus != null) {
                     tasks.add(task);
+                    taskIds.add(task.getId());
                 }
             }
-            users = new ArrayList<UserEntry>(UserRegistry.getInstance().getUsers());
+            for (UserEntry user: UserRegistry.getInstance().getUsers()) {
+                if (admin || !user.isPower()) {
+                    users.add(user);
+                }
+            }
             Collections.sort(users);
-            fireTableStructureChanged();
+            if (softUpdate) {
+                fireTableDataChanged();
+            } else {
+                fireTableStructureChanged();
+            }
         }
 
         public String getColumnName(int column) {
