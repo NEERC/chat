@@ -16,11 +16,11 @@
 package ru.ifmo.neerc.chat.client;
 
 import ru.ifmo.neerc.chat.message.*;
-import ru.ifmo.neerc.chat.task.TaskRegistry;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
 import ru.ifmo.neerc.chat.utils.ChatLogger;
 import ru.ifmo.neerc.chat.utils.DateUtils;
+import ru.ifmo.neerc.task.TaskRegistry;
 
 import javax.swing.*;
 import javax.swing.text.AttributeSet;
@@ -54,7 +54,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 
     private JSplitPane powerSplitter;
 
-    private boolean isBeepOn = false;
+    protected boolean isBeepOn = false;
 
 //    private TimerTicker ticker = new TimerTicker(neercTimer); todo: what about timer plugin?
 //    private PluginManager pluginManager;
@@ -69,9 +69,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     protected void setupUI() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         JPanel mainPanel = createMainPanel();
-        taskPanel = new AdminTaskPanel(this, ru.ifmo.neerc.task.TaskRegistry.getInstance(),
-            chat, user.getName()
-        );
+        taskPanel = new AdminTaskPanel(this, taskRegistry, chat, user.getName());
 //        if (!user.isPower()) {
 //            setContentPane(mainPanel);
 //        } else {
@@ -106,7 +104,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 
         JPanel controlPanel = new JPanel(new BorderLayout());
         UsersPanel users = new UsersPanel(user);
-        TaskPanel personalTasks = new TaskPanel(ru.ifmo.neerc.task.TaskRegistry.getInstance(), user, chat);
+        TaskPanel personalTasks = new TaskPanel(taskRegistry, user, chat);
         JSplitPane controlSplitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, users, personalTasks);
         setupSplitter(controlSplitter);
         controlSplitter.setResizeWeight(1);
@@ -246,7 +244,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     }
 
     public void processMessage(Message message) {
-        taskRegistry.processMessage(message);
+//        taskRegistry.processMessage(message);
         ChatMessage chatMessage = null;
         if (message instanceof ServerMessage) {
             ServerMessage serverMessage = (ServerMessage) message;
@@ -256,6 +254,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         } else if (message instanceof UserMessage) {
             chatMessage = ChatMessage.createUserMessage((UserMessage) message);
         } else if (message instanceof TaskMessage) {
+/*
             final TaskMessage taskMessage = (TaskMessage) message;
             switch (taskMessage.getTaskMsgType()) {
                 case ASSIGN:
@@ -284,8 +283,12 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
                     }
                     break;
             }
+*/
         }
+        processMessage(chatMessage);
+    }
 
+    public void processMessage(ChatMessage chatMessage) {
         if (chatMessage != null) {
             if (outputArea == null || outputAreaJury == null) {
                 addMessage(chatMessage);

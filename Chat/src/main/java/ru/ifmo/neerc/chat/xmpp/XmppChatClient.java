@@ -28,12 +28,14 @@ import ru.ifmo.neerc.chat.message.UserMessage;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
 import ru.ifmo.neerc.task.Task;
+import ru.ifmo.neerc.task.TaskActions;
+import ru.ifmo.neerc.task.TaskRegistry;
+import ru.ifmo.neerc.task.TaskRegistryListener;
 import ru.ifmo.neerc.task.TaskStatus;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Arrays;
-import java.util.Date;
+import java.util.*;
 
 /**
  * @author Evgeny Mandrikov
@@ -42,6 +44,7 @@ public class XmppChatClient extends AbstractChatClient {
     private static final Logger LOG = LoggerFactory.getLogger(XmppChatClient.class);
 
     private XmppChat xmppChat;
+    private HashSet<String> newTaskIds = new HashSet<String>();
 
     public XmppChatClient() {
         final String name = System.getProperty("username");
@@ -50,6 +53,7 @@ public class XmppChatClient extends AbstractChatClient {
         user = userRegistry.findOrRegister(name);
         userRegistry.putOnline(name);
         userRegistry.setRole(name, "moderator");
+
 
         chat = new MyChat();
         setupUI();
@@ -64,6 +68,9 @@ public class XmppChatClient extends AbstractChatClient {
         } else {
             setConnectionError("Unable to connect");
         }
+
+        taskRegistry.addListener(new MyListener());
+        alertNewTasks();
     }
 
     public static void main(String[] args) {
@@ -73,6 +80,44 @@ public class XmppChatClient extends AbstractChatClient {
                 new XmppChatClient().setVisible(true);
             }
         });
+    }
+
+    private void alertNewTasks() {
+        StringBuilder description = new StringBuilder("New tasks:\n");
+        boolean hasNew = false;
+        for (Task task: TaskRegistry.getInstance().getTasks()) {
+            TaskStatus status = task.getStatus(user.getName());
+            if (status == null || !TaskActions.STATUS_NEW.equals(status.getType())) {
+                continue;
+            }
+            if (newTaskIds.contains(task.getId())) continue;
+            newTaskIds.add(task.getId());
+            hasNew = true;
+            LOG.debug("got new task " + task.getTitle());
+            description.append(task.getTitle()).append("\n");
+            ChatMessage chatMessage = ChatMessage.createTaskMessage(
+                "!!! New task '" + task.getTitle() + "' has been assigned to you !!!",
+                (new Date())
+            );
+            addToModel(chatMessage);
+        }
+        if (!hasNew) return;
+        
+        final String str = description.toString();
+        new Thread(new Runnable() {
+            public void run() {
+                JOptionPane.showMessageDialog(
+                    XmppChatClient.this,
+                    str,
+                    "New tasks",
+                    JOptionPane.WARNING_MESSAGE
+                );
+            }
+            // TODO: send ack
+        }).start();
+        if (isBeepOn) {
+            System.out.print('\u0007'); // PC-speaker beep
+        }
     }
 
     private void setConnectionStatus(String status, boolean isError) {
@@ -116,7 +161,7 @@ public class XmppChatClient extends AbstractChatClient {
         }
     }
 
-    private class MyListener implements MUCListener, ConnectionListener {
+    private class MyListener implements MUCListener, ConnectionListener, TaskRegistryListener {
         @Override
         public void connectionClosed() {
             final String message = "Connection closed";
@@ -198,5 +243,17 @@ public class XmppChatClient extends AbstractChatClient {
             message.setTimestamp(timestamp);
             processMessage(message);
         }
+
+        @Override
+        public void taskChanged(Task task) {
+            TaskStatus status = task.getStatus(user.getName());
+            if (status == null || !TaskActions.STATUS_NEW.equals(status.getType())) {
+                return;
+            }
+            alertNewTasks();
+        }
+
+        @Override
+        public void tasksReset() {}
     }
 }
