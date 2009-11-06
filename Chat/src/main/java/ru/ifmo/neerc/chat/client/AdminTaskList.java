@@ -39,10 +39,12 @@ import java.util.Collections;
  */
 public class AdminTaskList extends JTable {
     private TaskRegistry registry;
+    private String username;
 
-    public AdminTaskList(TaskRegistry taskRegistry) {
+    public AdminTaskList(TaskRegistry taskRegistry, String username) {
         this.registry = taskRegistry;
-        TaskListModel dataModel = new TaskListModel();
+        this.username = username;
+        TaskListModel dataModel = new TaskListModel(username);
         this.registry.addListener(dataModel);
         UserRegistry.getInstance().addListener(dataModel);
         setModel(dataModel);
@@ -56,8 +58,10 @@ public class AdminTaskList extends JTable {
 
         private ArrayList<Task> tasks;
         private ArrayList<UserEntry> users;
+        private String username;
 
-        public TaskListModel() {
+        public TaskListModel(String username) {
+            this.username = username;
             updateTasks();
         }
 
@@ -92,7 +96,14 @@ public class AdminTaskList extends JTable {
         }
 
         private void updateTasks() {
-            tasks = new ArrayList<Task>(registry.getTasks());
+            tasks = new ArrayList<Task>();
+            boolean admin = UserRegistry.getInstance().findByName(username).isPower();
+            for (Task task: registry.getTasks()) {
+                TaskStatus ourStatus = task.getStatus(username);
+                if (admin || ourStatus != null) {
+                    tasks.add(task);
+                }
+            }
             users = new ArrayList<UserEntry>(UserRegistry.getInstance().getUsers());
             Collections.sort(users);
             fireTableStructureChanged();

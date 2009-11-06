@@ -107,6 +107,10 @@ public class XmppChatClient extends AbstractChatClient {
             xmppChat.write(message);
         }
         @Override
+        public void write(Task task) {
+            xmppChat.write(task);
+        }
+        @Override
         public void write(Task task, TaskStatus status) {
             xmppChat.write(task, status);
         }

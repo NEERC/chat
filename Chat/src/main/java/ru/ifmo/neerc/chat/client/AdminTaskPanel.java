@@ -42,11 +42,15 @@ public class AdminTaskPanel extends JPanel {
     private JButton btnRemoveTask;
 
     public Component toolBar;
+    private Chat chat;
+    private String username;
 
-    public AdminTaskPanel(Frame owner, TaskRegistry taskRegistry) {
+    public AdminTaskPanel(Frame owner, TaskRegistry taskRegistry, Chat chat, String username) {
         super(new BorderLayout());
         this.owner = owner;
-        taskList = new AdminTaskList(taskRegistry);
+        this.chat = chat;
+        this.username = username;
+        taskList = new AdminTaskList(taskRegistry, username);
 
         taskList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
@@ -96,8 +100,7 @@ public class AdminTaskPanel extends JPanel {
         btnAssignTask.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Task[] tasks = getSelectedTasks();
-                // TODO
-//                new AssignTaskDialog(owner, clientReader, tasks).setVisible(true);
+                new AssignTaskDialog(owner, chat, tasks).setVisible(true);
                 enableButtons();
             }
         });
@@ -108,8 +111,7 @@ public class AdminTaskPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 Task[] tasks = getSelectedTasks();
                 for (Task task : tasks) {
-                    // TODO
-//                    clientReader.write(new TaskMessage(TaskMessage.DELETE, -1, task, null));
+                    chat.write(new Task(task.getId(), "remove", ""));
                 }
                 enableButtons();
             }
@@ -137,8 +139,8 @@ public class AdminTaskPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 String taskDescription = JOptionPane.showInputDialog(AdminTaskPanel.this, message);
                 if (taskDescription != null && taskDescription.trim().length() > 0) {
-                    // TODO
-//                    clientReader.write(new TaskMessage(TaskMessage.CREATE, -1, registry.createTask(taskDescription, type), null));
+                    Task task = new Task(type, taskDescription);
+                    chat.write(task);
                 }
                 enableButtons();
             }

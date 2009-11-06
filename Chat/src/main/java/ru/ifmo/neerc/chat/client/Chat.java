@@ -8,5 +8,6 @@ import ru.ifmo.neerc.task.*;
  */
 public interface Chat {
     void write(Message message);
+    void write(Task task);
     void write(Task task, TaskStatus status);
 }

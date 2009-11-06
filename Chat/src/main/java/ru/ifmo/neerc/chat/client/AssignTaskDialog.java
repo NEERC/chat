@@ -27,25 +27,25 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.tree.*;
 
-import ru.ifmo.neerc.chat.message.TaskMessage;
-import ru.ifmo.neerc.chat.task.Task;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
+import ru.ifmo.neerc.task.Task;
+import ru.ifmo.neerc.task.TaskStatus;
 
 /**
  * @author Matvey Kazakov
  */
 public class AssignTaskDialog extends JDialog {
-    private Chat clientReader;
+    private Chat chat;
     private Task[] tasks;
     private JTree tree;
     private String[] allGroups;
     private Map<String, UserEntry[]> users = new HashMap<String, UserEntry[]>();
 
-    public AssignTaskDialog(Frame owner, Chat clientReader, Task[] tasks) throws HeadlessException {
+    public AssignTaskDialog(Frame owner, Chat chat, Task[] tasks) throws HeadlessException {
         super(owner, true);
         setTitle("Choose user to perform task");
-        this.clientReader = clientReader;
+        this.chat = chat;
         this.tasks = tasks;
         initUsersList();
         tree = createTree();
@@ -136,10 +136,17 @@ public class AssignTaskDialog extends JDialog {
                 }
             }
         }
-        for (UserEntry user : selectedUsers) {
-            for (Task task : tasks) {
-                clientReader.write(new TaskMessage(TaskMessage.Type.ASSIGN, user.getId(), task, null));
+        for (Task task : tasks) {
+            Task updatedTask = new Task(task.getId(), task.getType(), task.getTitle());
+            Map<String, TaskStatus> statuses = task.getStatuses();
+            for (UserEntry user : selectedUsers) {
+                updatedTask.setStatus(user.getName(), "none", "");
             }
+            for (String user : statuses.keySet()) {
+                TaskStatus status = statuses.get(user);
+                updatedTask.setStatus(user, status.getType(), status.getValue());
+            }
+            chat.write(updatedTask);
         }
         dispose();
     }

@@ -69,7 +69,9 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     protected void setupUI() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         JPanel mainPanel = createMainPanel();
-        taskPanel = new AdminTaskPanel(this, ru.ifmo.neerc.task.TaskRegistry.getInstance());
+        taskPanel = new AdminTaskPanel(this, ru.ifmo.neerc.task.TaskRegistry.getInstance(),
+            chat, user.getName()
+        );
 //        if (!user.isPower()) {
 //            setContentPane(mainPanel);
 //        } else {
