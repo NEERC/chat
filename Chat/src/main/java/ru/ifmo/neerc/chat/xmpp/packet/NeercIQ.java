@@ -9,14 +9,20 @@ import ru.ifmo.neerc.utils.XmlUtils;
  */
 public class NeercIQ extends IQ {
 	private String namespace;
+	private String elementName;
 
 	public NeercIQ(String name) {
+		this(name, "query");
+	}
+
+	public NeercIQ(String name, String element) {
 		super();
 		namespace = XmlUtils.NAMESPACE + "#" + name;
+		elementName = element;
 	}
 
 	public String getElementName() {
-		return "query";
+		return elementName;
 	}
 
 	public String getNamespace() {

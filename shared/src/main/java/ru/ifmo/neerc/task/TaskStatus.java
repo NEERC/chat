@@ -12,6 +12,11 @@ public class TaskStatus {
     public TaskStatus() {
     }
 
+    public TaskStatus(String type, String value) {
+        this.type = type;
+        this.value = value;
+    }
+
     public String getType() {
         return type;
     }

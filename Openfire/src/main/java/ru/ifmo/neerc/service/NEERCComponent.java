@@ -232,6 +232,10 @@ public class NEERCComponent implements Component {
                 sendPacket(createMessage(user.getName() + "@" + componentManager.getServerName(), task));
             }
         }
+
+        @Override
+        public void tasksReset() {
+        }
     }
 
 }

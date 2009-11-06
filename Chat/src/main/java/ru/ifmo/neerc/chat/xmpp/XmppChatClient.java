@@ -27,6 +27,8 @@ import ru.ifmo.neerc.chat.message.ServerMessage;
 import ru.ifmo.neerc.chat.message.UserMessage;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
+import ru.ifmo.neerc.task.Task;
+import ru.ifmo.neerc.task.TaskStatus;
 
 import javax.swing.*;
 import java.awt.*;
@@ -103,6 +105,10 @@ public class XmppChatClient extends AbstractChatClient {
         @Override
         public void write(Message message) {
             xmppChat.write(message);
+        }
+        @Override
+        public void write(Task task, TaskStatus status) {
+            xmppChat.write(task, status);
         }
     }
 

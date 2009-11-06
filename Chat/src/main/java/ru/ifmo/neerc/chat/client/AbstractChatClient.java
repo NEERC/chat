@@ -104,7 +104,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 
         JPanel controlPanel = new JPanel(new BorderLayout());
         UsersPanel users = new UsersPanel(user);
-        TaskPanel personalTasks = new TaskPanel(ru.ifmo.neerc.task.TaskRegistry.getInstance(), user);
+        TaskPanel personalTasks = new TaskPanel(ru.ifmo.neerc.task.TaskRegistry.getInstance(), user, chat);
         JSplitPane controlSplitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, users, personalTasks);
         setupSplitter(controlSplitter);
         controlSplitter.setResizeWeight(1);

@@ -42,10 +42,12 @@ public class TaskPanel extends JPanel {
     private AbstractButton btnActionDone;
     private AbstractButton btnActionStart;
     private AbstractButton btnActionFail;
+    private Chat chat;
 
-    public TaskPanel(TaskRegistry taskRegistry, UserEntry user) {
+    public TaskPanel(TaskRegistry taskRegistry, UserEntry user, Chat chat) {
         super(new BorderLayout());
         this.user = user.getName();
+        this.chat = chat;
         taskList = new TaskList(taskRegistry, this.user);
 
         taskList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -119,23 +121,29 @@ public class TaskPanel extends JPanel {
     private void performAction(int action) {
         Task task = (Task) taskList.getSelectedValue();
         TaskStatus taskStatus = task.getStatuses().get(user);
+        String value = "";
         if (action == TaskActions.ACTION_FAIL) {
             String message = "Give the reason";
-            String reason = JOptionPane.showInputDialog(
+            value = JOptionPane.showInputDialog(
                     SwingUtilities.getWindowAncestor(this),
                     message,
                     taskStatus.getValue()
             );
-            if (reason == null || reason.length() == 0) {
+            if (value == null || value.length() == 0) {
                 return;
             }
-            // TODO
-//            taskResult.performAction(action, reason);
-        } else {
-            // TODO
-//            taskResult.performAction(action);
         }
-//        clientReader.write(new TaskMessage(TaskMessage.COMPLETE, userId, task, taskResult));
+        String status = TaskActions.getNewStatus(task, user, action);
+        try {
+            chat.write(task, new TaskStatus(status, value));
+        } catch (IllegalStateException e) {
+            JOptionPane.showMessageDialog(
+                SwingUtilities.getWindowAncestor(this),
+                "Not connected to server",
+                "Error",
+                JOptionPane.WARNING_MESSAGE
+            );
+        }
         enableButtons();
     }
 
