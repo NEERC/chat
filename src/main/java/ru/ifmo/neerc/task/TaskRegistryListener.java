@@ -6,5 +6,5 @@ package ru.ifmo.neerc.task;
 public interface TaskRegistryListener {
 
     void taskChanged(Task task);
-
+    void tasksReset();
 }

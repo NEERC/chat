@@ -39,12 +39,23 @@ public final class TaskRegistry {
         }
     }
 
+    private void notifyResetListeners() {
+        for (TaskRegistryListener listener : listeners) {
+            listener.tasksReset();
+        }
+    }
+
     private String genId() {
         return Long.toString(nextId++);
     }
 
     public Task getById(String id) {
         return tasks.get(id);
+    }
+    
+    public void reset() {
+        tasks.clear();
+        notifyResetListeners();
     }
     
     public void update(Task task) {
