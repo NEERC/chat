@@ -19,8 +19,8 @@
  */
 package ru.ifmo.neerc.chat.client;
 
-import ru.ifmo.neerc.chat.task.TaskFactory;
 import ru.ifmo.neerc.task.Task;
+import ru.ifmo.neerc.task.TaskActions;
 import ru.ifmo.neerc.task.TaskRegistry;
 import ru.ifmo.neerc.task.TaskRegistryListener;
 
@@ -57,6 +57,9 @@ public class AdminTaskPanel extends JPanel {
             public void taskChanged(Task task) {
                 enableButtons();
             }
+            public void tasksReset() {
+                enableButtons();
+            }
         });
 
         add(new JScrollPane(taskList), BorderLayout.CENTER);
@@ -84,10 +87,10 @@ public class AdminTaskPanel extends JPanel {
         toolBar.setOrientation(JToolBar.VERTICAL);
         toolBar.setRollover(true);
 
-        toolBar.add(createAddTaskButton(TaskFactory.TASK_TODO, "Add TODO"));
-        toolBar.add(createAddTaskButton(TaskFactory.TASK_CONFIRM, "Add Confirmation"));
-        toolBar.add(createAddTaskButton(TaskFactory.TASK_REASON, "Add Ok/Fail Reason"));
-        toolBar.add(createAddTaskButton(TaskFactory.TASK_QUESTION, "Add Question"));
+        toolBar.add(createAddTaskButton(TaskActions.TYPE_TODO, "Add TODO"));
+        toolBar.add(createAddTaskButton(TaskActions.TYPE_CONFIRM, "Add Confirmation"));
+        toolBar.add(createAddTaskButton(TaskActions.TYPE_REASON, "Add Ok/Fail Reason"));
+        toolBar.add(createAddTaskButton(TaskActions.TYPE_QUESTION, "Add Question"));
 
         btnAssignTask = createButton(TaskIcon.iconTaskAssign, "Assign Task");
         btnAssignTask.addActionListener(new ActionListener() {
@@ -125,7 +128,7 @@ public class AdminTaskPanel extends JPanel {
         return toolBar;
     }
 
-    private JButton createAddTaskButton(final int type, final String message) {
+    private JButton createAddTaskButton(final String type, final String message) {
         JButton btnCreateTask = createButton(
                 TaskIcon.TYPE.get(type),
                 message

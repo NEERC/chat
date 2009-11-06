@@ -215,6 +215,7 @@ public class XmppChat implements Chat {
 		    throw new XMPPException("unparsed iq packet");
 		}
 		NeercTaskListIQ packet = (NeercTaskListIQ) iq;
+		TaskRegistry.getInstance().reset();
 		for (Task task: packet.getTasks()) {
 			TaskRegistry.getInstance().update(task);
 		}

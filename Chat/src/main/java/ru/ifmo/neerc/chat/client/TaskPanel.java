@@ -19,10 +19,9 @@
  */
 package ru.ifmo.neerc.chat.client;
 
-import ru.ifmo.neerc.chat.task.TaskFactory;
 import ru.ifmo.neerc.chat.user.UserEntry;
-import ru.ifmo.neerc.chat.xmpp.TaskActions;
 import ru.ifmo.neerc.task.Task;
+import ru.ifmo.neerc.task.TaskActions;
 import ru.ifmo.neerc.task.TaskRegistry;
 import ru.ifmo.neerc.task.TaskRegistryListener;
 import ru.ifmo.neerc.task.TaskStatus;
@@ -58,6 +57,9 @@ public class TaskPanel extends JPanel {
             public void taskChanged(Task taskId) {
                 enableButtons();
             }
+            public void tasksReset() {
+                enableButtons();
+            }
         });
 
         add(new JScrollPane(taskList), BorderLayout.CENTER);
@@ -74,15 +76,15 @@ public class TaskPanel extends JPanel {
 
         enableButton(
                 btnActionFail,
-                TaskActions.isActionSupported(task, user, TaskFactory.ACTION_FAIL)
+                TaskActions.isActionSupported(task, user, TaskActions.ACTION_FAIL)
         );
         enableButton(
                 btnActionStart,
-                TaskActions.isActionSupported(task, user, TaskFactory.ACTION_START)
+                TaskActions.isActionSupported(task, user, TaskActions.ACTION_START)
         );
         enableButton(
                 btnActionDone,
-                TaskActions.isActionSupported(task, user, TaskFactory.ACTION_DONE)
+                TaskActions.isActionSupported(task, user, TaskActions.ACTION_DONE)
         );
     }
 
@@ -97,15 +99,15 @@ public class TaskPanel extends JPanel {
         toolBar.setFloatable(false);
         toolBar.setRollover(true);
         btnActionDone = createButton(
-                TaskFactory.ACTION_DONE,
+                TaskActions.ACTION_DONE,
                 "Task is done"
         );
         btnActionFail = createButton(
-                TaskFactory.ACTION_FAIL,
+                TaskActions.ACTION_FAIL,
                 "Task is failed due to..."
         );
         btnActionStart = createButton(
-                TaskFactory.ACTION_START,
+                TaskActions.ACTION_START,
                 "Task is started"
         );
         toolBar.add(btnActionStart);
@@ -117,7 +119,7 @@ public class TaskPanel extends JPanel {
     private void performAction(int action) {
         Task task = (Task) taskList.getSelectedValue();
         TaskStatus taskStatus = task.getStatuses().get(user);
-        if (action == TaskFactory.ACTION_FAIL) {
+        if (action == TaskActions.ACTION_FAIL) {
             String message = "Give the reason";
             String reason = JOptionPane.showInputDialog(
                     SwingUtilities.getWindowAncestor(this),

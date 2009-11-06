@@ -1,6 +1,6 @@
 package ru.ifmo.neerc.chat.client;
 
-import ru.ifmo.neerc.chat.task.TaskFactory;
+import ru.ifmo.neerc.task.TaskActions;
 
 import javax.swing.*;
 import java.util.HashMap;
@@ -12,7 +12,7 @@ import java.util.Map;
 public final class TaskIcon {
     public static final Map<String, ImageIcon> STATUS = new HashMap<String, ImageIcon>();
     public static final Map<Integer, ImageIcon> ACTION = new HashMap<Integer, ImageIcon>();
-    public static final Map<Integer, ImageIcon> TYPE = new HashMap<Integer, ImageIcon>();
+    public static final Map<String, ImageIcon> TYPE = new HashMap<String, ImageIcon>();
 
     public static final ImageIcon iconTaskAssign = new ImageIcon(AdminTaskPanel.class.getResource("res/task_assign.gif"));
     public static final ImageIcon iconTaskRemove = new ImageIcon(AdminTaskPanel.class.getResource("res/task_remove.gif"));
@@ -20,49 +20,53 @@ public final class TaskIcon {
 
     static {
         STATUS.put(
-                "done",
+                TaskActions.STATUS_SUCCESS,
                 new ImageIcon(TaskList.class.getResource("res/task_state_done.gif"))
         );
         STATUS.put(
-                "fail",
+                TaskActions.STATUS_FAIL,
                 new ImageIcon(TaskList.class.getResource("res/task_state_fail.png"))
         );
         STATUS.put(
-                "inProgress",
+                TaskActions.STATUS_RUNNING,
                 new ImageIcon(TaskList.class.getResource("res/task_state_inprogress.png"))
         );
         STATUS.put(
-                "new",
+                TaskActions.STATUS_NEW,
+                new ImageIcon(TaskIcon.class.getResource("res/task_state_new.gif"))
+        );
+        STATUS.put(
+                TaskActions.STATUS_ACK,
                 new ImageIcon(TaskIcon.class.getResource("res/task_state_new.gif"))
         );
 
         ACTION.put(
-                TaskFactory.ACTION_DONE,
+                TaskActions.ACTION_DONE,
                 new ImageIcon(TaskPanel.class.getResource("res/task_action_complete.gif"))
         );
         ACTION.put(
-                TaskFactory.ACTION_FAIL,
+                TaskActions.ACTION_FAIL,
                 new ImageIcon(TaskPanel.class.getResource("res/task_action_fail.png"))
         );
         ACTION.put(
-                TaskFactory.ACTION_START,
+                TaskActions.ACTION_START,
                 new ImageIcon(TaskPanel.class.getResource("res/task_action_start.png"))
         );
 
         TYPE.put(
-                TaskFactory.TASK_TODO,
+                TaskActions.TYPE_TODO,
                 new ImageIcon(AdminTaskPanel.class.getResource("res/task_add_todo.png"))
         );
         TYPE.put(
-                TaskFactory.TASK_CONFIRM,
+                TaskActions.TYPE_CONFIRM,
                 new ImageIcon(AdminTaskPanel.class.getResource("res/task_add_confirm.png"))
         );
         TYPE.put(
-                TaskFactory.TASK_REASON,
+                TaskActions.TYPE_REASON,
                 new ImageIcon(AdminTaskPanel.class.getResource("res/task_add_text.png"))
         );
         TYPE.put(
-                TaskFactory.TASK_QUESTION,
+                TaskActions.TYPE_QUESTION,
                 new ImageIcon(AdminTaskPanel.class.getResource("res/task_add_quest.png"))
         );
     }

@@ -83,6 +83,10 @@ public class AdminTaskList extends JTable {
             updateTasks();
         }
 
+        public void tasksReset() {
+            updateTasks();
+        }
+
         public void userChanged(UserEntry userEntry) {
             updateTasks();
         }

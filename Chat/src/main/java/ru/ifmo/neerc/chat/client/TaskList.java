@@ -62,6 +62,10 @@ public class TaskList extends JList {
             updateTasks();
         }
 
+        public void tasksReset() {
+            updateTasks();
+        }
+
         private void updateTasks() {
             tasks = new ArrayList<Task>(registry.getAssignedTasks(user));
             fireContentsChanged(this, 0, tasks.size());
