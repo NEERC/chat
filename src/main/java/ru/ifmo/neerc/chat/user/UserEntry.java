@@ -53,6 +53,9 @@ public class UserEntry implements Comparable {
     }
 
     public String getGroup() {
+        if (group == null) {
+            return power ? "Admins" : "Users";
+        }
         return group;
     }
 
