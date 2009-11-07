@@ -213,6 +213,9 @@ public class XmppChatClient extends AbstractChatClient {
 
         @Override
         public void roleChanged(String jid, String role) {
+            if ("none".equals(role)) {
+                return;
+            }
             UserRegistry.getInstance().setRole(jid, role);
             String nick = getNick(jid);
 //            processMessage(new ServerMessage(
