@@ -22,10 +22,7 @@ package ru.ifmo.neerc.chat.client;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
 import ru.ifmo.neerc.chat.user.UserRegistryListener;
-import ru.ifmo.neerc.task.Task;
-import ru.ifmo.neerc.task.TaskRegistry;
-import ru.ifmo.neerc.task.TaskRegistryListener;
-import ru.ifmo.neerc.task.TaskStatus;
+import ru.ifmo.neerc.task.*;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -156,10 +153,28 @@ public class AdminTaskList extends JTable {
 
             if (value instanceof Task) {
                 Task task = (Task) value;
-                setIcon(null);
                 setText(task.getTitle());
                 setToolTipText(task.getTitle());
-                //setIcon(TaskList.getIcon(task.getVisualState()));
+
+                String status = TaskActions.STATUS_SUCCESS;
+                if (task.getStatuses().size() == 0) {
+                    setIcon(null);
+                } else {
+                    for (TaskStatus taskStatus : task.getStatuses().values()) {
+                        if (TaskActions.STATUS_FAIL.equals(taskStatus.getType())) {
+                            status = TaskActions.STATUS_FAIL;
+                            break;
+                        } else if (TaskActions.STATUS_RUNNING.equals(taskStatus.getType())) {
+                            status = TaskActions.STATUS_RUNNING;
+                            break;
+                        } else if (TaskActions.STATUS_SUCCESS.equals(taskStatus.getType())) {
+                        } else {
+                            status = TaskActions.STATUS_NEW;
+                            break;
+                        }
+                    }
+                    setIcon(TaskIcon.STATUS.get(status));
+                }
             } else if (value instanceof TaskStatus) {
                 TaskStatus status = (TaskStatus) value;
                 setIcon(TaskIcon.STATUS.get(status.getType()));
