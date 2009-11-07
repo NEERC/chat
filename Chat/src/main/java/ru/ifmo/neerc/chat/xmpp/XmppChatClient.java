@@ -22,7 +22,6 @@ import ru.ifmo.neerc.chat.client.AbstractChatClient;
 import ru.ifmo.neerc.chat.client.Chat;
 import ru.ifmo.neerc.chat.client.ChatMessage;
 import ru.ifmo.neerc.chat.message.Message;
-import ru.ifmo.neerc.chat.message.MessageFactory;
 import ru.ifmo.neerc.chat.message.ServerMessage;
 import ru.ifmo.neerc.chat.message.UserMessage;
 import ru.ifmo.neerc.chat.user.UserEntry;
@@ -112,8 +111,8 @@ public class XmppChatClient extends AbstractChatClient {
                     "New tasks",
                     JOptionPane.WARNING_MESSAGE
                 );
+                // TODO: send ack?
             }
-            // TODO: send ack
         }).start();
         if (isBeepOn) {
             System.out.print('\u0007'); // PC-speaker beep
@@ -200,7 +199,7 @@ public class XmppChatClient extends AbstractChatClient {
         public void joined(String participant) {
             UserRegistry.getInstance().putOnline(participant);
             processMessage(new ServerMessage(
-                    "User " + getNick(participant) + " has joined chat"
+                    "User " + getNick(participant) + " online"
             ));
         }
 
@@ -208,7 +207,7 @@ public class XmppChatClient extends AbstractChatClient {
         public void left(String participant) {
             UserRegistry.getInstance().putOffline(participant);
             processMessage(new ServerMessage(
-                    "User " + getNick(participant) + " has left chat"
+                    "User " + getNick(participant) + " offline"
             ));
         }
 
@@ -216,9 +215,9 @@ public class XmppChatClient extends AbstractChatClient {
         public void roleChanged(String jid, String role) {
             UserRegistry.getInstance().setRole(jid, role);
             String nick = getNick(jid);
-            processMessage(new ServerMessage(
-                    "User " + nick + " now " + role
-            ));
+//            processMessage(new ServerMessage(
+//                    "User " + nick + " now " + role
+//            ));
             if (nick.equals(user.getName())) {
                 taskPanel.toolBar.setVisible("moderator".equals(role));
             }
@@ -231,17 +230,8 @@ public class XmppChatClient extends AbstractChatClient {
 
         @Override
         public void historyMessageReceived(String jid, String message, Date timestamp) {
-            addToModel(ChatMessage.createUserMessage(new UserMessage(jid, message, timestamp)));
-//            processMessage(new UserMessage(jid, message, timestamp));
-        }
-
-        @Override
-        public void taskReceived(byte[] bytes, Date timestamp) {
-            bytes = Arrays.copyOf(bytes, bytes.length - 1); // TODO Godin: WTF?
-            Message message = MessageFactory.getInstance().deserialize(bytes);
-            LOG.debug("Found taskMessage: " + message.asString());
-            message.setTimestamp(timestamp);
-            processMessage(message);
+//            addToModel(ChatMessage.createUserMessage(new UserMessage(jid, message, timestamp)));
+            processMessage(new UserMessage(jid, message, timestamp));
         }
 
         @Override

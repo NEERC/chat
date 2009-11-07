@@ -31,7 +31,7 @@ import java.util.Date;
 /**
  * @author Matvey Kazakov
  */
-public class ChatMessage {
+public class ChatMessage implements Comparable<ChatMessage> {
     public static final String LOG_TIME_FORMAT = "yyyy.MM.dd HH:mm:ss";
 
 	public static enum Type {
@@ -93,6 +93,10 @@ public class ChatMessage {
 
     public boolean isPrivate() {
         return priv;
+    }
+
+    public long getTimestamp() {
+        return timestamp.getTime();
     }
 
     public synchronized String getTime() {
@@ -171,5 +175,17 @@ public class ChatMessage {
 
     public boolean isSpecial() {
         return special;
+    }
+    
+    public boolean equals(Object o) {
+        if (!(o instanceof ChatMessage)) return false;
+        ChatMessage msg = (ChatMessage) o;
+        return text.equals(msg.getText()) && getTimestamp() == msg.getTimestamp();
+    }
+    
+    public int compareTo(ChatMessage msg) {
+        long t = getTimestamp() - msg.getTimestamp();
+        if (t == 0) return 0;
+        return t > 0 ? 1 : -1;
     }
 }

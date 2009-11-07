@@ -27,7 +27,7 @@ import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * @author Matvey Kazakov
@@ -38,6 +38,7 @@ public class ChatArea extends JTable {
     private ChatModel model;
     private static final int TIME_COLUMN_WIDTH = 60;
     private TableCellRenderer cellRenderer = new NewChatMessageRenderer();
+    private boolean doScroll = false;
 
     public ChatArea() {
         model = new ChatModel();
@@ -58,6 +59,9 @@ public class ChatArea extends JTable {
                 timeColumn.setPreferredWidth(TIME_COLUMN_WIDTH);
                 userColumn.setPreferredWidth(USER_COLUMN_WIDTH);
                 messageColumn.setPreferredWidth(getWidth() - TIME_COLUMN_WIDTH - USER_COLUMN_WIDTH);
+                if (doScroll) {
+                    scrollRectToVisible(new Rectangle(1, 100000, 1, 1));
+                }
             }
         });
     }
@@ -67,7 +71,14 @@ public class ChatArea extends JTable {
     }
 
     public void addMessage(final ChatMessage message) {
-        final int index = model.add(message);
+        if ((new Date()).getTime() - message.getTimestamp() > 1000) {
+            model.add(message);
+            doScroll = true;
+            return;
+        }
+        final int index = model.append(message);
+        doScroll = false;
+
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
                 public void run() {
@@ -91,11 +102,22 @@ public class ChatArea extends JTable {
         } catch (InvocationTargetException e) {
 //            e.printStackTrace();
         }
+
     }
+    
 
     private class ChatModel extends AbstractTableModel {
-        private ArrayList<ChatMessage> messages = new ArrayList<ChatMessage>();
+        private ArrayList<ChatMessage> cache = new ArrayList<ChatMessage>();
+        private TreeSet<ChatMessage> messages = new TreeSet<ChatMessage>();
+        private boolean valid = true;
 
+        private synchronized void validate() {
+            if (valid) return;
+            cache.clear();
+            cache.addAll(messages);
+            valid = true;
+        }
+        
         public int getColumnCount() {
             return 3;
         }
@@ -105,7 +127,8 @@ public class ChatArea extends JTable {
         }
 
         public Object getValueAt(int rowIndex, int columnIndex) {
-            ChatMessage chatMessage = messages.get(rowIndex);
+            validate();
+            ChatMessage chatMessage = cache.get(rowIndex);
             if (columnIndex == 0) {
                 return chatMessage.getTime();
 //            } else if (columnIndex == 1) {
@@ -121,15 +144,25 @@ public class ChatArea extends JTable {
         }
 
         public synchronized int add(ChatMessage message) {
-            messages.add(message);
-            int size = messages.size();
-            fireTableRowsInserted(size - 1, size - 1);
-            if (size > MAXIMUM_LINES) {
-                messages.remove(0);
+            valid = false;
+            return append(message);
+        }
+
+        public synchronized int append(ChatMessage message) {
+            int size = cache.size();
+            if (messages.contains(message)) {
+                return size - 1;
+            }
+            if (size >= MAXIMUM_LINES) {
+                messages.remove(messages.first());
+                cache.remove(0);
                 fireTableRowsDeleted(0, 0);
                 size--;
             }
-            return size - 1;
+            messages.add(message);
+            cache.add(message);
+            fireTableRowsInserted(size, size);
+            return size;
         }
 
     }

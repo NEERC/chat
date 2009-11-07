@@ -15,6 +15,4 @@ public interface MUCListener {
     void messageReceived(String jid, String message, Date timestamp);
 
     void historyMessageReceived(String jid, String message, Date timestamp);
-
-    void taskReceived(byte[] bytes, Date timestamp);
 }
