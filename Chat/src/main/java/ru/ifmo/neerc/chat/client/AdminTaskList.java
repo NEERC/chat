@@ -31,7 +31,9 @@ import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 
 /**
  * @author Matvey Kazakov
@@ -104,14 +106,14 @@ public class AdminTaskList extends JTable {
             users = new ArrayList<UserEntry>();
             taskIds = new HashSet<String>();
             boolean admin = UserRegistry.getInstance().findByName(username).isPower();
-            for (Task task: registry.getTasks()) {
+            for (Task task : registry.getTasks()) {
                 TaskStatus ourStatus = task.getStatus(username);
                 if (admin || ourStatus != null) {
                     tasks.add(task);
                     taskIds.add(task.getId());
                 }
             }
-            for (UserEntry user: UserRegistry.getInstance().getUsers()) {
+            for (UserEntry user : UserRegistry.getInstance().getUsers()) {
                 if (admin || !user.isPower()) {
                     users.add(user);
                 }
@@ -132,7 +134,6 @@ public class AdminTaskList extends JTable {
 
     private class AdminTaskRenderer extends DefaultTableCellRenderer {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-
             if (isSelected) {
                 super.setForeground(table.getSelectionForeground());
                 super.setBackground(table.getSelectionBackground());
@@ -155,16 +156,19 @@ public class AdminTaskList extends JTable {
 
             if (value instanceof Task) {
                 Task task = (Task) value;
-                setText(task.getTitle());
                 setIcon(null);
-//                setIcon(TaskList.getIcon(task.getVisualState()));
+                setText(task.getTitle());
+                setToolTipText(task.getTitle());
+                //setIcon(TaskList.getIcon(task.getVisualState()));
             } else if (value instanceof TaskStatus) {
                 TaskStatus status = (TaskStatus) value;
                 setIcon(TaskIcon.STATUS.get(status.getType()));
                 setText(status.getValue());
+                setToolTipText(status.getValue());
             } else {
                 setIcon(null);
                 setValue(value);
+                setToolTipText(null);
             }
             return this;
         }
