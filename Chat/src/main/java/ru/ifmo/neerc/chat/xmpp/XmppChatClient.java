@@ -199,7 +199,7 @@ public class XmppChatClient extends AbstractChatClient {
         public void joined(String participant) {
             UserRegistry.getInstance().putOnline(participant);
             processMessage(new ServerMessage(
-                    "User " + getNick(participant) + " online"
+                    getNick(participant) + " online"
             ));
         }
 
@@ -207,7 +207,7 @@ public class XmppChatClient extends AbstractChatClient {
         public void left(String participant) {
             UserRegistry.getInstance().putOffline(participant);
             processMessage(new ServerMessage(
-                    "User " + getNick(participant) + " offline"
+                    getNick(participant) + " offline"
             ));
         }
 

@@ -34,7 +34,7 @@ import java.util.*;
  */
 public class ChatArea extends JTable {
     private static final int USER_COLUMN_WIDTH = 50;
-    private static final int MAXIMUM_LINES = 100;
+    private static final int MAXIMUM_LINES = 1000;
     private ChatModel model;
     private static final int TIME_COLUMN_WIDTH = 60;
     private TableCellRenderer cellRenderer = new NewChatMessageRenderer();

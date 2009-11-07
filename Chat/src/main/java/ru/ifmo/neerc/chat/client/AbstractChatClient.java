@@ -50,7 +50,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     protected TaskRegistry taskRegistry = TaskRegistry.getInstance();
     protected UserEntry user;
     protected int localHistorySize;
-    private static final int MAX_MESSAGE_LENGTH = 200;
+    private static final int MAX_MESSAGE_LENGTH = 500;
 
     private JSplitPane powerSplitter;
 
@@ -94,12 +94,12 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         JSplitPane outputSplitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, outputAreaScrollerJury,
                 outputAreaScroller);
         setupSplitter(outputSplitter);
-        outputAreaScrollerJury.setMinimumSize(new Dimension(300, 200));
+        outputAreaScrollerJury.setMinimumSize(new Dimension(300, 100));
         JSplitPane chatSplitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, outputSplitter,
                 new JScrollPane(inputArea));
         setupSplitter(chatSplitter);
         chatSplitter.setResizeWeight(1);
-        chatSplitter.setDividerLocation(450);
+        chatSplitter.setDividerLocation(526);
         chatPanel.add(chatSplitter, BorderLayout.CENTER);
 
         JPanel controlPanel = new JPanel(new BorderLayout());
@@ -110,6 +110,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         controlSplitter.setResizeWeight(1);
         controlSplitter.setDividerLocation(300);
         controlPanel.add(controlSplitter, BorderLayout.CENTER);
+        users.setSplitter(controlSplitter);
 
         JPanel topPanel = new JPanel(new BorderLayout());
         JSplitPane mainSplitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, controlPanel, chatPanel);

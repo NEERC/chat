@@ -39,8 +39,10 @@ public class UsersPanel extends JPanel {
             UsersPanel.class.getResource("res/user_normal_offline.gif"));
     public static final ImageIcon iconUserPowerOffline = new ImageIcon(
             UsersPanel.class.getResource("res/user_power_offline.gif"));
+    private static final int USER_ITEM_HEIGHT = 26;
 
     private UserEntry user;
+    private JSplitPane splitter;
 
     public UsersPanel(UserEntry user) {
         this.user = user;
@@ -51,6 +53,15 @@ public class UsersPanel extends JPanel {
         userList.setCellRenderer(new UserListCellRenderer());
         UserRegistry.getInstance().addListener(model);
         add(new JScrollPane(userList), BorderLayout.CENTER);
+    }
+    
+    public void setSplitter(JSplitPane splitter) {
+        this.splitter = splitter;
+    }
+    
+    private void resize(int users) {
+        if (splitter == null) return;
+        splitter.setDividerLocation(users * USER_ITEM_HEIGHT + 5);
     }
 
     private class ListData extends AbstractListModel implements UserRegistryListener {
@@ -64,6 +75,7 @@ public class UsersPanel extends JPanel {
         private void init() {
             userEntries = UserRegistry.getInstance().serialize();
             Arrays.sort(userEntries);
+            resize(userEntries.length);
         }
 
         public synchronized int getSize() {

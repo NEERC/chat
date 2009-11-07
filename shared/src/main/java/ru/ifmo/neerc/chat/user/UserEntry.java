@@ -117,6 +117,8 @@ public class UserEntry implements Comparable {
         if (name1 == null) {
             name1 = "";
         }
+        if (power && !userEntry.isPower()) return -1;
+        if (!power && userEntry.isPower()) return 1;
         return name.compareTo(name1);
     }
 }
