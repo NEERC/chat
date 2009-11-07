@@ -297,24 +297,20 @@ public class XmppChat implements Chat {
                 history = false;
             }
 
-            Object taskMessageProperty = xmppMessage.getProperty("taskMessage");
-            if (taskMessageProperty != null) {
-                mucListener.taskReceived((byte[]) taskMessageProperty, timestamp);
+            if (history) {
+                mucListener.historyMessageReceived(
+                        xmppMessage.getFrom(),
+                        xmppMessage.getBody(),
+                        timestamp
+                );
             } else {
-                if (history) {
-                    mucListener.historyMessageReceived(
-                            xmppMessage.getFrom(),
-                            xmppMessage.getBody(),
-                            timestamp
-                    );
-                } else {
-                    mucListener.messageReceived(
-                            xmppMessage.getFrom(),
-                            xmppMessage.getBody(),
-                            timestamp
-                    );
-                }
+                mucListener.messageReceived(
+                        xmppMessage.getFrom(),
+                        xmppMessage.getBody(),
+                        timestamp
+                );
             }
+
             lastActivity = timestamp;
         }
     }

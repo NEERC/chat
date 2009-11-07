@@ -23,6 +23,7 @@ import ru.ifmo.neerc.chat.message.UserMessage;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
 
+import java.util.regex.*;
 import java.text.CharacterIterator;
 import java.text.SimpleDateFormat;
 import java.text.StringCharacterIterator;
@@ -44,37 +45,50 @@ public class ChatMessage implements Comparable<ChatMessage> {
     private String text;
     private UserEntry user;
     private boolean priv;
+    private String to;
     private Date timestamp;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
     private boolean special;
 
-    private ChatMessage(Type type, String text, UserEntry user, boolean special, boolean priv, Date timestamp) {
+    private ChatMessage(Type type, String text, UserEntry user, String to, boolean special, boolean priv, Date timestamp) {
         this.special = special;
         this.type = type;
         this.text = text;
         this.user = user;
         this.priv = priv;
+        this.to = to;
         this.timestamp = timestamp == null ? new Date() : timestamp;
     }
 
     public static ChatMessage createServerMessage(String text) {
-        return new ChatMessage(Type.SERVER_MESSAGE, text, null, false, false, null);
+        return new ChatMessage(Type.SERVER_MESSAGE, text, null, "", false, false, null);
     }
 
     public static ChatMessage createTaskMessage(String text, Date timestamp) {
-        return new ChatMessage(Type.TASK_MESSAGE, text, null, true, false, timestamp);
+        return new ChatMessage(Type.TASK_MESSAGE, text, null, "", true, false, timestamp);
     }
 
     public static ChatMessage createUserMessage(UserMessage userMessage) {
         UserEntry user = UserRegistry.getInstance().findOrRegister(userMessage.getJid());
         String text = userMessage.getText();
+
+        // check if private
+        String to = "";
+        boolean priv = false;
+        Matcher matcher = Pattern.compile("(\\w+)>.*", Pattern.DOTALL).matcher(text);
+        if (matcher.matches()) {
+            to = matcher.group(1);
+            priv = true;
+        }
+
         return new ChatMessage(
                 Type.USER_MESSAGE,
                 text,
                 user,
+                to,
                 userMessage.isImportant(),
-                userMessage.isPrivate(),
+                priv,
                 userMessage.getTimestamp()
         );
     }
@@ -93,6 +107,10 @@ public class ChatMessage implements Comparable<ChatMessage> {
 
     public boolean isPrivate() {
         return priv;
+    }
+    
+    public String getTo() {
+        return to;
     }
 
     public long getTimestamp() {

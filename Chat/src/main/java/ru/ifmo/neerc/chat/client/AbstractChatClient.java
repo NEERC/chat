@@ -254,6 +254,15 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
             );
         } else if (message instanceof UserMessage) {
             chatMessage = ChatMessage.createUserMessage((UserMessage) message);
+            String jid = user.getJid();
+            
+            if (chatMessage.isPrivate()
+                && !jid.equals(chatMessage.getUser().getJid())
+                && !jid.equals(chatMessage.getTo())
+            ) {
+                // foreign private message
+                return;
+            }
         } else if (message instanceof TaskMessage) {
 /*
             final TaskMessage taskMessage = (TaskMessage) message;
