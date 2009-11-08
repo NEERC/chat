@@ -48,6 +48,9 @@ public class TaskActions {
             return STATUS_RUNNING;
         }
         if (action == ACTION_DONE) {
+            if (type.equals(TYPE_QUESTION)) {
+                return STATUS_SUCCESS;
+            }
             return STATUS_SUCCESS.equals(status) ? STATUS_ACK : STATUS_SUCCESS;
         }
         if (action == ACTION_FAIL) {
