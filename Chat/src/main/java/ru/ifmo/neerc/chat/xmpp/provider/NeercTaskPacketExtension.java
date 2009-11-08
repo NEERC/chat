@@ -7,10 +7,10 @@ import ru.ifmo.neerc.utils.XmlUtils;
 /**
  * @author Evgeny Mandrikov
  */
-public class NeercPacketExtension implements PacketExtension {
+public class NeercTaskPacketExtension implements PacketExtension {
     private Task task;
 
-    public NeercPacketExtension() {
+    public NeercTaskPacketExtension() {
     }
 
     public Task getTask() {

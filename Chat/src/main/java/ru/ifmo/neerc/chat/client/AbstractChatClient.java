@@ -54,7 +54,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 
     protected boolean isBeepOn = false;
 
-//    private TimerTicker ticker = new TimerTicker(neercTimer); todo: what about timer plugin?
+    protected TimerTicker ticker = new TimerTicker(neercTimer);
 //    private PluginManager pluginManager;
 
     protected Chat chat;

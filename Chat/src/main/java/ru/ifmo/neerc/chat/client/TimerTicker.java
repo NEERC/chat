@@ -71,7 +71,7 @@ public class TimerTicker extends Thread {
     }
 
     public void updateLabel() {
-        final String status = "Time: " + convertToHMS(time) + " of "
+        final String status = " Time: " + convertToHMS(time) + " of "
                 + convertToHMS(total) + " Status: " + convertStatus(TimerTicker.this.status);
         SwingUtilities.invokeLater(new Runnable(){
             public void run() {

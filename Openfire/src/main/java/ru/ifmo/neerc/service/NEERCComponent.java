@@ -21,6 +21,7 @@ import org.jivesoftware.openfire.XMPPServer;
 import org.jivesoftware.openfire.muc.MUCRoom;
 import org.jivesoftware.openfire.muc.MultiUserChatManager;
 import org.jivesoftware.openfire.muc.MultiUserChatService;
+import org.jivesoftware.util.*;
 import org.xmpp.component.Component;
 import org.xmpp.component.ComponentException;
 import org.xmpp.component.ComponentManager;
@@ -28,12 +29,15 @@ import org.xmpp.component.ComponentManagerFactory;
 import org.xmpp.packet.*;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
+import ru.ifmo.neerc.clock.Clock;
+import ru.ifmo.neerc.clock.ClockListener;
 import ru.ifmo.neerc.service.query.*;
 import ru.ifmo.neerc.task.Task;
 import ru.ifmo.neerc.task.TaskRegistry;
 import ru.ifmo.neerc.task.TaskRegistryListener;
 import ru.ifmo.neerc.utils.XmlUtils;
 
+import java.io.File;
 import java.util.*;
 
 /**
@@ -45,6 +49,10 @@ public class NEERCComponent implements Component {
     private ComponentManager componentManager = null;
     private UserRegistry users = UserRegistry.getInstance();
     private TaskRegistry tasks = TaskRegistry.getInstance();
+
+    private String baseDir = JiveGlobals.getHomeDirectory();
+    private String clockFilePath = baseDir + "/clock.xml";
+//    private String MUCJid;
 
     private HashMap<String, QueryHandler> handlers = new HashMap<String, QueryHandler>();
 
@@ -58,6 +66,7 @@ public class NEERCComponent implements Component {
     public NEERCComponent() {
         this.componentManager = ComponentManagerFactory.getComponentManager();
         myName = NAME + "." + componentManager.getServerName();
+//        MUCJid = "neerc@conference." + componentManager.getServerName();
     }
 
     private void initUsers() {
@@ -106,7 +115,6 @@ public class NEERCComponent implements Component {
         handlers.put("tasks", new TasksQueryHandler());
         handlers.put("task", new TaskQueryHandler());
         handlers.put("taskstatus", new TaskStatusQueryHandler());
-        // TODO: clock?
     }
 
     public UserEntry getSender(Packet packet) {
@@ -117,7 +125,6 @@ public class NEERCComponent implements Component {
     public void initialize(JID jid, ComponentManager componentManager) {
         initUsers();
         initHandlers();
-        tasks.addListener(new MyTaskRegistryListener());
     }
 
     public void start() {
@@ -126,6 +133,12 @@ public class NEERCComponent implements Component {
         message.setTo("admin@" + componentManager.getServerName());
         message.setBody("NEERC Service start");
         sendPacket(message);
+
+        MyListener listener = new MyListener();
+        tasks.addListener(listener);
+        ClockService clockservice = new ClockService(new File(clockFilePath));
+        clockservice.addListener(listener);
+        clockservice.start();
     }
 
     public void shutdown() {
@@ -150,10 +163,12 @@ public class NEERCComponent implements Component {
     }
 
     private void processMessage(Message message) {
+/*
         PacketExtension extension = message.getExtension("x", XmlUtils.NAMESPACE_TASKS);
         if (extension != null) {
             tasks.update(XmlUtils.taskFromXml(extension.getElement()));
         }
+*/
     }
 
     private void processIQ(IQ iq) {
@@ -212,25 +227,35 @@ public class NEERCComponent implements Component {
             componentManager.getLog().error(e);
         }
     }
-
-    private class MyTaskRegistryListener implements TaskRegistryListener {
-        private Message createMessage(String to, Task task) {
+    
+    public void broadcastMessage(String body, PacketExtension extension) {
+        for (UserEntry user : users.getUsers()) {
             Message message = new Message();
             message.setFrom(myName);
-            message.setBody("Task '" + task.getTitle() + "' (" + task.getId() + ") changed");
-            message.setTo(to);
+            message.setBody(body);
+            message.setTo(user.getName() + "@" + componentManager.getServerName());
+            if (extension != null) {
+                message.addExtension(new PacketExtension(extension.getElement().createCopy()));
+            }
+            sendPacket(message);
+        }
+    }
+
+    private class MyListener implements TaskRegistryListener, ClockListener {
+        @Override
+        public void taskChanged(Task task) {
             PacketExtension extension = new PacketExtension("x", XmlUtils.NAMESPACE_TASKS);
             XmlUtils.taskToXml(extension.getElement(), task);
-            message.addExtension(extension);
-            return message;
+            String body = "Task '" + task.getTitle() + "' (" + task.getId() + ") changed";
+            broadcastMessage(body, extension);
         }
 
         @Override
-        public void taskChanged(Task task) {
-            // Broadcast
-            for (UserEntry user : users.getUsers()) {
-                sendPacket(createMessage(user.getName() + "@" + componentManager.getServerName(), task));
-            }
+        public void clockChanged(Clock clock) {
+            PacketExtension extension = new PacketExtension("x", XmlUtils.NAMESPACE_CLOCK);
+            XmlUtils.clockToXml(extension.getElement(), clock);
+            String body = "The clock is ticking";
+            broadcastMessage(body, extension);
         }
 
         @Override

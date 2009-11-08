@@ -3,6 +3,7 @@ package ru.ifmo.neerc.chat.xmpp;
 import org.jivesoftware.smack.*;
 import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.filter.PacketTypeFilter;
+import org.jivesoftware.smack.filter.PacketExtensionFilter;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smack.packet.Presence;
@@ -21,12 +22,12 @@ import ru.ifmo.neerc.chat.message.UserMessage;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
 import ru.ifmo.neerc.chat.utils.DebugUtils;
-import ru.ifmo.neerc.chat.xmpp.provider.NeercPacketExtensionProvider;
-import ru.ifmo.neerc.chat.xmpp.provider.NeercIQProvider;
+import ru.ifmo.neerc.chat.xmpp.provider.*;
 import ru.ifmo.neerc.chat.xmpp.packet.*;
 import ru.ifmo.neerc.task.Task;
 import ru.ifmo.neerc.task.TaskStatus;
 import ru.ifmo.neerc.task.TaskRegistry;
+import ru.ifmo.neerc.utils.XmlUtils;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -82,11 +83,12 @@ public class XmppChat implements Chat {
         muc = new MultiUserChat(connection, ROOM);
         muc.addMessageListener(new MyMessageListener());
 
-        NeercPacketExtensionProvider.register();
+        NeercTaskPacketExtensionProvider.register();
+        NeercClockPacketExtensionProvider.register();
         NeercIQProvider.register();
 
         connection.addPacketListener(new MyPresenceListener(), new PacketTypeFilter(Presence.class));
-        connection.addPacketListener(new TaskPacketListener(), new PacketTypeFilter(org.jivesoftware.smack.packet.Message.class));
+        connection.addPacketListener(new TaskPacketListener(), new PacketExtensionFilter("x", XmlUtils.NAMESPACE_TASKS));
 
         join();
 

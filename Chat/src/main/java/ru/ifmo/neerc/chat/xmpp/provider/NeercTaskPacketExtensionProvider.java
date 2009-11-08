@@ -10,18 +10,18 @@ import ru.ifmo.neerc.utils.XmlUtils;
 /**
  * @author Evgeny Mandrikov
  */
-public class NeercPacketExtensionProvider implements PacketExtensionProvider {
+public class NeercTaskPacketExtensionProvider implements PacketExtensionProvider {
     public static void register() {
         ProviderManager.getInstance().addExtensionProvider(
                 "x",
                 XmlUtils.NAMESPACE_TASKS,
-                new NeercPacketExtensionProvider()
+                new NeercTaskPacketExtensionProvider()
         );
     }
 
     @Override
     public PacketExtension parseExtension(XmlPullParser parser) throws Exception {
-        NeercPacketExtension neercPacketExtension = new NeercPacketExtension();
+        NeercTaskPacketExtension neercPacketExtension = new NeercTaskPacketExtension();
         boolean done = false;
         while (!done) {
             int eventType = parser.next();
