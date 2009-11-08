@@ -19,6 +19,7 @@ import ru.ifmo.neerc.chat.message.*;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
 import ru.ifmo.neerc.chat.utils.ChatLogger;
+import ru.ifmo.neerc.task.Task;
 import ru.ifmo.neerc.task.TaskRegistry;
 
 import javax.swing.*;
@@ -31,6 +32,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.regex.*;
 
 /**
  * TODO: Log file
@@ -230,19 +232,28 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     private void send(String text) {
         // ensure that null won't be here
         text = String.valueOf(text);
-
-        int toPos = text.indexOf(">");
-        int destination = -1;
-        if (toPos >= 0) {
-            String to = text.substring(0, toPos).trim();
-            UserEntry toUser = UserRegistry.getInstance().findByName(to);
-            if (toUser != null) {
-                destination = toUser.getId();
-//                text = text.substring(toPos + 1);
+        String pattern = "^@(todo|confirm|okfail|question)( [\\w,]+)? (.*)$";
+        Matcher matcher = Pattern.compile(pattern, Pattern.MULTILINE).matcher(text);
+        while (matcher.find()) {
+            String type = matcher.group(1);
+            String to = matcher.group(2) == null ? "" : matcher.group(2).substring(1);
+            String title = matcher.group(3);
+            Task task = new Task(type, title);
+            for (UserEntry user: UserRegistry.getInstance().findMatchingUsers(to)) {
+                String username = user.getName();
+                if (task.getStatus(username) == null) {
+                    task.setStatus(username, "none", "");
+                }
             }
+            chat.write(task);
         }
-
-        chat.write(new UserMessage(user.getJid(), destination, text));
+        
+        int destination = -1;
+        
+        // do not echo commands (including mistyped) to chat
+        if (!Pattern.compile("^@\\w+ .*", Pattern.DOTALL).matcher(text).matches()) {
+            chat.write(new UserMessage(user.getJid(), destination, text));
+        }
         inputArea.setText("");
     }
 

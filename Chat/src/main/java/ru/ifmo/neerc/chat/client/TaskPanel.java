@@ -129,10 +129,22 @@ public class TaskPanel extends JPanel {
                     message,
                     taskStatus.getValue()
             );
-            if (value == null || value.length() == 0) {
+            if (value == null) {
                 return;
             }
         }
+        if (task.getType().equals(TaskActions.TYPE_QUESTION)) {
+            String message = "Your answer";
+            value = JOptionPane.showInputDialog(
+                    SwingUtilities.getWindowAncestor(this),
+                    message,
+                    taskStatus.getValue()
+            );
+            if (value == null) {
+                return;
+            }
+        }
+
         String status = TaskActions.getNewStatus(task, user, action);
         try {
             chat.write(task, new TaskStatus(status, value));

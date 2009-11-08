@@ -109,6 +109,26 @@ public class UserRegistry {
         return userById.size();
     }
 
+    
+    public synchronized UserEntry[] findMatchingUsers(String list) {
+        String[] search = list.split(",");
+        ArrayList<UserEntry> res = new ArrayList<UserEntry>();
+        for (UserEntry user : userByName.values()) {
+            String name = user.getName();
+            String group = user.getGroup();
+            for (String s : search) {
+                if (s.equalsIgnoreCase("halls")) {
+                    s = "Users";
+                }
+                if (s.equalsIgnoreCase(name) || s.equalsIgnoreCase(group)) {
+                    res.add(user);
+                    break;
+                }
+            }
+        }
+        return res.toArray(new UserEntry[res.size()]);
+    }
+    
     public synchronized UserEntry[] serialize() {
         return userById.values().toArray(new UserEntry[userById.size()]);
     }
