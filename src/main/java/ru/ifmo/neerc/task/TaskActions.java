@@ -58,4 +58,12 @@ public class TaskActions {
         }
         throw new IllegalArgumentException();
     }
+    
+    public static String getTypeByAlias(String type) {
+        if ("task".equals(type)) return TYPE_TODO;
+        if ("ok".equals(type)) return TYPE_CONFIRM;
+        if ("reason".equals(type)) return TYPE_REASON;
+        if ("q".equals(type)) return TYPE_QUESTION;
+        return type;
+    }
 }
