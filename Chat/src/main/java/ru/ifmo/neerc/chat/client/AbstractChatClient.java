@@ -19,7 +19,6 @@ import ru.ifmo.neerc.chat.message.*;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
 import ru.ifmo.neerc.chat.utils.ChatLogger;
-import ru.ifmo.neerc.chat.utils.DateUtils;
 import ru.ifmo.neerc.task.TaskRegistry;
 
 import javax.swing.*;
@@ -32,7 +31,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * TODO: Log file
@@ -46,7 +44,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     public ChatArea outputAreaJury;
     public JTextArea inputArea;
     public JLabel neercTimer = new JLabel();
-    protected JLabel connectionStatus = new JLabel();
+    protected JButton connectionStatus = new JButton();
     protected TaskRegistry taskRegistry = TaskRegistry.getInstance();
     protected UserEntry user;
     protected int localHistorySize;
@@ -128,6 +126,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         toolBar.setRollover(true);
 
         JButton tasks = new JButton(new ImageIcon(AbstractChatClient.class.getResource("res/btn_tasks.gif")));
+        tasks.setToolTipText("Change task list position");
         tasks.setFocusable(false);
         tasks.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -137,6 +136,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         toolBar.add(tasks);
 
         JButton about = new JButton(new ImageIcon(AbstractChatClient.class.getResource("res/btn_about.gif")));
+        about.setToolTipText("About");
         about.setFocusable(false);
         about.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -149,10 +149,12 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         final ImageIcon beepOffImage = new ImageIcon(AbstractChatClient.class.getResource("res/btn_beep_off.png"));
         final JButton mute = new JButton(beepOffImage);
         mute.setFocusable(false);
+        mute.setToolTipText(isBeepOn ? "Turn beep off" : "Turn beep on");
         mute.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 isBeepOn = !isBeepOn;
                 mute.setIcon(isBeepOn ? beepOnImage : beepOffImage);
+                mute.setToolTipText(isBeepOn ? "Turn beep off" : "Turn beep on");
             }
         });
         toolBar.add(mute);
@@ -255,11 +257,11 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         } else if (message instanceof UserMessage) {
             chatMessage = ChatMessage.createUserMessage((UserMessage) message);
             String jid = user.getJid();
-            
+
             if (chatMessage.isPrivate()
-                && !jid.equals(chatMessage.getUser().getJid())
-                && !jid.equals(chatMessage.getTo())
-            ) {
+                    && !jid.equals(chatMessage.getUser().getJid())
+                    && !jid.equals(chatMessage.getTo())
+                    ) {
                 // foreign private message
                 return;
             }

@@ -16,6 +16,7 @@
 package ru.ifmo.neerc.chat.xmpp;
 
 import org.jivesoftware.smack.ConnectionListener;
+import org.jivesoftware.smack.XMPPException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.ifmo.neerc.chat.client.AbstractChatClient;
@@ -26,15 +27,14 @@ import ru.ifmo.neerc.chat.message.ServerMessage;
 import ru.ifmo.neerc.chat.message.UserMessage;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
-import ru.ifmo.neerc.task.Task;
-import ru.ifmo.neerc.task.TaskActions;
-import ru.ifmo.neerc.task.TaskRegistry;
-import ru.ifmo.neerc.task.TaskRegistryListener;
-import ru.ifmo.neerc.task.TaskStatus;
+import ru.ifmo.neerc.task.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Date;
+import java.util.HashSet;
 
 /**
  * @author Evgeny Mandrikov
@@ -53,6 +53,7 @@ public class XmppChatClient extends AbstractChatClient {
         userRegistry.putOnline(name);
         userRegistry.setRole(name, "moderator");
 
+        connectionStatus.setFocusable(false);
 
         chat = new MyChat();
         setupUI();
@@ -70,6 +71,25 @@ public class XmppChatClient extends AbstractChatClient {
 
         taskRegistry.addListener(new MyListener());
         alertNewTasks();
+
+        connectionStatus.setToolTipText("Force connect when disconnected");
+        connectionStatus.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!xmppChat.getConnection().isConnected()) {
+                            try {
+                                xmppChat.getConnection().connect();
+                            } catch (XMPPException e) {
+                                LOG.error(e.getMessage(), e);
+                            }
+                        }
+                    }
+                }).start();
+            }
+        });
     }
 
     public static void main(String[] args) {
@@ -84,7 +104,7 @@ public class XmppChatClient extends AbstractChatClient {
     private void alertNewTasks() {
         StringBuilder description = new StringBuilder("New tasks:\n");
         boolean hasNew = false;
-        for (Task task: TaskRegistry.getInstance().getTasks()) {
+        for (Task task : TaskRegistry.getInstance().getTasks()) {
             TaskStatus status = task.getStatus(user.getName());
             if (status == null || !TaskActions.STATUS_NEW.equals(status.getType())) {
                 continue;
@@ -95,21 +115,21 @@ public class XmppChatClient extends AbstractChatClient {
             LOG.debug("got new task " + task.getTitle());
             description.append(task.getTitle()).append("\n");
             ChatMessage chatMessage = ChatMessage.createTaskMessage(
-                "!!! New task '" + task.getTitle() + "' has been assigned to you !!!",
-                (new Date())
+                    "!!! New task '" + task.getTitle() + "' has been assigned to you !!!",
+                    (new Date())
             );
             addToModel(chatMessage);
         }
         if (!hasNew) return;
-        
+
         final String str = description.toString();
         new Thread(new Runnable() {
             public void run() {
                 JOptionPane.showMessageDialog(
-                    XmppChatClient.this,
-                    str,
-                    "New tasks",
-                    JOptionPane.WARNING_MESSAGE
+                        XmppChatClient.this,
+                        str,
+                        "New tasks",
+                        JOptionPane.WARNING_MESSAGE
                 );
                 // TODO: send ack?
             }
@@ -150,10 +170,12 @@ public class XmppChatClient extends AbstractChatClient {
         public void write(Message message) {
             xmppChat.write(message);
         }
+
         @Override
         public void write(Task task) {
             xmppChat.write(task);
         }
+
         @Override
         public void write(Task task, TaskStatus status) {
             xmppChat.write(task, status);
@@ -247,6 +269,7 @@ public class XmppChatClient extends AbstractChatClient {
         }
 
         @Override
-        public void tasksReset() {}
+        public void tasksReset() {
+        }
     }
 }
