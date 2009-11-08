@@ -2,6 +2,7 @@ package ru.ifmo.neerc.utils;
 
 import org.dom4j.Element;
 import ru.ifmo.neerc.chat.user.UserEntry;
+import ru.ifmo.neerc.clock.Clock;
 import ru.ifmo.neerc.task.Task;
 import ru.ifmo.neerc.task.TaskStatus;
 
@@ -14,6 +15,7 @@ public final class XmlUtils {
     public static final String NAMESPACE = "http://neerc.ifmo.ru/protocol/neerc";
     public static final String NAMESPACE_TASKS = NAMESPACE + "#tasks";
     public static final String NAMESPACE_USERS = NAMESPACE + "#users";
+    public static final String NAMESPACE_CLOCK = NAMESPACE + "#clock";
 
     /**
      * Hide utility class contructor.
@@ -33,6 +35,13 @@ public final class XmlUtils {
             statusElement.addAttribute("type", status.getType());
             statusElement.addAttribute("value", status.getValue());
         }
+    }
+
+    public static void clockToXml(Element parent, Clock clock) {
+        Element taskElement = parent.addElement("clock");
+        taskElement.addAttribute("time", "" + clock.getTime());
+        taskElement.addAttribute("total", "" + clock.getTotal());
+        taskElement.addAttribute("status", "" + clock.getStatus());
     }
 
     public static void userToXml(Element parent, UserEntry user) {
