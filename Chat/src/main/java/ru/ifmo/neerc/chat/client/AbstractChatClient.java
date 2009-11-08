@@ -20,6 +20,7 @@ import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
 import ru.ifmo.neerc.chat.utils.ChatLogger;
 import ru.ifmo.neerc.task.Task;
+import ru.ifmo.neerc.task.TaskActions;
 import ru.ifmo.neerc.task.TaskRegistry;
 
 import javax.swing.*;
@@ -232,10 +233,10 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     private void send(String text) {
         // ensure that null won't be here
         text = String.valueOf(text);
-        String pattern = "^@(todo|confirm|okfail|question)( [\\w,]+)? (.*)$";
+        String pattern = "^@(todo|task|confirm|ok|okfail|reason|question|q)( [\\w,]+)? (.*)$";
         Matcher matcher = Pattern.compile(pattern, Pattern.MULTILINE).matcher(text);
         while (matcher.find()) {
-            String type = matcher.group(1);
+            String type = TaskActions.getTypeByAlias(matcher.group(1));
             String to = matcher.group(2) == null ? "" : matcher.group(2).substring(1);
             String title = matcher.group(3);
             Task task = new Task(type, title);
@@ -276,37 +277,6 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
                 // foreign private message
                 return;
             }
-        } else if (message instanceof TaskMessage) {
-/*
-            final TaskMessage taskMessage = (TaskMessage) message;
-            switch (taskMessage.getTaskMsgType()) {
-                case ASSIGN:
-                    if (taskMessage.getUser() == user.getId()) {
-                        final String description = taskRegistry.findTask(taskMessage.getTaskId()).getDescription();
-                        Date timestamp = taskMessage.getTimestamp();
-                        if ((timestamp == null) || (DateUtils.getTimeDifference(timestamp) < DateUtils.MINUTE)) {
-                            new Thread(new Runnable() {
-                                public void run() {
-                                    JOptionPane.showMessageDialog(
-                                            AbstractChatClient.this,
-                                            "New task: " + description,
-                                            "New Task",
-                                            JOptionPane.WARNING_MESSAGE
-                                    );
-                                }
-                            }).start();
-                        }
-                        if (isBeepOn) {
-                            System.out.println('\u0007'); // PC-speaker beep
-                        }
-                        chatMessage = ChatMessage.createTaskMessage(
-                                "!!! New task '" + description + "' has been assigned to you !!!",
-                                timestamp
-                        );
-                    }
-                    break;
-            }
-*/
         }
         processMessage(chatMessage);
     }

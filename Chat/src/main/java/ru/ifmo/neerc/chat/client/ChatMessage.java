@@ -33,7 +33,7 @@ import java.util.Date;
  * @author Matvey Kazakov
  */
 public class ChatMessage implements Comparable<ChatMessage> {
-    public static final String LOG_TIME_FORMAT = "yyyy.MM.dd HH:mm:ss";
+    public static final String LOG_TIME_FORMAT = "HH:mm:ss";
 
 	public static enum Type {
 		SERVER_MESSAGE,
@@ -122,16 +122,17 @@ public class ChatMessage implements Comparable<ChatMessage> {
     }
 
     public String log() {
-        StringBuilder result = new StringBuilder(new SimpleDateFormat(LOG_TIME_FORMAT).format(new Date())).append(": ");
+        StringBuilder result = new StringBuilder(new SimpleDateFormat(LOG_TIME_FORMAT).format(timestamp)).append(": ");
+        String line = text.replaceAll("\r?\n", "\t");
         switch (type) {
             case SERVER_MESSAGE:
-                result.append(">>>>>>>>>>>>").append(text).append("<<<<<<<<<<<<<");
+                result.append(">>>>>>>>>>>>").append(line).append("<<<<<<<<<<<<<");
                 break;
             case TASK_MESSAGE:
-                result.append("!!!!!!!!!!!!").append(text);
+                result.append("!!!!!!!!!!!!").append(line);
                 break;
             case USER_MESSAGE:
-                result.append(user).append("> ").append(text);
+                result.append(user).append("> ").append(line);
                 break;
         }
         return result.toString();

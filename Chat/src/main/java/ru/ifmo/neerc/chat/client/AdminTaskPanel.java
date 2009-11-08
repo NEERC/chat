@@ -118,15 +118,6 @@ public class AdminTaskPanel extends JPanel {
         });
         toolBar.add(btnRemoveTask);
 
-        // TODO?
-//        JButton btnImportTasks = createButton(TaskIcon.iconTaskImport, "Import tasks");
-//        btnImportTasks.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                new ImportTasksDialog(owner, clientReader).setVisible(true);
-//            }
-//        });
-//        toolBar.add(btnImportTasks);
-
         return toolBar;
     }
 

@@ -63,7 +63,7 @@ public class AboutBox extends JDialog{
         mainPanel.setBorder(BorderFactory.createLineBorder(mainPanel.getBackground(), 10));
         setContentPane(mainPanel);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        setSize(400, 300);
+        setSize(400, 500);
         setLocationRelativeTo(owner);
     }
 

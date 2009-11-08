@@ -16,8 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.ifmo.neerc.chat.client.Chat;
 import ru.ifmo.neerc.chat.message.Message;
-import ru.ifmo.neerc.chat.message.MessageFactory;
-import ru.ifmo.neerc.chat.message.TaskMessage;
 import ru.ifmo.neerc.chat.message.UserMessage;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
@@ -162,13 +160,6 @@ public class XmppChat implements Chat {
             if (message instanceof UserMessage) {
                 UserMessage userMessage = (UserMessage) message;
                 muc.sendMessage(userMessage.getText());
-            } else if (message instanceof TaskMessage) {
-                TaskMessage taskMessage = (TaskMessage) message;
-                byte[] bytes = MessageFactory.getInstance().serialize(taskMessage);
-                org.jivesoftware.smack.packet.Message msg = muc.createMessage();
-                msg.setProperty("taskMessage", bytes);
-                msg.setBody("Task");
-                muc.sendMessage(msg);
             } else {
                 throw new UnsupportedOperationException(message.getClass().getSimpleName());
             }
