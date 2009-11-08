@@ -45,6 +45,7 @@ import java.util.HashSet;
  */
 public class XmppChatClient extends AbstractChatClient {
     private static final Logger LOG = LoggerFactory.getLogger(XmppChatClient.class);
+    private boolean alertPending;
 
     private XmppChat xmppChat;
     private HashSet<String> newTaskIds = new HashSet<String>();
@@ -86,42 +87,54 @@ public class XmppChatClient extends AbstractChatClient {
         });
     }
 
-    private void alertNewTasks() {
-        StringBuilder description = new StringBuilder("New tasks:\n");
-        boolean hasNew = false;
-        for (Task task : TaskRegistry.getInstance().getTasks()) {
-            TaskStatus status = task.getStatus(user.getName());
-            if (status == null || !TaskActions.STATUS_NEW.equals(status.getType())) {
-                continue;
-            }
-            if (newTaskIds.contains(task.getId())) continue;
-            newTaskIds.add(task.getId());
-            hasNew = true;
-            LOG.debug("got new task " + task.getTitle());
-            description.append(task.getTitle()).append("\n");
-            ChatMessage chatMessage = ChatMessage.createTaskMessage(
-                    "!!! New task '" + task.getTitle() + "' has been assigned to you !!!",
-                    (new Date())
-            );
-            addToModel(chatMessage);
+    private synchronized void alertNewTasks() {
+        if (alertPending) {
+            return;
         }
-        if (!hasNew) return;
-
-        final String str = description.toString();
+        alertPending = true;
         new Thread(new Runnable() {
             public void run() {
-                JOptionPane.showMessageDialog(
+                try {
+                    Thread.sleep(500);
+                    StringBuilder description = new StringBuilder("New tasks:\n");
+                    boolean hasNew = false;
+                    for (Task task : TaskRegistry.getInstance().getTasks()) {
+                        TaskStatus status = task.getStatus(user.getName());
+                        if (status == null || !TaskActions.STATUS_NEW.equals(status.getType())) {
+                            continue;
+                        }
+                        if (newTaskIds.contains(task.getId())) continue;
+                        newTaskIds.add(task.getId());
+                        hasNew = true;
+                        LOG.debug("got new task " + task.getTitle());
+                        description.append(task.getTitle()).append("\n");
+                        ChatMessage chatMessage = ChatMessage.createTaskMessage(
+                                "!!! New task '" + task.getTitle() + "' has been assigned to you !!!",
+                                (new Date())
+                        );
+                        processMessage(chatMessage);
+                    }
+                    if (!hasNew) {
+                        alertPending = false;
+                        return;
+                    }
+
+                    if (isBeepOn) {
+                        System.out.print('\u0007'); // PC-speaker beep
+                    }
+                    JOptionPane.showMessageDialog(
                         XmppChatClient.this,
-                        str,
+                        description.toString(),
                         "New tasks",
                         JOptionPane.WARNING_MESSAGE
-                );
-                // TODO: send ack?
+                    );
+                } catch (InterruptedException e) {
+                
+                } finally {
+                     alertPending = false;
+                }
             }
         }).start();
-        if (isBeepOn) {
-            System.out.print('\u0007'); // PC-speaker beep
-        }
     }
 
     private void setConnectionStatus(String status, boolean isError) {

@@ -9,7 +9,7 @@ public final class TaskRegistry {
 
     private static final TaskRegistry INSTANCE = new TaskRegistry();
 
-    private final Map<String, Task> tasks = new HashMap<String, Task>();
+    private final Map<String, Task> tasks = new TreeMap<String, Task>();
 
     private final Collection<TaskRegistryListener> listeners = new ArrayList<TaskRegistryListener>();
 
