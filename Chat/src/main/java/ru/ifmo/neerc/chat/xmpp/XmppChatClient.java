@@ -16,7 +16,6 @@
 package ru.ifmo.neerc.chat.xmpp;
 
 import org.jivesoftware.smack.ConnectionListener;
-import org.jivesoftware.smack.XMPPException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.ifmo.neerc.chat.client.AbstractChatClient;
@@ -31,8 +30,6 @@ import ru.ifmo.neerc.task.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Date;
 import java.util.HashSet;
 
@@ -53,8 +50,6 @@ public class XmppChatClient extends AbstractChatClient {
         userRegistry.putOnline(name);
         userRegistry.setRole(name, "moderator");
 
-        connectionStatus.setFocusable(false);
-
         chat = new MyChat();
         setupUI();
 
@@ -71,25 +66,6 @@ public class XmppChatClient extends AbstractChatClient {
 
         taskRegistry.addListener(new MyListener());
         alertNewTasks();
-
-        connectionStatus.setToolTipText("Force connect when disconnected");
-        connectionStatus.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent event) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (!xmppChat.getConnection().isConnected()) {
-                            try {
-                                xmppChat.getConnection().connect();
-                            } catch (XMPPException e) {
-                                LOG.error(e.getMessage(), e);
-                            }
-                        }
-                    }
-                }).start();
-            }
-        });
     }
 
     public static void main(String[] args) {

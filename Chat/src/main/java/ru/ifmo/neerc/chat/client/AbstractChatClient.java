@@ -44,7 +44,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     public ChatArea outputAreaJury;
     public JTextArea inputArea;
     public JLabel neercTimer = new JLabel();
-    protected JButton connectionStatus = new JButton();
+    protected JLabel connectionStatus = new JLabel();
     protected TaskRegistry taskRegistry = TaskRegistry.getInstance();
     protected UserEntry user;
     protected int localHistorySize;
