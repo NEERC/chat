@@ -57,14 +57,25 @@ public class XmppChat implements Chat {
     ) {
         this.name = name;
         this.mucListener = mucListener;
+
+        NeercTaskPacketExtensionProvider.register();
+        NeercClockPacketExtensionProvider.register();
+        NeercIQProvider.register();
+        SASLAuthentication.supportSASLMechanism("PLAIN", 0);
+        connect();
+    }
+
+    public void connect() {
+        if (connection != null) {
+            connection.disconnect();
+        }
+
         // Create the configuration for this new connection
         ConnectionConfiguration config = new ConnectionConfiguration(SERVER_HOST, SERVER_PORT);
         config.setCompressionEnabled(true);
         config.setSASLAuthenticationEnabled(true);
         config.setReconnectionAllowed(true);
         config.setDebuggerEnabled(DEBUG);
-
-        SASLAuthentication.supportSASLMechanism("PLAIN", 0);
 
         connection = new XMPPConnection(config);
         // Connect to the server
@@ -81,10 +92,6 @@ public class XmppChat implements Chat {
         muc = new MultiUserChat(connection, ROOM);
         muc.addMessageListener(new MyMessageListener());
 
-        NeercTaskPacketExtensionProvider.register();
-        NeercClockPacketExtensionProvider.register();
-        NeercIQProvider.register();
-
         connection.addPacketListener(new MyPresenceListener(), new PacketTypeFilter(Presence.class));
         connection.addPacketListener(new TaskPacketListener(), new PacketExtensionFilter("x", XmlUtils.NAMESPACE_TASKS));
 
@@ -100,8 +107,9 @@ public class XmppChat implements Chat {
                 debugConnection();
             }
         });
+        mucListener.connected(this);
     }
-
+    
     private void authenticate() {
         // Log into the server
         // You have to specify your Jabber ID addres WITHOUT @jabber.org at the end

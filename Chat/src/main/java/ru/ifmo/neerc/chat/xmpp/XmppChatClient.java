@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import ru.ifmo.neerc.chat.client.AbstractChatClient;
 import ru.ifmo.neerc.chat.client.Chat;
 import ru.ifmo.neerc.chat.client.ChatMessage;
-//import ru.ifmo.neerc.chat.message.Message;
 import ru.ifmo.neerc.chat.message.ServerMessage;
 import ru.ifmo.neerc.chat.message.UserMessage;
 import ru.ifmo.neerc.chat.user.UserEntry;
@@ -37,6 +36,8 @@ import ru.ifmo.neerc.utils.XmlUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Date;
 import java.util.HashSet;
 
@@ -62,20 +63,20 @@ public class XmppChatClient extends AbstractChatClient {
         setupUI();
 
         MyListener listener = new MyListener();
+        taskRegistry.addListener(listener);
+
         xmppChat = new XmppChat(name, listener);
-
-        xmppChat.getConnection().addConnectionListener(listener);
-        xmppChat.getConnection().addPacketListener(new ClockPacketListener(),
-            new PacketExtensionFilter("x", XmlUtils.NAMESPACE_CLOCK));
-        if (xmppChat.getMultiUserChat().isJoined()) {
-            final String message = "Connected";
-            setConnectionStatus(message);
-        } else {
-            setConnectionError("Unable to connect");
-        }
-
-        taskRegistry.addListener(new MyListener());
-        alertNewTasks();
+        resetButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        xmppChat.connect();
+                    }
+                }).start();
+            }
+        });
     }
 
     public static void main(String[] args) {
@@ -179,13 +180,50 @@ public class XmppChatClient extends AbstractChatClient {
             xmppChat.write(task, status);
         }
     }
+    
+    protected void send(String text) {
+        if (text.equals("/dc")) {
+            new Thread(new Runnable() {
+                public void run() {
+                    xmppChat.getConnection().disconnect();
+                }
+            }).start();
+            return;
+        }
+        if (text.equals("/rc")) {
+            new Thread(new Runnable() {
+                public void run() {
+                    xmppChat.connect();
+                }
+            }).start();
+            return;
+        }        
+        super.send(text);
+    }
 
     private class MyListener implements MUCListener, ConnectionListener, TaskRegistryListener {
+        @Override
+        public void connected(XmppChat chat) {
+            chat.getConnection().addConnectionListener(this);
+            chat.getConnection().addPacketListener(new ClockPacketListener(),
+                new PacketExtensionFilter("x", XmlUtils.NAMESPACE_CLOCK));
+            if (chat.getMultiUserChat().isJoined()) {
+                final String message = "Connected";
+                setConnectionStatus(message);
+            } else {
+                setConnectionError("Unable to connect");
+            }
+            alertNewTasks();
+        }
+
         @Override
         public void connectionClosed() {
             final String message = "Connection closed";
             setConnectionError(message);
             processMessage(new ServerMessage(message));
+            for (UserEntry user : UserRegistry.getInstance().getUsers()) {
+                UserRegistry.getInstance().putOffline(user.getName());
+            }
         }
 
         @Override

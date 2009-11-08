@@ -6,6 +6,8 @@ import java.util.Date;
  * @author Evgeny Mandrikov
  */
 public interface MUCListener {
+    void connected(XmppChat chat);
+
     void roleChanged(String jid, String role);
 
     void joined(String participant);

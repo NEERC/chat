@@ -48,6 +48,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     public JTextArea inputArea;
     public JLabel neercTimer = new JLabel();
     protected JLabel connectionStatus = new JLabel();
+    protected JButton resetButton;
     protected TaskRegistry taskRegistry = TaskRegistry.getInstance();
     protected UserEntry user;
     protected int localHistorySize;
@@ -161,6 +162,9 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
             }
         });
         toolBar.add(mute);
+        
+        resetButton = new JButton("Reconnect");
+        resetButton.setFocusable(false);
 
 //        java.util.List<ChatPlugin> plugins = pluginManager.getPlugins();
 //        if (plugins.size() > 0) {
@@ -178,7 +182,10 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 
         toolBar.add(Box.createHorizontalGlue());
         toolBar.add(connectionStatus);
+        toolBar.add(Box.createHorizontalStrut(10));
         toolBar.add(neercTimer);
+        toolBar.add(Box.createHorizontalStrut(10));
+        toolBar.add(resetButton);
         return toolBar;
     }
 
@@ -230,7 +237,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         return inputArea;
     }
 
-    private void send(String text) {
+    protected void send(String text) {
         // ensure that null won't be here
         text = String.valueOf(text);
         String pattern = "^@(todo|task|confirm|ok|okfail|reason|question|q)( [\\w,]+)? (.*)$";
@@ -250,7 +257,6 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         }
         
         int destination = -1;
-        
         // do not echo commands (including mistyped) to chat
         if (!Pattern.compile("^@\\w+ .*", Pattern.DOTALL).matcher(text).matches()) {
             chat.write(new UserMessage(user.getJid(), destination, text));
