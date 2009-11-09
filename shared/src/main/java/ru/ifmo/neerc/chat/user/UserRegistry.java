@@ -82,7 +82,7 @@ public class UserRegistry {
 
     private synchronized void putOnline(UserEntry user, boolean online) {
         user.setOnline(online);
-        notifyListeners(user);
+        notifyPresenceListeners(user);
     }
 
     public void putOnline(String jid) {
@@ -95,13 +95,22 @@ public class UserRegistry {
 
     public synchronized void setRole(String jid, String role) {
         UserEntry user = findOrRegister(jid);
-        user.setPower("moderator".equalsIgnoreCase(role));
-        notifyListeners(user);
+        boolean newPower = "moderator".equalsIgnoreCase(role);
+        if (newPower != user.isPower()) {
+            user.setPower(newPower);
+            notifyListeners(user);
+        }
     }
 
     private void notifyListeners(UserEntry user) {
         for (UserRegistryListener listener : listeners) {
             listener.userChanged(user);
+        }
+    }
+
+    private void notifyPresenceListeners(UserEntry user) {
+        for (UserRegistryListener listener : listeners) {
+            listener.userPresenceChanged(user);
         }
     }
 

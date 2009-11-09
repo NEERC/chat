@@ -90,6 +90,10 @@ public class UsersPanel extends JPanel {
             update();
         }
 
+        public void userPresenceChanged(UserEntry userEntry) {
+            update();
+        }
+
         private void update() {
             init();
             fireContentsChanged(this, 0, userEntries.length);

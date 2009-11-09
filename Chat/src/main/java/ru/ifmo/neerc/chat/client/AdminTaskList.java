@@ -98,6 +98,10 @@ public class AdminTaskList extends JTable {
             updateTasks(false);
         }
 
+        public void userPresenceChanged(UserEntry userEntry) {
+            // ignore
+        }
+
         private void updateTasks(boolean softUpdate) {
             tasks = new ArrayList<Task>();
             users = new ArrayList<UserEntry>();
