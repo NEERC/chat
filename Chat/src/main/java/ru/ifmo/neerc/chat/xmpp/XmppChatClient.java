@@ -16,8 +16,8 @@
 package ru.ifmo.neerc.chat.xmpp;
 
 import org.jivesoftware.smack.ConnectionListener;
-import org.jivesoftware.smack.filter.PacketExtensionFilter;
 import org.jivesoftware.smack.PacketListener;
+import org.jivesoftware.smack.filter.PacketExtensionFilter;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
 import org.slf4j.Logger;
@@ -29,7 +29,7 @@ import ru.ifmo.neerc.chat.message.ServerMessage;
 import ru.ifmo.neerc.chat.message.UserMessage;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
-import ru.ifmo.neerc.chat.xmpp.provider.*;
+import ru.ifmo.neerc.chat.xmpp.provider.NeercClockPacketExtension;
 import ru.ifmo.neerc.clock.Clock;
 import ru.ifmo.neerc.task.*;
 import ru.ifmo.neerc.utils.XmlUtils;
@@ -123,16 +123,18 @@ public class XmppChatClient extends AbstractChatClient {
                     if (isBeepOn) {
                         System.out.print('\u0007'); // PC-speaker beep
                     }
+                    setAlwaysOnTop(true);
                     JOptionPane.showMessageDialog(
-                        XmppChatClient.this,
-                        description.toString(),
-                        "New tasks",
-                        JOptionPane.WARNING_MESSAGE
+                            XmppChatClient.this,
+                            description.toString(),
+                            "New tasks",
+                            JOptionPane.WARNING_MESSAGE
                     );
+                    setAlwaysOnTop(false);
                 } catch (InterruptedException e) {
-                
+
                 } finally {
-                     alertPending = false;
+                    alertPending = false;
                 }
             }
         }).start();
@@ -180,7 +182,7 @@ public class XmppChatClient extends AbstractChatClient {
             xmppChat.write(task, status);
         }
     }
-    
+
     protected void send(String text) {
         if (text.equals("/dc")) {
             new Thread(new Runnable() {
@@ -197,7 +199,7 @@ public class XmppChatClient extends AbstractChatClient {
                 }
             }).start();
             return;
-        }        
+        }
         super.send(text);
     }
 
@@ -206,7 +208,7 @@ public class XmppChatClient extends AbstractChatClient {
         public void connected(XmppChat chat) {
             chat.getConnection().addConnectionListener(this);
             chat.getConnection().addPacketListener(new ClockPacketListener(),
-                new PacketExtensionFilter("x", XmlUtils.NAMESPACE_CLOCK));
+                    new PacketExtensionFilter("x", XmlUtils.NAMESPACE_CLOCK));
             if (chat.getMultiUserChat().isJoined()) {
                 final String message = "Connected";
                 setConnectionStatus(message);

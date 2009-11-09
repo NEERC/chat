@@ -15,7 +15,10 @@
 */
 package ru.ifmo.neerc.chat.client;
 
-import ru.ifmo.neerc.chat.message.*;
+import ru.ifmo.neerc.chat.message.Message;
+import ru.ifmo.neerc.chat.message.MessageListener;
+import ru.ifmo.neerc.chat.message.ServerMessage;
+import ru.ifmo.neerc.chat.message.UserMessage;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
 import ru.ifmo.neerc.chat.utils.ChatLogger;
@@ -28,12 +31,10 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.util.ArrayList;
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * TODO: Log file
@@ -58,8 +59,10 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 
     protected boolean isBeepOn = false;
 
+    protected int unread;
+    protected boolean windowActive;
+
     protected TimerTicker ticker = new TimerTicker(neercTimer);
-//    private PluginManager pluginManager;
 
     protected Chat chat;
 
@@ -72,18 +75,29 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         JPanel mainPanel = createMainPanel();
         taskPanel = new AdminTaskPanel(this, taskRegistry, chat, user.getName());
-//        if (!user.isPower()) {
-//            setContentPane(mainPanel);
-//        } else {
+
         powerSplitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         powerSplitter.setTopComponent(mainPanel);
         powerSplitter.setBottomComponent(taskPanel);
         powerSplitter.setResizeWeight(1.0);
         powerSplitter.setDividerLocation(600);
         setContentPane(powerSplitter);
-//        }
+
         setSize(800, 800);
         setLocationRelativeTo(null);
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowActivated(WindowEvent e) {
+                windowActive = true;
+                setUnread(0);
+            }
+
+            @Override
+            public void windowDeactivated(WindowEvent e) {
+                windowActive = false;
+            }
+        });
     }
 
     private JPanel createMainPanel() {
@@ -120,7 +134,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         mainSplitter.setDividerLocation(100);
         topPanel.add(mainSplitter);
         topPanel.add(createToolBar(), BorderLayout.NORTH);
-        setTitle("NEERC chat: " + user.getName());
+        updateTitle();
         return topPanel;
     }
 
@@ -162,7 +176,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
             }
         });
         toolBar.add(mute);
-        
+
         resetButton = new JButton("Reconnect");
         resetButton.setFocusable(false);
 
@@ -247,7 +261,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
             String to = matcher.group(2) == null ? "" : matcher.group(2).substring(1);
             String title = matcher.group(3);
             Task task = new Task(type, title);
-            for (UserEntry user: UserRegistry.getInstance().findMatchingUsers(to)) {
+            for (UserEntry user : UserRegistry.getInstance().findMatchingUsers(to)) {
                 String username = user.getName();
                 if (task.getStatus(username) == null) {
                     task.setStatus(username, "none", "");
@@ -255,7 +269,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
             }
             chat.write(task);
         }
-        
+
         int destination = -1;
         // do not echo commands (including mistyped) to chat
         if (!Pattern.compile("^@\\w+ .*", Pattern.DOTALL).matcher(text).matches()) {
@@ -265,7 +279,10 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     }
 
     public void processMessage(Message message) {
-//        taskRegistry.processMessage(message);
+        if (!windowActive) {
+            setUnread(getUnread() + 1);
+        }
+
         ChatMessage chatMessage = null;
         if (message instanceof ServerMessage) {
             ServerMessage serverMessage = (ServerMessage) message;
@@ -327,4 +344,20 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         }
     }
 
+    protected void setUnread(int unread) {
+        this.unread = unread;
+        updateTitle();
+    }
+
+    public int getUnread() {
+        return unread;
+    }
+
+    private void updateTitle() {
+        if (unread > 0) {
+            setTitle("[" + unread + "] NEERC chat: " + user.getName());
+        } else {
+            setTitle("NEERC chat: " + user.getName());
+        }
+    }
 }
