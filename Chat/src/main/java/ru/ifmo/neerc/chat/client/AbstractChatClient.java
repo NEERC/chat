@@ -265,10 +265,6 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     }
 
     public void processMessage(Message message) {
-        if (!hasFocus()) {
-            requestFocus();
-        }
-
         ChatMessage chatMessage = null;
         if (message instanceof ServerMessage) {
             ServerMessage serverMessage = (ServerMessage) message;
