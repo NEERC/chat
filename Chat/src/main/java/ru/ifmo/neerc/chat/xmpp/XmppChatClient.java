@@ -214,6 +214,7 @@ public class XmppChatClient extends AbstractChatClient {
                 setConnectionError("Unable to connect");
             }
             alertNewTasks();
+            resetButton.setEnabled(true);
         }
 
         @Override
@@ -234,10 +235,16 @@ public class XmppChatClient extends AbstractChatClient {
             for (UserEntry user : UserRegistry.getInstance().getUsers()) {
                 UserRegistry.getInstance().putOffline(user.getName());
             }
+            resetButton.setEnabled(true);
         }
 
         @Override
         public void reconnectingIn(int i) {
+            if (i == 0) {
+                setConnectionStatus("Reconnecting...");
+                resetButton.setEnabled(false);
+                return;
+            }
             setConnectionError("Reconnecting in " + i);
         }
 
@@ -246,11 +253,13 @@ public class XmppChatClient extends AbstractChatClient {
             final String message = "Reconnected";
             setConnectionStatus(message);
             processMessage(new ServerMessage(message));
+            resetButton.setEnabled(true);
         }
 
         @Override
         public void reconnectionFailed(Exception e) {
             setConnectionError("Reconnection failed");
+            resetButton.setEnabled(true);
         }
 
         @Override
@@ -263,10 +272,11 @@ public class XmppChatClient extends AbstractChatClient {
 
         @Override
         public void left(String participant) {
-            UserRegistry.getInstance().putOffline(participant);
-            processMessage(new ServerMessage(
-                    getNick(participant) + " offline"
-            ));
+            final String username = getNick(participant);
+            if (UserRegistry.getInstance().findByName(username).isOnline()) {
+                UserRegistry.getInstance().putOffline(participant);
+                processMessage(new ServerMessage(username + " offline"));
+            }
         }
 
         @Override

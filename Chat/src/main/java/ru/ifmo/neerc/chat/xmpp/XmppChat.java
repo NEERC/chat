@@ -65,11 +65,11 @@ public class XmppChat implements Chat {
         connect();
     }
 
-    public void connect() {
+    public synchronized void connect() {
         if (connection != null) {
             connection.disconnect();
+            ((ConnectionListener)mucListener).reconnectingIn(0);
         }
-
         // Create the configuration for this new connection
         ConnectionConfiguration config = new ConnectionConfiguration(SERVER_HOST, SERVER_PORT);
         config.setCompressionEnabled(true);
@@ -83,6 +83,7 @@ public class XmppChat implements Chat {
             connection.connect();
         } catch (XMPPException e) {
             LOG.error("Unable to connect", e);
+            ((ConnectionListener)mucListener).reconnectionFailed(e);
             throw new RuntimeException(e);
         }
 
@@ -101,10 +102,13 @@ public class XmppChat implements Chat {
 
         connection.addConnectionListener(new DefaultConnectionListener() {
             @Override
-            public void reconnectionSuccessful() {
-                authenticate();
-                join();
-                debugConnection();
+            public synchronized void reconnectionSuccessful() {
+               if (connection.isAuthenticated()) {
+                   return;
+               }
+               authenticate();
+               join();
+               debugConnection();
             }
         });
         mucListener.connected(this);
