@@ -38,4 +38,8 @@ public class NeercIQ extends IQ {
 	public void parse(XmlPullParser parser) throws Exception {
 		throw new UnsupportedOperationException();
 	}
+	
+	protected String escape(String xml) {
+		return xml.replaceAll(">", "&gt;").replaceAll("<", "&lt;").replaceAll("\"", "&quot;");
+	}
 }

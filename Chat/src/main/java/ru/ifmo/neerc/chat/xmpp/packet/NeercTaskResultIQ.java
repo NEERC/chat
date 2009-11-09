@@ -20,9 +20,9 @@ public class NeercTaskResultIQ extends NeercIQ {
 		StringBuilder buf = new StringBuilder();
 		buf.append("<").append(getElementName());
 		buf.append(" xmlns=\"").append(getNamespace()).append("\"");
-		buf.append(" id=\"").append(task.getId()).append("\"");
-		buf.append(" type=\"").append(result.getType()).append("\"");
-		buf.append(" value=\"").append(result.getValue()).append("\"");
+		buf.append(" id=\"").append(escape(task.getId())).append("\"");
+		buf.append(" type=\"").append(escape(result.getType())).append("\"");
+		buf.append(" value=\"").append(escape(result.getValue())).append("\"");
 		buf.append(" />");
 		return buf.toString();
 	}

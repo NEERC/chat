@@ -42,8 +42,8 @@ public class NeercUserListIQ extends NeercIQ {
 		buf.append("<").append(getElementName()).append(" xmlns=\"").append(getNamespace()).append("\">");
 		for (UserEntry user: users) {
 			buf.append("<user");
-			buf.append(" name=\"").append(user.getName()).append("\"");
-			buf.append(" group=\"").append(user.getGroup()).append("\"");
+			buf.append(" name=\"").append(escape(user.getName())).append("\"");
+			buf.append(" group=\"").append(escape(user.getGroup())).append("\"");
 			buf.append(" power=\"").append(user.isPower() ? "yes" :"no").append("\" />");
 		}
 		buf.append("</").append(getElementName()).append(">");

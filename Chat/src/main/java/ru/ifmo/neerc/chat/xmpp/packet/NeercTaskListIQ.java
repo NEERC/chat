@@ -37,15 +37,15 @@ public class NeercTaskListIQ extends NeercIQ {
 		buf.append("<").append(getElementName()).append(" xmlns=\"").append(getNamespace()).append("\">");
 		for (Task task: tasks) {
 			buf.append("<task");
-			buf.append(" id=\"").append(task.getId()).append("\"");
-			buf.append(" type=\"").append(task.getType()).append("\"");
-			buf.append(" title=\"").append(task.getTitle()).append("\">");
+			buf.append(" id=\"").append(escape(task.getId())).append("\"");
+			buf.append(" type=\"").append(escape(task.getType())).append("\"");
+			buf.append(" title=\"").append(escape(task.getTitle())).append("\">");
 			for (Map.Entry<String, TaskStatus> entry : task.getStatuses().entrySet()) {
 				TaskStatus status = entry.getValue();
 				buf.append("<status");
-				buf.append(" for=\"").append(entry.getKey()).append("\"");
-				buf.append(" type=\"").append(status.getType()).append("\"");
-				buf.append(" value=\"").append(status.getValue()).append("\" />");
+				buf.append(" for=\"").append(escape(entry.getKey())).append("\"");
+				buf.append(" type=\"").append(escape(status.getType())).append("\"");
+				buf.append(" value=\"").append(escape(status.getValue())).append("\" />");
 			}
 			buf.append("</task>");
 		}
