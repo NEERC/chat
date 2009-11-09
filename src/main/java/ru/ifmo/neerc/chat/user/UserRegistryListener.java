@@ -24,4 +24,5 @@ package ru.ifmo.neerc.chat.user;
  */
 public interface UserRegistryListener {
     void userChanged(UserEntry userEntry);
+    void userPresenceChanged(UserEntry userEntry);
 }
