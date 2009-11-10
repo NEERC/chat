@@ -110,6 +110,7 @@ public class NEERCComponent implements Component {
         handlers.put("tasks", new TasksQueryHandler());
         handlers.put("task", new TaskQueryHandler());
         handlers.put("taskstatus", new TaskStatusQueryHandler());
+        handlers.put("ping", new PingQueryHandler());
     }
 
     public UserEntry getSender(Packet packet) {

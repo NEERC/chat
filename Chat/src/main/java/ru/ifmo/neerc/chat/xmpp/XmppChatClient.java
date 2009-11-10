@@ -187,7 +187,7 @@ public class XmppChatClient extends AbstractChatClient {
         if (text.equals("/dc")) {
             new Thread(new Runnable() {
                 public void run() {
-                    xmppChat.getConnection().disconnect();
+                    xmppChat.disconnect();
                 }
             }).start();
             return;

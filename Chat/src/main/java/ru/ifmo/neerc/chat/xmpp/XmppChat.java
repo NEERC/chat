@@ -41,9 +41,11 @@ public class XmppChat implements Chat {
     private static final String ROOM = "neerc@conference.localhost";
     private static final boolean DEBUG = Boolean.parseBoolean(System.getProperty("smack.debug", "false"));
 	private static final String NEERC_SERVICE = "neerc.localhost";
+    private static final int PING_INTERVAL = Integer.parseInt(System.getProperty("ping", "5")) * 1000;
 
     private MultiUserChat muc;
     private XMPPConnection connection;
+    private boolean connected;
 
     private String name;
     private String password = System.getProperty("password", "12345");
@@ -63,18 +65,29 @@ public class XmppChat implements Chat {
         NeercIQProvider.register();
         SASLAuthentication.supportSASLMechanism("PLAIN", 0);
         connect();
+        if (PING_INTERVAL > 0) {
+            (new Pinger()).start();
+        }
     }
 
-    public synchronized void connect() {
+    public synchronized void disconnect() {
+        connected = false;
         if (connection != null) {
             connection.disconnect();
+        }
+    }
+    
+    public synchronized void connect() {
+        disconnect();
+        LOG.info("connecting to server");
+        if (connection != null ) {
             ((ConnectionListener)mucListener).reconnectingIn(0);
         }
         // Create the configuration for this new connection
         ConnectionConfiguration config = new ConnectionConfiguration(SERVER_HOST, SERVER_PORT);
         config.setCompressionEnabled(true);
         config.setSASLAuthenticationEnabled(true);
-        config.setReconnectionAllowed(true);
+        config.setReconnectionAllowed(false);
         config.setDebuggerEnabled(DEBUG);
 
         connection = new XMPPConnection(config);
@@ -102,16 +115,23 @@ public class XmppChat implements Chat {
 
         connection.addConnectionListener(new DefaultConnectionListener() {
             @Override
-            public synchronized void reconnectionSuccessful() {
-               if (connection.isAuthenticated()) {
-                   return;
-               }
-               authenticate();
-               join();
-               debugConnection();
+            public void connectionClosed() {
+                connected = false;
+                // TODO: init auto reconnect
+            }
+
+            @Override
+            public void connectionClosedOnError(Exception e) {
+                connected = false;
+                // TODO: init auto reconnect
             }
         });
+        connected = true;
         mucListener.connected(this);
+    }
+    
+    public boolean isConnected() {
+        return connected;
     }
     
     private void authenticate() {
@@ -209,7 +229,7 @@ public class XmppChat implements Chat {
 		} else if (response.getType() == IQ.Type.ERROR) {
 			throw new XMPPException(response.getError());
 		}
-		LOG.debug("parsed " + response.getClass().getName());
+//		LOG.debug("parsed " + response.getClass().getName());
 		return response;
     }
 	
@@ -317,6 +337,32 @@ public class XmppChat implements Chat {
             }
 
             lastActivity = timestamp;
+        }
+    }
+    
+    private class Pinger extends Thread {
+        public void run() {
+            while (true) {
+                try {
+                    sleep(PING_INTERVAL);
+                    if (!connected) {
+                        continue;
+                    }
+                    query("ping");
+                } catch (InterruptedException e) {
+                    break;
+                } catch (XMPPException e) {
+                    LOG.debug("ping failed");
+                    if (!connected) {
+                        continue;
+                    }
+                    try {
+                        disconnect();
+                    } catch (Exception ex) {
+
+                    }
+                }
+            }
         }
     }
 }
