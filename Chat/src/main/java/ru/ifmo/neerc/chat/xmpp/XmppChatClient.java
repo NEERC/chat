@@ -72,6 +72,7 @@ public class XmppChatClient extends AbstractChatClient {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
+                        xmppChat.stopAutoReconnect();
                         xmppChat.connect();
                     }
                 }).start();
@@ -195,6 +196,7 @@ public class XmppChatClient extends AbstractChatClient {
         if (text.equals("/rc")) {
             new Thread(new Runnable() {
                 public void run() {
+                    xmppChat.stopAutoReconnect();
                     xmppChat.connect();
                 }
             }).start();
