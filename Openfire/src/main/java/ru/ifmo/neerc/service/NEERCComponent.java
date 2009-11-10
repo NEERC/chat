@@ -50,10 +50,6 @@ public class NEERCComponent implements Component {
     private UserRegistry users = UserRegistry.getInstance();
     private TaskRegistry tasks = TaskRegistry.getInstance();
 
-    private String baseDir = JiveGlobals.getHomeDirectory();
-    private String clockFilePath = baseDir + "/clock.xml";
-//    private String MUCJid;
-
     private HashMap<String, QueryHandler> handlers = new HashMap<String, QueryHandler>();
 
 	private DocumentFactory docFactory = DocumentFactory.getInstance();
@@ -66,7 +62,6 @@ public class NEERCComponent implements Component {
     public NEERCComponent() {
         this.componentManager = ComponentManagerFactory.getComponentManager();
         myName = NAME + "." + componentManager.getServerName();
-//        MUCJid = "neerc@conference." + componentManager.getServerName();
     }
 
     private void initUsers() {
@@ -136,7 +131,7 @@ public class NEERCComponent implements Component {
 
         MyListener listener = new MyListener();
         tasks.addListener(listener);
-        ClockService clockservice = new ClockService(new File(clockFilePath));
+        ClockService clockservice = new ClockService();
         clockservice.addListener(listener);
         clockservice.start();
     }

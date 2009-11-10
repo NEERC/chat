@@ -3,6 +3,7 @@ package ru.ifmo.neerc.service;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+import org.jivesoftware.util.JiveGlobals;
 import org.jivesoftware.util.Log;
 import org.xmpp.component.Component;
 import ru.ifmo.neerc.clock.Clock;
@@ -15,14 +16,14 @@ import java.util.Collection;
  * @author Dmitriy Trofimov
  */
 public class ClockService extends Thread {
+    private String defaultFileName = JiveGlobals.getHomeDirectory() + File.separator + "clock.xml";
     private File clockFile;
     private long lastModified;
     private long timeStarted;
     private final Collection<ClockListener> listeners = new ArrayList<ClockListener>();
     private Clock clock = new Clock();
     
-    public ClockService(File clockFile) {
-        this.clockFile = clockFile;
+    public ClockService() {
     }
 
     public void run() {
@@ -40,6 +41,7 @@ public class ClockService extends Thread {
     }
     
     private void checkUpdate() throws Exception {
+        clockFile = new File(JiveGlobals.getProperty("neerc.clock", defaultFileName));
         long modified = clockFile.lastModified();
         if (modified == 0) {
             if (lastModified != 0) {
