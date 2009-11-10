@@ -23,11 +23,12 @@ import ru.ifmo.neerc.chat.message.UserMessage;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
 
-import java.util.regex.*;
 import java.text.CharacterIterator;
 import java.text.SimpleDateFormat;
 import java.text.StringCharacterIterator;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Matvey Kazakov
@@ -35,11 +36,11 @@ import java.util.Date;
 public class ChatMessage implements Comparable<ChatMessage> {
     public static final String LOG_TIME_FORMAT = "HH:mm:ss";
 
-	public static enum Type {
-		SERVER_MESSAGE,
-		USER_MESSAGE,
-		TASK_MESSAGE,
-	}
+    public static enum Type {
+        SERVER_MESSAGE,
+        USER_MESSAGE,
+        TASK_MESSAGE,
+    }
 
     private Type type;
     private String text;
@@ -108,7 +109,7 @@ public class ChatMessage implements Comparable<ChatMessage> {
     public boolean isPrivate() {
         return priv;
     }
-    
+
     public String getTo() {
         return to;
     }
@@ -195,13 +196,13 @@ public class ChatMessage implements Comparable<ChatMessage> {
     public boolean isSpecial() {
         return special;
     }
-    
+
     public boolean equals(Object o) {
         if (!(o instanceof ChatMessage)) return false;
         ChatMessage msg = (ChatMessage) o;
         return text.equals(msg.getText()) && getTimestamp() == msg.getTimestamp();
     }
-    
+
     public int compareTo(ChatMessage msg) {
         long t = getTimestamp() - msg.getTimestamp();
         if (t == 0) return 0;
