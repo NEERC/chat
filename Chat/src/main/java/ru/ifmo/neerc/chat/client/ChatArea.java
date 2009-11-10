@@ -19,6 +19,8 @@
  */
 package ru.ifmo.neerc.chat.client;
 
+import ru.ifmo.neerc.chat.user.UserEntry;
+
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -27,8 +29,9 @@ import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-import ru.ifmo.neerc.chat.user.UserEntry;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.TreeSet;
 
 /**
  * @author Matvey Kazakov
@@ -57,7 +60,7 @@ public class ChatArea extends JTable {
         timeColumn.setResizable(false);
         timeColumn.setCellRenderer(new NewChatMessageRenderer());
         final TableColumn userColumn = getColumnModel().getColumn(1);
-        userColumn.setCellRenderer(new NewChatMessageRenderer(Font.BOLD));
+        userColumn.setCellRenderer(new NewChatMessageRenderer(Font.BOLD, user));
         final TableColumn messageColumn = getColumnModel().getColumn(2);
         messageColumn.setCellRenderer(new NewChatMessageRenderer(user));
         addComponentListener(new ComponentAdapter() {
@@ -110,7 +113,7 @@ public class ChatArea extends JTable {
         }
 
     }
-    
+
 
     private class ChatModel extends AbstractTableModel {
         private ArrayList<ChatMessage> cache = new ArrayList<ChatMessage>();
@@ -123,7 +126,7 @@ public class ChatArea extends JTable {
             cache.addAll(messages);
             valid = true;
         }
-        
+
         public int getColumnCount() {
             return 3;
         }

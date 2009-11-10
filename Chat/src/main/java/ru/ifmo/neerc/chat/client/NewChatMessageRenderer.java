@@ -60,6 +60,11 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
         setWrapStyleWord(true);
     }
 
+    public NewChatMessageRenderer(int fontStyle, UserEntry user) {
+        this(fontStyle);
+        currentUser = user;
+    }
+
     public Component getTableCellRendererComponent(//
                                                    JTable table, Object obj, boolean isSelected,
                                                    boolean hasFocus, int row, int column) {
@@ -78,8 +83,10 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
             updateRenderer(message);
         } else if (obj instanceof ChatMessage && column == 1) {
             ChatMessage message = (ChatMessage) obj;
-            if (message.isPrivate()) {
-                setForeground(Color.gray);
+            if (currentUser != null && message.getText().contains(currentUser.getName())) {
+                setForeground(Color.RED);
+            } else if (message.isPrivate()) {
+                setForeground(Color.GRAY);
             }
             UserEntry user = message.getUser();
             setText(user == null ? "" : user.getName());
@@ -103,21 +110,23 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
         switch (message.getType()) {
             case SERVER_MESSAGE:
                 setFont(adaptee.getFont().deriveFont(Font.BOLD));
-                setForeground(Color.blue);
+                setForeground(Color.BLUE);
                 setText(">>>>>   " + message.getText() + "   <<<<<");
                 break;
             case TASK_MESSAGE:
                 setFont(adaptee.getFont().deriveFont(Font.BOLD).deriveFont(20.0f));
-                setForeground(Color.red);
+                setForeground(Color.RED);
                 setText(message.getText());
                 break;
             case USER_MESSAGE:
                 UserEntry user = message.getUser();
                 String messageText = message.getText();
-                boolean importantToUs = currentUser != null && messageText.indexOf(currentUser.getName()) != -1;
+                boolean importantToUs = currentUser != null && messageText.contains(currentUser.getName());
 
                 if (importantToUs) {
-                    setForeground(Color.red);
+//                    setFont(adaptee.getFont().deriveFont(Font.ITALIC));
+                    setForeground(Color.RED);
+//                    setForeground(Color.red);
                 }
 
                 if (user.isPower()) {
@@ -125,7 +134,7 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
                     if (messageText != null && messageText.length() > 0) {
                         c = messageText.charAt(0);
                     }
-                    if (c == '#' || c == '\uFFFD' /* c == '�' */) {
+                    if (c == '#' || c == '\uFFFD') {
                         messageText = setupPowerMessage(messageText, Color.green.darker());
                     } else if (c == '!') {
                         messageText = setupPowerMessage(messageText, Color.red);
