@@ -28,6 +28,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import ru.ifmo.neerc.chat.user.UserEntry;
 
 /**
  * @author Matvey Kazakov
@@ -39,8 +40,13 @@ public class ChatArea extends JTable {
     private static final int TIME_COLUMN_WIDTH = 60;
     private TableCellRenderer cellRenderer = new NewChatMessageRenderer();
     private boolean doScroll = false;
+    private UserEntry user;
 
     public ChatArea() {
+        this(null);
+    }
+
+    public ChatArea(UserEntry user) {
         model = new ChatModel();
         setModel(model);
         setShowHorizontalLines(false);
@@ -53,7 +59,7 @@ public class ChatArea extends JTable {
         final TableColumn userColumn = getColumnModel().getColumn(1);
         userColumn.setCellRenderer(new NewChatMessageRenderer(Font.BOLD));
         final TableColumn messageColumn = getColumnModel().getColumn(2);
-        messageColumn.setCellRenderer(new NewChatMessageRenderer());
+        messageColumn.setCellRenderer(new NewChatMessageRenderer(user));
         addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent e) {
                 timeColumn.setPreferredWidth(TIME_COLUMN_WIDTH);

@@ -89,7 +89,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 
     private JPanel createMainPanel() {
         JPanel chatPanel = new JPanel(new BorderLayout());
-        outputArea = new ChatArea();
+        outputArea = new ChatArea(user);
         outputAreaJury = new ChatArea();
         inputArea = createInputArea();
         JScrollPane outputAreaScroller = new JScrollPane(outputArea);

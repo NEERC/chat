@@ -36,6 +36,8 @@ import java.util.Map;
  */
 public class NewChatMessageRenderer extends JTextArea implements TableCellRenderer {
     private final DefaultTableCellRenderer adaptee = new DefaultTableCellRenderer();
+    private UserEntry currentUser;
+
     /**
      * map from table to map of rows to map of column heights
      */
@@ -47,11 +49,15 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
         this(-1);
     }
 
+    public NewChatMessageRenderer(UserEntry user) {
+        this(-1);
+        currentUser = user;
+    }
+
     public NewChatMessageRenderer(int fontStyle) {
         this.fontStyle = fontStyle;
         setLineWrap(true);
         setWrapStyleWord(true);
-
     }
 
     public Component getTableCellRendererComponent(//
@@ -108,6 +114,12 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
             case USER_MESSAGE:
                 UserEntry user = message.getUser();
                 String messageText = message.getText();
+                boolean importantToUs = currentUser != null && messageText.indexOf(currentUser.getName()) != -1;
+
+                if (importantToUs) {
+                    setForeground(Color.red);
+                }
+
                 if (user.isPower()) {
                     char c = '.';
                     if (messageText != null && messageText.length() > 0) {
