@@ -1,0 +1,17 @@
+<project default="all">
+    <target name="all">
+        <mkdir dir="dime"/>
+        <mkdir dir="classes"/>
+        <javac srcdir="src" destdir="classes" debug="yes"/>
+        <jar destfile="dime\dime.jar" basedir="classes">
+            <manifest>
+                <attribute name="Main-Class" value="ru.ifmo.neerc.dime.Dime"/>  
+            </manifest>
+        </jar> 
+        <xslt
+            in      = "standings.xml"
+            out     = "dime\text.txt"
+            style   = "xsl\standings.xsl"
+        />
+    </target>
+</project>
