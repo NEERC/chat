@@ -208,4 +208,8 @@ public class ChatMessage implements Comparable<ChatMessage> {
         if (t == 0) return 0;
         return t > 0 ? 1 : -1;
     }
+    
+    public String toString() {
+        return text;
+    }
 }

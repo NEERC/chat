@@ -81,8 +81,8 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
         if (obj instanceof ChatMessage && column == 2) {
             ChatMessage message = (ChatMessage) obj;
             updateRenderer(message);
-        } else if (obj instanceof ChatMessage && column == 1) {
-            ChatMessage message = (ChatMessage) obj;
+        } else if (obj instanceof UserEntry && column == 1) {
+            ChatMessage message = (ChatMessage) table.getValueAt(row, 2);
             if (currentUser != null && message.getText().contains(currentUser.getName())) {
                 setForeground(Color.RED);
             } else if (message.isPrivate()) {
@@ -208,5 +208,9 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
             maximum_height = Math.max(maximum_height, cellHeight);
         }
         return maximum_height;
+    }
+    
+    public String toString() {
+        return "test";
     }
 }

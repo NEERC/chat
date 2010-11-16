@@ -140,13 +140,8 @@ public class ChatArea extends JTable {
             ChatMessage chatMessage = cache.get(rowIndex);
             if (columnIndex == 0) {
                 return chatMessage.getTime();
-//            } else if (columnIndex == 1) {
-//                UserEntry user = chatMessage.getUser();
-//                if (user != null) {
-//                    return user.getName();
-//                } else {
-//                    return "";
-//                }
+            } else if (columnIndex == 1) {
+                return chatMessage.getUser();
             } else {
                 return chatMessage;
             }
