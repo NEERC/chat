@@ -64,13 +64,13 @@ public class AdminTaskList extends JTable {
         private static final long serialVersionUID = 7990317100207622830L;
 
         private ArrayList<Task> tasks;
-        private HashSet<String> taskIds;
+        private HashMap<String, Integer> taskIds;
         private ArrayList<UserEntry> users;
         private String username;
 
         public TaskListModel(String username) {
             this.username = username;
-            updateTasks(false);
+            updateTasks();
         }
 
         public int getColumnCount() {
@@ -92,35 +92,41 @@ public class AdminTaskList extends JTable {
         }
 
         public void taskChanged(Task task) {
-            if (taskIds.contains(task.getId()) && !("remove".equals(task.getType()))) {
-                updateTasks(true);
+            if (taskIds.containsKey(task.getId()) && !("remove".equals(task.getType()))) {
+                updateTask(task);
             } else {
-                updateTasks(false);
+                updateTasks();
             }
         }
 
         public void tasksReset() {
-            updateTasks(false);
+            updateTasks();
         }
 
         public void userChanged(UserEntry userEntry) {
-            updateTasks(false);
+            updateTasks();
         }
 
         public void userPresenceChanged(UserEntry userEntry) {
             // ignore
         }
 
-        private void updateTasks(boolean softUpdate) {
+        private void updateTask(Task task) {
+            int id = taskIds.get(task.getId());
+            tasks.set(id, task);
+            fireTableRowsUpdated(id, id);
+        }
+        
+        private void updateTasks() {
             tasks = new ArrayList<Task>();
             users = new ArrayList<UserEntry>();
-            taskIds = new HashSet<String>();
+            taskIds = new HashMap<String, Integer>();
             boolean admin = UserRegistry.getInstance().findByName(username).isPower();
             for (Task task : registry.getTasks()) {
                 TaskStatus ourStatus = task.getStatus(username);
                 if (admin || ourStatus != null) {
                     tasks.add(task);
-                    taskIds.add(task.getId());
+                    taskIds.put(task.getId(), tasks.size() - 1);
                 }
             }
             for (UserEntry user : UserRegistry.getInstance().getUsers()) {
@@ -129,11 +135,7 @@ public class AdminTaskList extends JTable {
                 }
             }
             Collections.sort(users);
-            if (softUpdate) {
-                fireTableDataChanged();
-            } else {
-                fireTableStructureChanged();
-            }
+	        fireTableStructureChanged();
         }
 
         public String getColumnName(int column) {
