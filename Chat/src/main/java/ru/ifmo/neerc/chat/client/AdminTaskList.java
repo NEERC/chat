@@ -27,15 +27,18 @@ import ru.ifmo.neerc.task.*;
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.*;
 
 /**
  * @author Matvey Kazakov
  */
 public class AdminTaskList extends JTable {
+    private static final int TASK_DEFAULT_WIDTH = 250;
+
     private TaskRegistry registry;
     private String username;
 
@@ -49,6 +52,12 @@ public class AdminTaskList extends JTable {
         setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         AdminTaskRenderer renderer = new AdminTaskRenderer();
         setDefaultRenderer(Object.class, renderer);
+    }
+    
+    public void doLayout() {
+        final TableColumn taskColumn = getColumnModel().getColumn(0);
+        taskColumn.setPreferredWidth(TASK_DEFAULT_WIDTH);
+        super.doLayout();
     }
 
     private class TaskListModel extends AbstractTableModel implements TaskRegistryListener, UserRegistryListener {
@@ -133,37 +142,26 @@ public class AdminTaskList extends JTable {
     }
 
 
-    private class AdminTaskRenderer extends DefaultTableCellRenderer {
+    private class AdminTaskRenderer extends JTextPane implements TableCellRenderer {
+        private final Map<Integer, Map<Integer, Integer>> cellSizes
+                = new HashMap<Integer, Map<Integer, Integer>>();
+
+        private final DefaultTableCellRenderer adaptee = new DefaultTableCellRenderer();
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            if (isSelected) {
-                super.setForeground(table.getSelectionForeground());
-                super.setBackground(table.getSelectionBackground());
-            } else {
-                super.setForeground(table.getForeground());
-                super.setBackground(table.getBackground());
-            }
+            adaptee.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            setForeground(adaptee.getForeground());
+            setBackground(adaptee.getBackground());
+            setFont(adaptee.getFont());
 
-            setFont(table.getFont());
-
-            if (hasFocus) {
-                setBorder(UIManager.getBorder("Table.focusCellHighlightBorder"));
-                if (table.isCellEditable(row, column)) {
-                    super.setForeground(UIManager.getColor("Table.focusCellForeground"));
-                    super.setBackground(UIManager.getColor("Table.focusCellBackground"));
-                }
-            } else {
-                setBorder(noFocusBorder);
-            }
-
+            setText("");
+            setToolTipText(null);
             if (value instanceof Task) {
                 Task task = (Task) value;
                 setText(task.getTitle());
                 setToolTipText(task.getTitle());
 
                 String status = TaskActions.STATUS_SUCCESS;
-                if (task.getStatuses().size() == 0) {
-                    setIcon(null);
-                } else {
+                if (task.getStatuses().size() > 0) {
                     for (TaskStatus taskStatus : task.getStatuses().values()) {
                         if (TaskActions.STATUS_FAIL.equals(taskStatus.getType())) {
                             status = TaskActions.STATUS_FAIL;
@@ -177,20 +175,35 @@ public class AdminTaskList extends JTable {
                             break;
                         }
                     }
-                    setIcon(TaskIcon.STATUS.get(status));
+                    setCaretPosition(0);
+                    insertIcon(TaskIcon.STATUS.get(status));
                 }
             } else if (value instanceof TaskStatus) {
                 TaskStatus status = (TaskStatus) value;
-                setIcon(TaskIcon.STATUS.get(status.getType()));
                 setText(status.getValue());
+                setCaretPosition(0);
+                insertIcon(TaskIcon.STATUS.get(status.getType()));
                 setToolTipText(status.getValue());
-            } else {
-                setIcon(null);
-                setValue(value);
-                setToolTipText(null);
             }
+
+            TableColumnModel columnModel = table.getColumnModel();
+            setSize(columnModel.getColumn(column).getWidth(), 100000);
+            int height_wanted = (int) getPreferredSize().getHeight();
+
+            if (!cellSizes.containsKey(row)) {
+                cellSizes.put(row, new HashMap<Integer, Integer>());
+            }
+            cellSizes.get(row).put(column, height_wanted);
+            int maxHeight = 10;
+            for (Integer h: cellSizes.get(row).values()) {
+                maxHeight = Math.max(maxHeight, h);
+            }
+
+            if (maxHeight != table.getRowHeight(row)) {
+                table.setRowHeight(row, maxHeight);
+            }
+
             return this;
         }
     }
-
 }

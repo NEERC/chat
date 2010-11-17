@@ -210,7 +210,4 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
         return maximum_height;
     }
     
-    public String toString() {
-        return "test";
-    }
 }
