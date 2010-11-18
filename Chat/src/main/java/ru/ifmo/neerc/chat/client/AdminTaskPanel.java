@@ -31,6 +31,8 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 /**
  * @author Matvey Kazakov
@@ -71,6 +73,14 @@ public class AdminTaskPanel extends JPanel {
             }
             public void tasksReset() {
                 enableButtons();
+            }
+        });
+
+        taskList.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    performDefaultAction();
+                }
             }
         });
 
@@ -232,6 +242,25 @@ public class AdminTaskPanel extends JPanel {
     private Task getSelectedTask() {
         int selectedRow = taskList.getSelectedRow();
         return selectedRow != -1 ? (Task) taskList.getModel().getValueAt(selectedRow, 0) : null;
+    }
+
+    private void performDefaultAction() {
+        Task task = getSelectedTask();
+        if (task == null) {
+            return;
+        }
+        TaskStatus taskStatus = task.getStatuses().get(username);
+        if (taskStatus == null) {
+            return;
+        }
+        String type = task.getType();
+        String status = taskStatus.getType();
+        
+        int action = TaskActions.ACTION_DONE;
+        if (type.equals(TaskActions.TYPE_TODO)) {
+            action = status.equals(TaskActions.STATUS_RUNNING) ? TaskActions.ACTION_DONE : TaskActions.ACTION_START;
+        }
+        performAction(action);
     }
 
     private void performAction(int action) {

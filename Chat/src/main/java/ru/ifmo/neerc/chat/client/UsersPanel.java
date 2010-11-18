@@ -51,6 +51,7 @@ public class UsersPanel extends JPanel {
         JList userList = new JList();
         userList.setModel(model);
         userList.setCellRenderer(new UserListCellRenderer());
+        userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         UserRegistry.getInstance().addListener(model);
         add(new JScrollPane(userList), BorderLayout.CENTER);
     }
@@ -106,13 +107,13 @@ public class UsersPanel extends JPanel {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             UserEntry entry = (UserEntry) value;
             Color foreground;
-            if (isSelected) {
-                setBackground(list.getSelectionBackground());
-                foreground = list.getSelectionForeground();
-            } else {
-                setBackground(list.getBackground());
-                foreground = list.getForeground();
-            }
+//            if (isSelected) {
+//                setBackground(list.getSelectionBackground());
+//                foreground = list.getSelectionForeground();
+//            } else {
+            setBackground(list.getBackground());
+            foreground = list.getForeground();
+//            }
 
             if (!entry.isOnline()) {
                 foreground = Color.lightGray;
