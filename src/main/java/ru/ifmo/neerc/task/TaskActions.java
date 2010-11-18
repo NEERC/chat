@@ -25,6 +25,9 @@ public class TaskActions {
         }
         String type = task.getType();
         TaskStatus status = task.getStatuses().get(user);
+        if (status == null) {
+            return false;
+        }
         if (TYPE_TODO.equals(type)) {
             if (STATUS_RUNNING.equals(status.getType())) {
                 return action == ACTION_DONE;
