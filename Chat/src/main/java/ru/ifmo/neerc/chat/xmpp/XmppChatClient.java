@@ -294,7 +294,7 @@ public class XmppChatClient extends AbstractChatClient {
 //                    "User " + nick + " now " + role
 //            ));
             if (nick.equals(user.getName())) {
-                taskPanel.toolBar.setVisible("moderator".equals(role));
+                taskPanel.adminToolBar.setVisible("moderator".equals(role));
             }
         }
 

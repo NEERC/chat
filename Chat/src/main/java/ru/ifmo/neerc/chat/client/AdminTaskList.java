@@ -154,6 +154,7 @@ public class AdminTaskList extends JTable {
             setForeground(adaptee.getForeground());
             setBackground(adaptee.getBackground());
             setFont(adaptee.getFont());
+            setMargin(new Insets(1, 1, 1, 1));
 
             setText("");
             setToolTipText(null);
@@ -162,24 +163,33 @@ public class AdminTaskList extends JTable {
                 setText(task.getTitle());
                 setToolTipText(task.getTitle());
 
-                String status = TaskActions.STATUS_SUCCESS;
-                if (task.getStatuses().size() > 0) {
+                TaskStatus ourStatus = task.getStatus(username);
+                String displayStatus = null;
+                
+                if (ourStatus != null) {
+                    displayStatus = ourStatus.getType();
+                } else if (task.getStatuses().size() > 0) {
+                    displayStatus = TaskActions.STATUS_SUCCESS;
                     for (TaskStatus taskStatus : task.getStatuses().values()) {
                         if (TaskActions.STATUS_FAIL.equals(taskStatus.getType())) {
-                            status = TaskActions.STATUS_FAIL;
+                            displayStatus = TaskActions.STATUS_FAIL;
                             break;
                         } else if (TaskActions.STATUS_RUNNING.equals(taskStatus.getType())) {
-                            status = TaskActions.STATUS_RUNNING;
+                            displayStatus = TaskActions.STATUS_RUNNING;
                             break;
                         } else if (TaskActions.STATUS_SUCCESS.equals(taskStatus.getType())) {
                         } else {
-                            status = TaskActions.STATUS_NEW;
+                            displayStatus = TaskActions.STATUS_NEW;
                             break;
                         }
                     }
-                    setCaretPosition(0);
-                    insertIcon(TaskIcon.STATUS.get(status));
                 }
+                
+                if (displayStatus != null) {
+                    setCaretPosition(0);
+                    insertIcon(TaskIcon.STATUS.get(displayStatus));
+                }
+
             } else if (value instanceof TaskStatus) {
                 TaskStatus status = (TaskStatus) value;
                 setText(status.getValue());

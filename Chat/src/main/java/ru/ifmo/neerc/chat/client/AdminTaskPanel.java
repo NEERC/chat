@@ -23,6 +23,7 @@ import ru.ifmo.neerc.task.Task;
 import ru.ifmo.neerc.task.TaskActions;
 import ru.ifmo.neerc.task.TaskRegistry;
 import ru.ifmo.neerc.task.TaskRegistryListener;
+import ru.ifmo.neerc.task.TaskStatus;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -41,7 +42,14 @@ public class AdminTaskPanel extends JPanel {
     private JButton btnAssignTask;
     private JButton btnRemoveTask;
 
+    private AbstractButton btnActionDone;
+    private AbstractButton btnActionStart;
+    private AbstractButton btnActionFail;
+
+    public Component adminToolBar;
+    public Component userToolBar;
     public Component toolBar;
+
     private Chat chat;
     private String username;
 
@@ -66,17 +74,33 @@ public class AdminTaskPanel extends JPanel {
             }
         });
 
-        add(new JScrollPane(taskList), BorderLayout.CENTER);
         toolBar = createToolBar();
-        toolBar.setVisible(false);
-        add(toolBar, BorderLayout.WEST);
+
+        add(new JScrollPane(taskList), BorderLayout.CENTER);
+        add(toolBar, BorderLayout.NORTH);
         enableButtons();
+
+        adminToolBar.setVisible(false);
     }
 
     private void enableButtons() {
-        boolean enable = taskList.getSelectedRowCount() > 0;
+        boolean enable = taskList.getSelectedRow() != -1;
         enableButton(enable, btnAssignTask);
         enableButton(enable, btnRemoveTask);
+
+        Task task = getSelectedTask();
+        enableButton(
+                TaskActions.isActionSupported(task, username, TaskActions.ACTION_FAIL),
+                btnActionFail
+        );
+        enableButton(
+                TaskActions.isActionSupported(task, username, TaskActions.ACTION_START),
+                btnActionStart
+        );
+        enableButton(
+                TaskActions.isActionSupported(task, username, TaskActions.ACTION_DONE),
+                btnActionDone
+        );
     }
 
     private void enableButton(boolean enable, Component btn) {
@@ -87,14 +111,34 @@ public class AdminTaskPanel extends JPanel {
 
     private Component createToolBar() {
         JToolBar toolBar = new JToolBar();
+
+        toolBar.setBorderPainted(false);
+        toolBar.setMargin(new Insets(0, 0, 0, 0));
         toolBar.setFloatable(false);
-        toolBar.setOrientation(JToolBar.VERTICAL);
         toolBar.setRollover(true);
 
-        toolBar.add(createAddTaskButton(TaskActions.TYPE_TODO, "Add TODO"));
-        toolBar.add(createAddTaskButton(TaskActions.TYPE_CONFIRM, "Add Confirmation"));
-        toolBar.add(createAddTaskButton(TaskActions.TYPE_REASON, "Add Ok/Fail Reason"));
-        toolBar.add(createAddTaskButton(TaskActions.TYPE_QUESTION, "Add Question"));
+        adminToolBar = createAdminToolBar();
+        userToolBar = createUserToolBar();
+
+        toolBar.add(userToolBar);
+        toolBar.add(Box.createHorizontalStrut(20));
+        toolBar.add(adminToolBar);
+
+        return toolBar;
+    }
+
+    private Component createAdminToolBar() {
+        JToolBar toolBar = new JToolBar();
+
+        toolBar.setBorderPainted(false);
+        toolBar.setMargin(new Insets(0, 0, 0, 0));
+        toolBar.setFloatable(false);
+        toolBar.setRollover(true);
+
+        toolBar.add(createAddTaskButton(TaskActions.TYPE_TODO, "Add TODO (@todo)"));
+        toolBar.add(createAddTaskButton(TaskActions.TYPE_CONFIRM, "Add Confirmation (@confirm)"));
+        toolBar.add(createAddTaskButton(TaskActions.TYPE_REASON, "Add Ok/Fail Reason (@okfail)"));
+        toolBar.add(createAddTaskButton(TaskActions.TYPE_QUESTION, "Add Question (@q)"));
 
         btnAssignTask = createButton(TaskIcon.iconTaskAssign, "Assign Task");
         btnAssignTask.addActionListener(new ActionListener() {
@@ -117,11 +161,29 @@ public class AdminTaskPanel extends JPanel {
             }
         });
         toolBar.add(btnRemoveTask);
-
         return toolBar;
     }
 
-    private JButton createAddTaskButton(final String type, final String message) {
+
+    private Component createUserToolBar() {
+        JToolBar toolBar = new JToolBar();
+
+        toolBar.setBorderPainted(false);
+        toolBar.setMargin(new Insets(0, 0, 0, 0));
+        toolBar.setFloatable(false);
+        toolBar.setRollover(true);
+
+        btnActionDone = createButton(TaskActions.ACTION_DONE, "Task is done");
+        btnActionFail = createButton(TaskActions.ACTION_FAIL, "Task is failed due to...");
+        btnActionStart = createButton(TaskActions.ACTION_START, "Task is started");
+        toolBar.add(btnActionStart);
+        toolBar.add(btnActionDone);
+        toolBar.add(btnActionFail);
+        return toolBar;
+    }
+
+    
+    private Component createAddTaskButton(final String type, final String message) {
         JButton btnCreateTask = createButton(
                 TaskIcon.TYPE.get(type),
                 message
@@ -140,11 +202,22 @@ public class AdminTaskPanel extends JPanel {
     }
 
     private JButton createButton(final ImageIcon icon, final String toolTipText) {
-        JButton btnCreateTask = new JButton(icon);
-        btnCreateTask.setBorderPainted(false);
-        btnCreateTask.setToolTipText(toolTipText);
-        btnCreateTask.setMargin(new Insets(0, 0, 0, 0));
-        return btnCreateTask;
+        JButton btn = new JButton(icon);
+        btn.setFocusable(false);
+        btn.setBorderPainted(false);
+        btn.setToolTipText(toolTipText);
+        btn.setMargin(new Insets(0, 0, 0, 0));
+        return btn;
+    }
+
+    private JButton createButton(final int action, final String toolTipText) {
+        JButton btn = createButton(TaskIcon.ACTION.get(action), toolTipText);
+        btn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                performAction(action);
+            }
+        });
+        return btn;
     }
 
     private Task[] getSelectedTasks() {
@@ -155,5 +228,56 @@ public class AdminTaskPanel extends JPanel {
         }
         return tasks;
     }
+    
+    private Task getSelectedTask() {
+        int selectedRow = taskList.getSelectedRow();
+        return selectedRow != -1 ? (Task) taskList.getModel().getValueAt(selectedRow, 0) : null;
+    }
 
+    private void performAction(int action) {
+        Task task = getSelectedTask();
+        if (task == null) {
+            return;
+        }
+        TaskStatus taskStatus = task.getStatuses().get(username);
+        if (taskStatus == null) {
+            return;
+        }
+        String value = "";
+        if (action == TaskActions.ACTION_FAIL) {
+            String message = "Give the reason";
+            value = JOptionPane.showInputDialog(
+                    SwingUtilities.getWindowAncestor(this),
+                    message,
+                    taskStatus.getValue()
+            );
+            if (value == null) {
+                return;
+            }
+        }
+        if (task.getType().equals(TaskActions.TYPE_QUESTION)) {
+            String message = "Your answer";
+            value = JOptionPane.showInputDialog(
+                    SwingUtilities.getWindowAncestor(this),
+                    message,
+                    taskStatus.getValue()
+            );
+            if (value == null) {
+                return;
+            }
+        }
+
+        String status = TaskActions.getNewStatus(task, username, action);
+        try {
+            chat.write(task, new TaskStatus(status, value));
+        } catch (IllegalStateException e) {
+            JOptionPane.showMessageDialog(
+                SwingUtilities.getWindowAncestor(this),
+                "Not connected to server",
+                "Error",
+                JOptionPane.WARNING_MESSAGE
+            );
+        }
+        enableButtons();
+    }
 }

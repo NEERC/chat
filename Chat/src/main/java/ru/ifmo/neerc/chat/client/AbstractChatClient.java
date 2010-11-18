@@ -105,18 +105,18 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         chatSplitter.setDividerLocation(526);
         chatPanel.add(chatSplitter, BorderLayout.CENTER);
 
-        JPanel controlPanel = new JPanel(new BorderLayout());
+//        JPanel controlPanel = new JPanel(new BorderLayout());
         UsersPanel users = new UsersPanel(user);
-        TaskPanel personalTasks = new TaskPanel(taskRegistry, user, chat);
-        JSplitPane controlSplitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, users, personalTasks);
-        setupSplitter(controlSplitter);
-        controlSplitter.setResizeWeight(1);
-        controlSplitter.setDividerLocation(300);
-        controlPanel.add(controlSplitter, BorderLayout.CENTER);
-        users.setSplitter(controlSplitter);
+//        TaskPanel personalTasks = new TaskPanel(taskRegistry, user, chat);
+//        JSplitPane controlSplitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, users, personalTasks);
+//        setupSplitter(controlSplitter);
+//        controlSplitter.setResizeWeight(1);
+//        controlSplitter.setDividerLocation(300);
+//        controlPanel.add(controlSplitter, BorderLayout.CENTER);
+//        users.setSplitter(controlSplitter);
 
         JPanel topPanel = new JPanel(new BorderLayout());
-        JSplitPane mainSplitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, controlPanel, chatPanel);
+        JSplitPane mainSplitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, users, chatPanel);
         setupSplitter(mainSplitter);
         mainSplitter.setDividerLocation(100);
         topPanel.add(mainSplitter);
