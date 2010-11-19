@@ -82,6 +82,9 @@ public class AdminTaskList extends JTable {
         }
 
         public Object getValueAt(int rowIndex, int columnIndex) {
+            if (rowIndex >= getRowCount() || columnIndex >= getColumnCount()) {
+                return null;
+            }
             if (columnIndex == 0) {
                 return tasks.get(rowIndex);
             } else {
@@ -92,10 +95,10 @@ public class AdminTaskList extends JTable {
         }
 
         public void taskChanged(Task task) {
-            if (taskIds.containsKey(task.getId()) && !("remove".equals(task.getType()))) {
+            if (taskIds.containsKey(task.getId())) {
                 updateTask(task);
             } else {
-                updateTasks();
+                insertTask(task);
             }
         }
 
@@ -113,8 +116,23 @@ public class AdminTaskList extends JTable {
 
         private void updateTask(Task task) {
             int id = taskIds.get(task.getId());
+            if ("remove".equals(task.getType())) {
+                tasks.remove(id);
+                for (int i = id; i < tasks.size(); i++) {
+                    taskIds.put(tasks.get(i).getId(), i);
+                }
+                fireTableRowsDeleted(id, id);
+                return;
+            }
             tasks.set(id, task);
             fireTableRowsUpdated(id, id);
+        }
+        
+        private void insertTask(Task task) {
+            int id = tasks.size();
+            tasks.add(task);
+            taskIds.put(task.getId(), id);
+            fireTableRowsInserted(id, id);
         }
         
         private void updateTasks() {
