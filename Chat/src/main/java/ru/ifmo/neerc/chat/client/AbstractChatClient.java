@@ -212,7 +212,8 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         inputArea.addKeyListener(new KeyAdapter() {
             public void keyTyped(KeyEvent e1) {
                 if (e1.getKeyChar() == KeyEvent.VK_ENTER && (e1.getModifiers() & KeyEvent.CTRL_MASK) > 0) {
-                    String text = inputArea.getText();
+                    String text = inputArea.getText().trim();
+                    if (text.equals("")) return;
                     messageLocalHistory.add(text);
                     send(text);
                 }
