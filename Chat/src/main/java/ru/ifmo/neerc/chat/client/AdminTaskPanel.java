@@ -78,7 +78,7 @@ public class AdminTaskPanel extends JPanel {
 
         taskList.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
+                if (e.getClickCount() % 2 == 0) {
                     performDefaultAction();
                 }
             }
@@ -260,6 +260,9 @@ public class AdminTaskPanel extends JPanel {
         if (type.equals(TaskActions.TYPE_TODO)) {
             action = status.equals(TaskActions.STATUS_RUNNING) ? TaskActions.ACTION_DONE : TaskActions.ACTION_START;
         }
+        else if (type.equals(TaskActions.TYPE_REASON)) {
+            action = TaskActions.ACTION_FAIL;
+        }
         performAction(action);
     }
 
@@ -282,6 +285,9 @@ public class AdminTaskPanel extends JPanel {
             );
             if (value == null) {
                 return;
+            }
+            if (value.equals("")) {
+                action = TaskActions.ACTION_DONE;
             }
         }
         if (task.getType().equals(TaskActions.TYPE_QUESTION)) {
