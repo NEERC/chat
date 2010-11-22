@@ -128,27 +128,39 @@ public class AdminTaskList extends JTable {
             fireTableRowsUpdated(id, id);
         }
         
+        private boolean isAdmin() {
+            return UserRegistry.getInstance().findByName(username).isPower();
+        }
+        
+        private boolean isTaskRelevant(Task task) {
+            return isAdmin() || task.getStatus(username) != null;
+        }
+        
+        private boolean isUserRelevant(UserEntry user) {
+            return isAdmin() || !user.isPower();
+        }
+
         private void insertTask(Task task) {
             int id = tasks.size();
-            tasks.add(task);
-            taskIds.put(task.getId(), id);
-            fireTableRowsInserted(id, id);
+            if (isTaskRelevant(task)) {
+                tasks.add(task);
+                taskIds.put(task.getId(), id);
+                fireTableRowsInserted(id, id);
+            }
         }
         
         private void updateTasks() {
             tasks = new ArrayList<Task>();
             users = new ArrayList<UserEntry>();
             taskIds = new HashMap<String, Integer>();
-            boolean admin = UserRegistry.getInstance().findByName(username).isPower();
             for (Task task : registry.getTasks()) {
-                TaskStatus ourStatus = task.getStatus(username);
-                if (admin || ourStatus != null) {
+                if (isTaskRelevant(task)) {
                     tasks.add(task);
                     taskIds.put(task.getId(), tasks.size() - 1);
                 }
             }
             for (UserEntry user : UserRegistry.getInstance().getUsers()) {
-                if (admin || !user.isPower()) {
+                if (isUserRelevant(user)) {
                     users.add(user);
                 }
             }
