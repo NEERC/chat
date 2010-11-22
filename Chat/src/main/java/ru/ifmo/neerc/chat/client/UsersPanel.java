@@ -25,6 +25,9 @@ import ru.ifmo.neerc.chat.user.UserRegistryListener;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -43,16 +46,27 @@ public class UsersPanel extends JPanel {
 
     private UserEntry user;
     private JSplitPane splitter;
+    private ArrayList<UsersPanelListener> listeners = new ArrayList<UsersPanelListener>();
 
     public UsersPanel(UserEntry user) {
         this.user = user;
         setLayout(new BorderLayout());
         ListData model = new ListData();
-        JList userList = new JList();
+        final JList userList = new JList();
         userList.setModel(model);
         userList.setCellRenderer(new UserListCellRenderer());
         userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         UserRegistry.getInstance().addListener(model);
+        userList.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                UserEntry user = (UserEntry)userList.getSelectedValue();
+                if (user != null && e.getClickCount() % 2 == 0) {
+                    for (UsersPanelListener listener : listeners) {
+                        listener.userClicked(user);
+                    }
+                }
+            }
+        });
         add(new JScrollPane(userList), BorderLayout.CENTER);
     }
     
@@ -63,6 +77,10 @@ public class UsersPanel extends JPanel {
     private void resize(int users) {
         if (splitter == null) return;
         splitter.setDividerLocation(users * USER_ITEM_HEIGHT + 5);
+    }
+    
+    public void addListener(UsersPanelListener listener) {
+        listeners.add(listener);
     }
 
     private class ListData extends AbstractListModel implements UserRegistryListener {

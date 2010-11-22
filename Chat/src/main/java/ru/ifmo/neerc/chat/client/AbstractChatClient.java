@@ -107,6 +107,15 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 
 //        JPanel controlPanel = new JPanel(new BorderLayout());
         UsersPanel users = new UsersPanel(user);
+        users.addListener(new UsersPanelListener() {
+            public void userClicked(UserEntry user) {
+                String text = inputArea.getText();
+                text = text.replaceAll("\\A\\w+>\\s*", "");
+                text = user.getName() + "> " + text;
+                inputArea.setText(text);
+                inputArea.requestFocus();
+            }
+        });
 //        TaskPanel personalTasks = new TaskPanel(taskRegistry, user, chat);
 //        JSplitPane controlSplitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, users, personalTasks);
 //        setupSplitter(controlSplitter);
