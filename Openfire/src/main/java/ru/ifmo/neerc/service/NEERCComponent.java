@@ -114,8 +114,9 @@ public class NEERCComponent implements Component {
     }
 
     public UserEntry getSender(Packet packet) {
-        String userName = getUsernameFromJID(packet.getFrom().toBareJID());
-        return users.findByName(userName);
+        String jid = packet.getFrom().toBareJID();
+        if (jid.equals("component.localhost")) return null;
+        return users.findOrRegister(jid);
     }
 
     public void initialize(JID jid, ComponentManager componentManager) {
