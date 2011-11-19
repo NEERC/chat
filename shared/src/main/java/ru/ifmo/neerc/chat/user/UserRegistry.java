@@ -127,9 +127,12 @@ public class UserRegistry {
             String group = user.getGroup();
             for (String s : search) {
                 if (s.equalsIgnoreCase("halls")) {
-                    s = "Users";
+                    if (name.startsWith("hall")) {
+                        res.add(user);
+                        break;
+                    }
                 }
-                if (s.equalsIgnoreCase(name) || s.equalsIgnoreCase(group)) {
+                else if (s.equalsIgnoreCase(name) || s.equalsIgnoreCase(group)) {
                     res.add(user);
                     break;
                 }
