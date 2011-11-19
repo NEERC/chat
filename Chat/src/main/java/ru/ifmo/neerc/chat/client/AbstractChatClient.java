@@ -62,6 +62,8 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 
     protected boolean isBeepOn = false;
 
+    protected boolean sendOnEnter = false;
+
     protected TimerTicker ticker = new TimerTicker(neercTimer);
 
     protected Chat chat;
@@ -172,6 +174,22 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         });
         toolBar.add(mute);
 
+        final ImageIcon enterImage = new ImageIcon(AbstractChatClient.class.getResource("res/btn_enter.png"));
+        final ImageIcon ctrlEnterImage = new ImageIcon(AbstractChatClient.class.getResource("res/btn_ctrl_enter.png"));
+        final JButton sendModeSwitch = new JButton(ctrlEnterImage);
+        sendModeSwitch.setFocusable(false);
+        final String sendModeEnter = "Messages are sent on Enter";
+        final String sendModeCtrlEnter = "Messages are sent on Ctrl+Enter";
+        sendModeSwitch.setToolTipText(sendOnEnter ? sendModeEnter : sendModeCtrlEnter);
+        sendModeSwitch.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                sendOnEnter = !sendOnEnter;
+                sendModeSwitch.setIcon(sendOnEnter ? enterImage : ctrlEnterImage);
+                sendModeSwitch.setToolTipText(sendOnEnter ? sendModeEnter : sendModeCtrlEnter);
+            }
+        });
+        toolBar.add(sendModeSwitch);
+
         resetButton = new JButton("Reconnect");
         resetButton.setFocusable(false);
 
@@ -220,11 +238,18 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         final MessageLocalHistory messageLocalHistory = new MessageLocalHistory(localHistorySize);
         inputArea.addKeyListener(new KeyAdapter() {
             public void keyTyped(KeyEvent e1) {
-                if (e1.getKeyChar() == KeyEvent.VK_ENTER && (e1.getModifiers() & KeyEvent.CTRL_MASK) > 0) {
-                    String text = inputArea.getText().trim();
-                    if (text.equals("")) return;
-                    messageLocalHistory.add(text);
-                    send(text);
+                if (e1.getKeyChar() == KeyEvent.VK_ENTER) {
+                    boolean hasCtrl = (e1.getModifiers() & KeyEvent.CTRL_MASK) > 0;
+                    if (hasCtrl != sendOnEnter) {
+                        String text = inputArea.getText().trim();
+                        if (text.equals("")) return;
+                        messageLocalHistory.add(text);
+                        send(text);
+                    } else {
+                        if (hasCtrl) {
+                            inputArea.setText(inputArea.getText() + "\n");
+                        }
+                    }
                 }
             }
 
