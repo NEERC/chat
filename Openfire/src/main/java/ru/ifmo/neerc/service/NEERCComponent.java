@@ -36,6 +36,8 @@ import ru.ifmo.neerc.task.Task;
 import ru.ifmo.neerc.task.TaskRegistry;
 import ru.ifmo.neerc.task.TaskRegistryListener;
 import ru.ifmo.neerc.utils.XmlUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.*;
@@ -46,6 +48,7 @@ import java.util.*;
 public class NEERCComponent implements Component {
 
     private String myName;
+	private static final Logger Log = LoggerFactory.getLogger(NEERCComponent.class);
     private ComponentManager componentManager = null;
     private UserRegistry users = UserRegistry.getInstance();
     private TaskRegistry tasks = TaskRegistry.getInstance();
@@ -69,7 +72,7 @@ public class NEERCComponent implements Component {
         MultiUserChatService service = server.getMultiUserChatManager().getMultiUserChatServices().get(0);
         MUCRoom room = service.getChatRoom("neerc");
         if (room == null) {
-           componentManager.getLog().error("no neerc room in MUC");
+           Log.error("no neerc room in MUC");
            return;
         }
 
@@ -144,7 +147,7 @@ public class NEERCComponent implements Component {
     // Component Interface
 
     public void processPacket(Packet packet) {
-        componentManager.getLog().debug("neerc got packet: " + packet.toXML());
+        Log.debug("neerc got packet: " + packet.toXML());
         if (packet instanceof IQ) {
             // Handle disco packets
             IQ iq = (IQ) packet;
@@ -193,7 +196,7 @@ public class NEERCComponent implements Component {
 	    } else if (namespace.startsWith(NAMESPACE + '#')) {
             String query = namespace.substring(NAMESPACE.length() + 1);
             if (!handlers.containsKey(query)) {
-                componentManager.getLog().info("neerc got unknown query " + query);
+                Log.info("neerc got unknown query " + query);
                 reply.setError(PacketError.Condition.service_unavailable);
             } else {
                 QueryHandler handler = handlers.get(query);
@@ -219,9 +222,9 @@ public class NEERCComponent implements Component {
     public void sendPacket(Packet packet) {
         try {
             componentManager.sendPacket(this, packet);
-            componentManager.getLog().debug("neerc sent packet: " + packet.toXML());
+            Log.debug("neerc sent packet: " + packet.toXML());
         } catch (ComponentException e) {
-            componentManager.getLog().error(e);
+            Log.error(e.getLocalizedMessage());
         }
     }
     

@@ -22,6 +22,8 @@ import org.xmpp.component.ComponentManager;
 import org.xmpp.component.ComponentManagerFactory;
 
 import ru.ifmo.neerc.service.NEERCComponent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
@@ -33,6 +35,7 @@ public class NEERCService implements Plugin {
     private String serviceName = "neerc";
     private ComponentManager componentManager;
     private NEERCComponent component;
+	private static final Logger Log = LoggerFactory.getLogger(NEERCService.class);
 
     public void initializePlugin(PluginManager manager, File pluginDirectory) {
         componentManager = ComponentManagerFactory.getComponentManager();
@@ -40,9 +43,9 @@ public class NEERCService implements Plugin {
         try {
             componentManager.addComponent(serviceName, component);
         } catch (Exception e) {
-            componentManager.getLog().error(e);
+            Log.error(e.getLocalizedMessage());
         }
-        componentManager.getLog().debug("neerc service started");
+        Log.debug("neerc service started");
     }
 
     public void destroyPlugin() {
@@ -50,9 +53,9 @@ public class NEERCService implements Plugin {
             try {
                 componentManager.removeComponent(serviceName);
             } catch (Exception e) {
-                componentManager.getLog().error(e);
+                Log.error(e.getLocalizedMessage());
             }
-	        componentManager.getLog().debug("neerc service stopped");
+	        Log.debug("neerc service stopped");
         }
         component = null;
         componentManager = null;
