@@ -37,10 +37,11 @@ public class XmppChat implements Chat {
     private static final Logger LOG = LoggerFactory.getLogger(XmppChat.class);
 
     private static final String SERVER_HOST = System.getProperty("server.host", "localhost");
+    private static final String SERVER_HOSTNAME = System.getProperty("server.hostname", SERVER_HOST);
     private static final int SERVER_PORT = Integer.parseInt(System.getProperty("server.port", "5222"));
-    private static final String ROOM = "neerc@conference.localhost";
+    private static final String ROOM = "neerc@conference." + SERVER_HOSTNAME;
     private static final boolean DEBUG = Boolean.parseBoolean(System.getProperty("smack.debug", "false"));
-	private static final String NEERC_SERVICE = "neerc.localhost";
+	private static final String NEERC_SERVICE = "neerc." + SERVER_HOSTNAME;
     private static final int PING_INTERVAL = Integer.parseInt(System.getProperty("ping", "5")) * 1000;
 
     private MultiUserChat muc;
