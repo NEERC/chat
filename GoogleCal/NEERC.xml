@@ -1,0 +1,71 @@
+<cal>
+    <day shift="-10" where="ИТМО">
+        Подготовка комнаты ТК
+        <event start="10:00" end="14:00">Монтаж оборудования комнаты ТК</event>
+        <event start="14:00" end="21:00">Настройка компьютеров ТК и проверочной системы</event>
+    </day>
+    <day shift="-9" where="ИТМО">
+        Подготовка холлов
+        <event start="10:00" end="20:00" cal="org">Регистрация участников</event>
+        <event start="13:00" end="14:00" cal="food">Обед жюри</event>        
+        <event start="14:00" end="14:30" where="каф. КТ">Общий сбор</event>
+        <event start="14:30" end="21:00">Расстановка, настройка рабочих мест участников, тестовая прогонка</event>
+        <event start="15:00" end="16:00" where="каф. КТ" cal="food">Доставка еды из магазина</event>        
+        <event start="18:00" end="19:00" where="каф. КТ" cal="food">Перекус волонтеров</event>                
+    </day>
+    <day shift="-8" where="ИТМО">
+        Школьники: Пробный тур
+        <event start="09:00" end="11:00" cal="org">Регистрация участников</event>
+        <event start="11:00" end="12:00" where="актовый зал" cal="org">Церемония открытия</event>
+        <event start="12:00" end="13:00">Подготовка к пробному туру</event>
+        <event start="12:00" end="12:30" where="актовый зал" cal="org">Выступление представителей жюри и ТК</event>        
+        <event start="13:00" end="14:00">Пробный тур</event>
+        <event start="14:00" end="15:00">Наведение порядка в холлах</event>        
+        <event start="14:30" end="15:30" cal="food">Обед участников, жюри</event>        
+    </day>
+    <day shift="-7" where="ИТМО">
+        Школьники: Основной Тур
+        <event start="09:00" end="10:00">Подготовка к основному туру</event>
+        <event start="10:00" end="15:00">Основной тур</event>
+        <event start="12:00" end="13:00" cal="food">Дополнительное питание участников</event>
+        <event start="13:00" end="14:00" cal="food">Обед волонтеров, жюри</event>        
+        <event start="15:00" end="16:00">Наведение порядка в холлах</event>        
+        <event start="15:15" end="16:15" cal="food">Обед участников</event>                
+        <event start="16:30" end="17:30" cal="org">Разбор задач</event>                
+        <event start="17:30" end="18:30" cal="org">Церемония награждения</event>                
+    </day>
+    <day shift="-2" where="ИТМО">
+        Подготовка холлов
+        <event start="10:00" end="20:00" cal="org">Регистрация участников</event>
+        <event start="13:00" end="14:00" cal="food">Обед жюри</event>        
+        <event start="14:00" end="14:30" where="каф. КТ">Общий сбор</event>
+        <event start="14:30" end="21:00">Расстановка, настройка рабочих мест участников, тестовая прогонка</event>
+        <event start="15:00" end="16:00" where="каф. КТ" cal="food">Доставка еды из магазина</event>        
+        <event start="18:00" end="19:00" where="каф. КТ" cal="food">Перекус волонтеров</event>                
+    </day>
+    <day shift="-1" where="ИТМО">
+        Студенты: Пробный тур
+        <event start="09:00" end="11:00" cal="org">Регистрация участников</event>
+        <event start="11:00" end="12:00" where="актовый зал" cal="org">Церемония открытия</event>
+        <event start="12:00" end="12:45" where="актовый зал" cal="org">Встреча со спонсорами и организаторами</event>
+        <event start="12:45" end="13:30" where="актовый зал" cal="org">Встреча с представителями Жюри и ТК</event>        
+        <event start="13:45" end="15:45" cal="food">Обед участников, жюри</event>        
+        <event start="15:00" end="16:00">Подготовка к пробному туру</event>
+        <event start="16:00" end="17:30">Пробный тур</event>
+        <event start="17:30" end="19:30">Наведение порядка в холлах</event>        
+        <event start="19:00" end="20:00" cal="food">Ужин участников, жюри</event>        
+    </day>
+    <day shift="0" where="ИТМО">
+        Студенты: Основной Тур
+        <event start="09:00" end="10:00">Подготовка к основному туру</event>
+        <event start="10:00" end="15:00">Финал NEERC</event>
+        <event start="12:00" end="13:00" cal="food">Дополнительное питание участников</event>
+        <event start="13:00" end="14:00" cal="food">Обед волонтеров, жюри</event>        
+        <event start="15:00" end="18:00">Приведение аудиторий в оригинальное состояние</event>        
+        <event start="15:30" end="16:30" cal="food">Обед участников</event>                
+        <event start="17:00" end="19:00" cal="org">Разбор задач</event>                
+        <event start="18:00" end="18:30">Подведение итогов</event>        
+        <event start="19:00" end="20:00" cal="org">Церемония награждения</event>                
+        <event start="20:00" end="21:00" cal="food">Торжественный ужин</event>                
+    </day>
+</cal>
