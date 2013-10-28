@@ -68,6 +68,7 @@ public class NEERCComponent implements Component {
     }
 
     private void initUsers() {
+		Log.debug("init start");
         XMPPServer server = XMPPServer.getInstance(); 
         MultiUserChatService service = server.getMultiUserChatManager().getMultiUserChatServices().get(0);
         MUCRoom room = service.getChatRoom("neerc");
@@ -76,28 +77,25 @@ public class NEERCComponent implements Component {
            return;
         }
 
-        for (String jid: room.getOwners()) {
-            String username = getUsernameFromJID(jid);
+        for (JID jid: room.getOwners()) {
+            String username = jid.getNode() == null ? jid.toString() : jid.getNode();
             UserEntry user = users.findOrRegister(username);
             user.setPower(true);
             user.setGroup("Admins");
         }
-        for (String jid: room.getAdmins()) {
-            String username = getUsernameFromJID(jid);
+
+        for (JID jid: room.getAdmins()) {
+            String username = jid.getNode() == null ? jid.toString() : jid.getNode();
             UserEntry user = users.findOrRegister(username);
             user.setPower(true);
             user.setGroup("Admins");
         }
-        for (String jid: room.getMembers()) {
-            String username = getUsernameFromJID(jid);
+
+        for (JID jid: room.getMembers()) {
+            String username = jid.getNode() == null ? jid.toString() : jid.getNode();
             UserEntry user = users.findOrRegister(username);
             user.setGroup("Users");
         }
-    }
-
-    private String getUsernameFromJID(String jid) {
-        int pos = jid.indexOf('@');
-        return pos == -1 ? jid : jid.substring(0, pos);
     }
     
     public Collection<UserEntry> getUsers() {
