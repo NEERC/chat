@@ -41,6 +41,7 @@ public class AdminTaskList extends JTable {
 
     private TaskRegistry registry;
     private String username;
+    private boolean reverseTaskList = true;
 
     public AdminTaskList(TaskRegistry taskRegistry, String username) {
         this.registry = taskRegistry;
@@ -52,6 +53,15 @@ public class AdminTaskList extends JTable {
         setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         AdminTaskRenderer renderer = new AdminTaskRenderer();
         setDefaultRenderer(Object.class, renderer);
+    }
+
+    boolean getReverseTaskList() {
+        return reverseTaskList;
+    }
+
+    void setReverseTaskList(boolean reverse) {
+        reverseTaskList = reverse;
+        repaint();
     }
     
     public void doLayout() {
@@ -86,10 +96,10 @@ public class AdminTaskList extends JTable {
                 return null;
             }
             if (columnIndex == 0) {
-                return tasks.get(rowIndex);
+                return tasks.get(reverseTaskList ? tasks.size() - rowIndex - 1 : rowIndex);
             } else {
                 UserEntry currentUser = users.get(columnIndex - 1);
-                Task currentTask = tasks.get(rowIndex);
+                Task currentTask = tasks.get(reverseTaskList ? tasks.size() - rowIndex - 1 : rowIndex);
                 return currentTask.getStatuses().get(currentUser.getName());
             }
         }
@@ -117,11 +127,12 @@ public class AdminTaskList extends JTable {
         private void updateTask(Task task) {
             int id = taskIds.get(task.getId());
             if ("remove".equals(task.getType())) {
+                int row = reverseTaskList ? tasks.size() - id - 1 : id;
                 tasks.remove(id);
                 for (int i = id; i < tasks.size(); i++) {
                     taskIds.put(tasks.get(i).getId(), i);
                 }
-                fireTableRowsDeleted(id, id);
+                fireTableRowsDeleted(row, row);
                 return;
             }
             tasks.set(id, task);
@@ -145,7 +156,8 @@ public class AdminTaskList extends JTable {
             if (isTaskRelevant(task)) {
                 tasks.add(task);
                 taskIds.put(task.getId(), id);
-                fireTableRowsInserted(id, id);
+                int row = reverseTaskList ? 0 : id;
+                fireTableRowsInserted(row, row);
             }
         }
         
