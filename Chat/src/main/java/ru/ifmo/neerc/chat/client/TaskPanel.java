@@ -38,7 +38,7 @@ import java.awt.event.ActionListener;
  */
 public class TaskPanel extends JPanel {
     private String user;
-    private JList taskList;
+    private JList<Task> taskList;
     private AbstractButton btnActionDone;
     private AbstractButton btnActionStart;
     private AbstractButton btnActionFail;

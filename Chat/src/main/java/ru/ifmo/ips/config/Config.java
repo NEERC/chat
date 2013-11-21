@@ -107,7 +107,7 @@ public interface Config {
      * @throws java.lang.UnsupportedOperationException in case if operation is not supported by particular
      * Config implementation
      */
-    Map getProperties();
+    Map<String, String> getProperties();
 
     /**
      * Assigns new value for given property. If property with given name doesn't exist, it will be created.

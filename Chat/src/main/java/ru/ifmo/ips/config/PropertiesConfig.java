@@ -25,7 +25,7 @@ import ru.ifmo.ips.config.ConfigException;
 
 import java.io.*;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * <code>PropertiesConfig</code> class
@@ -39,9 +39,9 @@ public class PropertiesConfig extends AbstractPropertiesConfig {
     public void writeConfig(Writer target) throws ConfigException {
         PrintWriter writer = new PrintWriter(target);
         int rootlen = (ROOT_NAME + PATH_DELIMETER).length();
-        Iterator itProperty = properties.entrySet().iterator();
+        Iterator<Entry<String, String>> itProperty = properties.entrySet().iterator();
         while (itProperty.hasNext()) {
-            Map.Entry property = (Map.Entry)itProperty.next();
+            Entry<String, String> property = itProperty.next();
             writer.println(((String)property.getKey()).substring(rootlen) + "=" + property.getValue());
         }
     }

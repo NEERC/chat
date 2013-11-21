@@ -4,8 +4,10 @@ import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.provider.IQProvider;
 import org.jivesoftware.smack.provider.ProviderManager;
 import org.xmlpull.v1.XmlPullParser;
-import ru.ifmo.neerc.chat.user.UserEntry;
-import ru.ifmo.neerc.chat.xmpp.packet.*;
+
+import ru.ifmo.neerc.chat.xmpp.packet.NeercIQ;
+import ru.ifmo.neerc.chat.xmpp.packet.NeercTaskListIQ;
+import ru.ifmo.neerc.chat.xmpp.packet.NeercUserListIQ;
 import ru.ifmo.neerc.utils.XmlUtils;
 
 /**

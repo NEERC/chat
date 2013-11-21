@@ -43,7 +43,6 @@ public class ChatArea extends JTable {
     private static final int TIME_COLUMN_WIDTH = 60;
     private TableCellRenderer cellRenderer = new NewChatMessageRenderer();
     private boolean doScroll = false;
-    private UserEntry user;
 
     public ChatArea() {
         this(null);

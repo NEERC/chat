@@ -18,9 +18,9 @@ package ru.ifmo.neerc.service.query;
 import org.dom4j.Element;
 import org.xmpp.packet.IQ;
 import org.xmpp.packet.PacketError;
+
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.service.NEERCComponent;
-import ru.ifmo.neerc.task.Task;
 import ru.ifmo.neerc.task.TaskRegistry;
 import ru.ifmo.neerc.utils.XmlUtils;
 

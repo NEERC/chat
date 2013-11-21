@@ -15,32 +15,40 @@
 */
 package ru.ifmo.neerc.service;
 
-import org.dom4j.DocumentFactory;
+import java.util.Collection;
+import java.util.HashMap;
+
 import org.dom4j.Element;
 import org.jivesoftware.openfire.XMPPServer;
 import org.jivesoftware.openfire.muc.MUCRoom;
-import org.jivesoftware.openfire.muc.MultiUserChatManager;
 import org.jivesoftware.openfire.muc.MultiUserChatService;
-import org.jivesoftware.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xmpp.component.Component;
 import org.xmpp.component.ComponentException;
 import org.xmpp.component.ComponentManager;
 import org.xmpp.component.ComponentManagerFactory;
-import org.xmpp.packet.*;
+import org.xmpp.packet.IQ;
+import org.xmpp.packet.JID;
+import org.xmpp.packet.Message;
+import org.xmpp.packet.Packet;
+import org.xmpp.packet.PacketError;
+import org.xmpp.packet.PacketExtension;
+
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
 import ru.ifmo.neerc.clock.Clock;
 import ru.ifmo.neerc.clock.ClockListener;
-import ru.ifmo.neerc.service.query.*;
+import ru.ifmo.neerc.service.query.PingQueryHandler;
+import ru.ifmo.neerc.service.query.QueryHandler;
+import ru.ifmo.neerc.service.query.TaskQueryHandler;
+import ru.ifmo.neerc.service.query.TaskStatusQueryHandler;
+import ru.ifmo.neerc.service.query.TasksQueryHandler;
+import ru.ifmo.neerc.service.query.UsersQueryHandler;
 import ru.ifmo.neerc.task.Task;
 import ru.ifmo.neerc.task.TaskRegistry;
 import ru.ifmo.neerc.task.TaskRegistryListener;
 import ru.ifmo.neerc.utils.XmlUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.util.*;
 
 /**
  * @author Dmitriy Trofimov
@@ -55,7 +63,6 @@ public class NEERCComponent implements Component {
 
     private HashMap<String, QueryHandler> handlers = new HashMap<String, QueryHandler>();
 
-	private DocumentFactory docFactory = DocumentFactory.getInstance();
     /**
      * Namespace of the packet extension.
      */

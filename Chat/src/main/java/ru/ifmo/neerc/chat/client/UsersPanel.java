@@ -52,7 +52,7 @@ public class UsersPanel extends JPanel {
         this.user = user;
         setLayout(new BorderLayout());
         ListData model = new ListData();
-        final JList userList = new JList();
+        final JList<UserEntry> userList = new JList<UserEntry>();
         userList.setModel(model);
         userList.setCellRenderer(new UserListCellRenderer());
         userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -83,7 +83,7 @@ public class UsersPanel extends JPanel {
         listeners.add(listener);
     }
 
-    private class ListData extends AbstractListModel implements UserRegistryListener {
+    private class ListData extends AbstractListModel<UserEntry> implements UserRegistryListener {
 
         private UserEntry[] userEntries;
 
@@ -101,7 +101,7 @@ public class UsersPanel extends JPanel {
             return userEntries.length;
         }
 
-        public synchronized Object getElementAt(int index) {
+        public synchronized UserEntry getElementAt(int index) {
             return userEntries[index];
         }
 
@@ -122,7 +122,7 @@ public class UsersPanel extends JPanel {
     private class UserListCellRenderer extends DefaultListCellRenderer {
 
         @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             UserEntry entry = (UserEntry) value;
             Color foreground;
 //            if (isSelected) {

@@ -21,6 +21,7 @@
 package ru.ifmo.ips.config;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.io.Writer;
 import java.io.Reader;
 
@@ -31,8 +32,8 @@ import java.io.Reader;
  */
 public abstract class AbstractPropertiesConfig extends AbstractConfig {
 
-    protected TreeMap properties = null;
-    protected HashMap elementIds = null;
+    protected TreeMap<String, String> properties = null;
+    protected HashMap<String, List<String>> elementIds = null;
     protected String elementRoot = null;
     protected InnerConfig innerConfig;
     protected static final String ATTRIBUTE_ID = "id";
@@ -43,8 +44,8 @@ public abstract class AbstractPropertiesConfig extends AbstractConfig {
     protected static final String ATTRIBUTE_IDS = ATT_DELIMETER + "ids";
 
     public AbstractPropertiesConfig() {
-        elementIds = new HashMap();
-        properties = new TreeMap(new SpecialComparator());
+        elementIds = new HashMap<String, List<String>>();
+        properties = new TreeMap<String, String>(new SpecialComparator());
     }
 
     public Config getNode(String name) throws ConfigException {
@@ -63,7 +64,7 @@ public abstract class AbstractPropertiesConfig extends AbstractConfig {
         return innerConfig.getNodeList(name);
     }
 
-    public Map getProperties() {
+    public Map<String, String> getProperties() {
         return properties;
     }
 
@@ -74,7 +75,7 @@ public abstract class AbstractPropertiesConfig extends AbstractConfig {
      * @param value property value
      */
     protected void addProperty(String name, String value) {
-        String old = (String)properties.get(name);
+        String old = properties.get(name);
         properties.put(name, (old == null) ? value : old + value);
     }
 
@@ -113,9 +114,9 @@ public abstract class AbstractPropertiesConfig extends AbstractConfig {
         // getting row path to store list of properties with the same path
         String strPath = getRawPath(path);
         // initializing list of identifiers
-        ArrayList ids = (ArrayList)elementIds.get(strPath);
+        List<String> ids = elementIds.get(strPath);
         if (ids == null) {
-            ids = new ArrayList();
+            ids = new ArrayList<String>();
             elementIds.put(strPath, ids);
         }
         // from the second element of the list we should assign
@@ -148,7 +149,7 @@ public abstract class AbstractPropertiesConfig extends AbstractConfig {
         String strPath1 = path;
         // trimming spaces
         properties.put(strPath1, properties.get(strPath1).toString().trim());
-        ArrayList ids = (ArrayList)elementIds.get(strPath);
+        List<String> ids = elementIds.get(strPath);
         if (ids != null) {
             // getting last id of the property
             String newId = (String)ids.get(ids.size() - 1);
@@ -204,46 +205,40 @@ public abstract class AbstractPropertiesConfig extends AbstractConfig {
         innerConfig.deleteProperty(p_name);
     }
 
-    class SpecialComparator implements Comparator {
+    class SpecialComparator implements Comparator<String> {
 
-        public int compare(Object o1, Object o2) {
-            if (o1 instanceof String && o2 instanceof String) {
-                String s1 = (String)o1;
-                String s2 = (String)o2;
-                int len1 = s1.length();
-                int len2 = s2.length();
-                int i = 0;
-                while (i < len1 && i < len2 && s1.charAt(i) == s2.charAt(i)) {
-                    i++;
-                }
-                ;
-                if (i == len1 && i == len2) {
-                    return 0;
-                } else if (i == len1) {
-                    return -1;
-                } else if (i == len2) {
-                    return 1;
-                } else {
-                    char c1 = s1.charAt(i);
-                    char c2 = s2.charAt(i);
-                    if (c1 == '@') {
-                        return -1;
-                    } else if (c2 == '@') {
-                        return 1;
-                    } else if (c1 == '.') {
-                        return -1;
-                    } else if (c2 == '.') {
-                        return 1;
-                    } else if (c1 == '#') {
-                        return -1;
-                    } else if (c2 == '#') {
-                        return 1;
-                    }
-                }
-                return s1.compareTo(s2);
-            } else {
-                throw new ClassCastException();
+        public int compare(String s1, String s2) {
+            int len1 = s1.length();
+            int len2 = s2.length();
+            int i = 0;
+            while (i < len1 && i < len2 && s1.charAt(i) == s2.charAt(i)) {
+                i++;
             }
+            ;
+            if (i == len1 && i == len2) {
+                return 0;
+            } else if (i == len1) {
+                return -1;
+            } else if (i == len2) {
+                return 1;
+            } else {
+                char c1 = s1.charAt(i);
+                char c2 = s2.charAt(i);
+                if (c1 == '@') {
+                    return -1;
+                } else if (c2 == '@') {
+                    return 1;
+                } else if (c1 == '.') {
+                    return -1;
+                } else if (c2 == '.') {
+                    return 1;
+                } else if (c1 == '#') {
+                    return -1;
+                } else if (c2 == '#') {
+                    return 1;
+                }
+            }
+            return s1.compareTo(s2);
         }
     }
 
@@ -319,14 +314,14 @@ public abstract class AbstractPropertiesConfig extends AbstractConfig {
                 throw new ConfigException("Can't take a node from attribute");
             }
             // otherwise we try to retrieve ids of nodes
-            ArrayList nodeList = (ArrayList)elementIds.get(path);
+            List<String> nodeList = elementIds.get(path);
             Config[] result;
             // if they are exist
             if (nodeList != null) {
                 result = new Config[nodeList.size()];
                 // we are creating list of nodes
                 for (int i = 0; i < result.length; i++) {
-                    String id = (String)nodeList.get(i);
+                    String id = nodeList.get(i);
                     result[i] = new InnerConfig((id == null) ? path
                             : makePath(path, NUM_DELIMETER + (String)nodeList.get(i)));
                 }
@@ -341,7 +336,7 @@ public abstract class AbstractPropertiesConfig extends AbstractConfig {
             return result;
         }
 
-        public Map getProperties() {
+        public Map<String, String> getProperties() {
             throw new UnsupportedOperationException("getProperties() method is not supported by " + this.getClass().getName());
         }
 
@@ -400,21 +395,21 @@ public abstract class AbstractPropertiesConfig extends AbstractConfig {
                     if (key == null) {
                         // we need to create it.
                         properties.put(curNode + PATH_DELIMETER + curName, "");
-                        ArrayList ids = new ArrayList();
+                        List<String> ids = new ArrayList<String>();
                         ids.add(null);
                         elementIds.put(curNode + PATH_DELIMETER + curName, ids);
                         properties.put(curNode + PATH_DELIMETER + curName + ATTRIBUTE_IDS, "");
                     }
                 } else {
                     // key for element without id.
-                    ArrayList ids = (ArrayList)elementIds.get(curNode + PATH_DELIMETER + name);
+                    List<String> ids = elementIds.get(curNode + PATH_DELIMETER + name);
                     // key for element without id.
-                    String idsStr = (String)properties.get(curNode + PATH_DELIMETER + name + ATTRIBUTE_IDS);
+                    String idsStr = properties.get(curNode + PATH_DELIMETER + name + ATTRIBUTE_IDS);
                     // key for element with id
-                    String fullkey = (String)properties.get(curNode + PATH_DELIMETER + curName);
+                    String fullkey = properties.get(curNode + PATH_DELIMETER + curName);
                     if (ids == null) {
                         // we need to create it.
-                        ids = new ArrayList();
+                        ids = new ArrayList<String>();
                         ids.add(null);
                         elementIds.put(curNode + PATH_DELIMETER + name, ids);
                         properties.put(curNode + PATH_DELIMETER + name + ATTRIBUTE_IDS, "");
@@ -447,10 +442,10 @@ public abstract class AbstractPropertiesConfig extends AbstractConfig {
                 if (properties.get(newname + ATTRIBUTE_IDS) != null) {
                     throw new ConfigException("Cannot rename node " + oldname + " to " + newname);
                 }
-                Iterator it = properties.tailMap(oldname).entrySet().iterator();
-                HashMap tempMap = new HashMap();
+                Iterator<Entry<String, String>> it = properties.tailMap(oldname).entrySet().iterator();
+                Map<String, String> tempMap = new HashMap<String, String>();
                 while (it.hasNext()) {
-                    Map.Entry entry = (Map.Entry)it.next();
+                    Entry<String, String> entry = it.next();
                     String key = ((String)entry.getKey());
                     if (key.length() == oldname.length() && oldname.equals(key)
                             || key.startsWith(oldname + ATT_DELIMETER)
@@ -462,7 +457,7 @@ public abstract class AbstractPropertiesConfig extends AbstractConfig {
                 }
                 it = tempMap.entrySet().iterator();
                 while (it.hasNext()) {
-                    Map.Entry entry = (Map.Entry)it.next();
+                    Entry<String, String> entry = it.next();
                     String newKey = newname + ((String)entry.getKey()).substring(oldname.length());
                     properties.remove(entry.getKey());
                     properties.put(newKey, entry.getValue());
@@ -491,7 +486,7 @@ public abstract class AbstractPropertiesConfig extends AbstractConfig {
                     newIds = newIds.substring(1);
                 }
                 // key for element without id.
-                ArrayList ids = (ArrayList)elementIds.get(p_name.substring(0, p_name.lastIndexOf(NUM_DELIMETER)));
+                List<String> ids = elementIds.get(p_name.substring(0, p_name.lastIndexOf(NUM_DELIMETER)));
                 ids.remove(oldid);
                 ids.add(p_value);
                 properties.put(idsKey, newIds);
@@ -516,10 +511,10 @@ public abstract class AbstractPropertiesConfig extends AbstractConfig {
                 throw new ConfigException("property with name " + p_name + " can't be deleted");
             }
             p_name = root + PATH_DELIMETER + p_name;
-            Iterator it = properties.tailMap(p_name).entrySet().iterator();
-            HashMap tempMap = new HashMap();
+            Iterator<Entry<String, String>> it = properties.tailMap(p_name).entrySet().iterator();
+            Map<String, String> tempMap = new HashMap<String, String>();
             while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry)it.next();
+                Entry<String, String> entry = it.next();
                 String key = ((String)entry.getKey());
                 if (key.length() == p_name.length() && p_name.equals(key)
                         || key.startsWith(p_name + ATT_DELIMETER)
@@ -536,7 +531,7 @@ public abstract class AbstractPropertiesConfig extends AbstractConfig {
             }
             it = tempMap.entrySet().iterator();
             while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry)it.next();
+                Entry<String, String> entry = it.next();
                 properties.remove(entry.getKey());
             }
             if (p_name.lastIndexOf(ATT_DELIMETER) == -1) {
@@ -544,7 +539,7 @@ public abstract class AbstractPropertiesConfig extends AbstractConfig {
                 int pathpos = p_name.lastIndexOf(PATH_DELIMETER);
                 if (numpos > pathpos) {
                     String node = p_name.substring(0, numpos);
-                    ArrayList ids = (ArrayList)elementIds.get(node);
+                    List<String> ids = elementIds.get(node);
                     String id = p_name.substring(numpos + 1);
                     ids.remove(id);
                     String oldIds = (String)properties.get(node + ATTRIBUTE_IDS) + IDS_DELIMETER;

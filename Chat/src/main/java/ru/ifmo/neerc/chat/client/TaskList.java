@@ -34,7 +34,7 @@ import java.util.ArrayList;
  *
  * @author Matvey Kazakov
  */
-public class TaskList extends JList {
+public class TaskList extends JList<Task> {
     private TaskRegistry registry;
 
     private String user;
@@ -49,7 +49,7 @@ public class TaskList extends JList {
         setCellRenderer(new PersonalTaskListRenderer());
     }
 
-    private class TaskListModel extends AbstractListModel implements TaskRegistryListener {
+    private class TaskListModel extends AbstractListModel<Task> implements TaskRegistryListener {
         private static final long serialVersionUID = -3486815875540806367L;
 
         private ArrayList<Task> tasks;
@@ -75,13 +75,13 @@ public class TaskList extends JList {
             return tasks.size();
         }
 
-        public Object getElementAt(int index) {
+        public Task getElementAt(int index) {
             return tasks.get(index);
         }
     }
 
     private class PersonalTaskListRenderer extends DefaultListCellRenderer {
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             Task task = (Task) value;
             setText(task.getTitle());
             TaskStatus taskStatus = task.getStatuses().get(user);

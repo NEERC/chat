@@ -25,6 +25,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import javax.xml.parsers.SAXParserFactory;
 import java.util.*;
+import java.util.Map.Entry;
 import java.io.*;
 
 import ru.ifmo.ips.config.AbstractPropertiesConfig;
@@ -100,8 +101,8 @@ public class XMLConfig extends AbstractPropertiesConfig {
     public void writeConfig(Writer p_target) throws ConfigException {
         try {
             p_target.write("<?xml version=\"1.0\"?>\n");
-            Iterator it = properties.entrySet().iterator();
-            Map.Entry entry = (Map.Entry)it.next();
+            Iterator<Entry<String, String>> it = properties.entrySet().iterator();
+            Entry<String, String> entry = it.next();
             String curKey = (String)entry.getKey();
             String curValue = (String)entry.getValue();
             String curNode = curKey;
@@ -112,7 +113,7 @@ public class XMLConfig extends AbstractPropertiesConfig {
             while (true) {
                 do {
                     if (it.hasNext()) {
-                        entry = (Map.Entry)it.next();
+                        entry = it.next();
                         curKey = (String)entry.getKey();
                         curValue = (String)entry.getValue();
                     } else {
@@ -174,8 +175,8 @@ public class XMLConfig extends AbstractPropertiesConfig {
     public void writeCompactConfig(Writer p_target) throws ConfigException {
         try {
             p_target.write("<?xml version=\"1.0\"?>");
-            Iterator it = properties.entrySet().iterator();
-            Map.Entry entry = (Map.Entry)it.next();
+            Iterator<Entry<String, String>> it = properties.entrySet().iterator();
+            Entry<String, String> entry = it.next();
             String curKey = (String)entry.getKey();
             String curValue = (String)entry.getValue();
             String curNode = curKey;
@@ -184,7 +185,7 @@ public class XMLConfig extends AbstractPropertiesConfig {
             while (true) {
                 do {
                     if (it.hasNext()) {
-                        entry = (Map.Entry)it.next();
+                        entry = it.next();
                         curKey = (String)entry.getKey();
                         curValue = (String)entry.getValue();
                     } else {

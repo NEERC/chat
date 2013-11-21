@@ -22,7 +22,7 @@ package ru.ifmo.neerc.chat.user;
 /**
  * @author Matvey Kazakov
  */
-public class UserEntry implements Comparable {
+public class UserEntry implements Comparable<UserEntry> {
     @Deprecated
     private int id;
 
@@ -107,7 +107,7 @@ public class UserEntry implements Comparable {
         this.online = online;
     }
 
-    public int compareTo(Object o) {
+    public int compareTo(UserEntry o) {
         UserEntry userEntry = (UserEntry) o;
         String name = getName();
         if (name == null) {

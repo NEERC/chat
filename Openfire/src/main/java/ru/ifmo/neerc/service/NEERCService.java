@@ -15,17 +15,14 @@
 */
 package ru.ifmo.neerc.service;
 
+import java.io.File;
+
 import org.jivesoftware.openfire.container.Plugin;
 import org.jivesoftware.openfire.container.PluginManager;
-import org.jivesoftware.util.*;
-import org.xmpp.component.ComponentManager;
-import org.xmpp.component.ComponentManagerFactory;
-
-import ru.ifmo.neerc.service.NEERCComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
+import org.xmpp.component.ComponentManager;
+import org.xmpp.component.ComponentManagerFactory;
 
 /**
  * @author Dmitriy Trofimov

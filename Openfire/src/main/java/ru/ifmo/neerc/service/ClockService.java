@@ -1,21 +1,25 @@
 package ru.ifmo.neerc.service;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.jivesoftware.util.JiveGlobals;
-import org.jivesoftware.util.Log;
-import org.xmpp.component.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ru.ifmo.neerc.clock.Clock;
 import ru.ifmo.neerc.clock.ClockListener;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
+
 
 /**
  * @author Dmitriy Trofimov
  */
 public class ClockService extends Thread {
+	private static Logger log = LoggerFactory.getLogger(ClockService.class);
     private String defaultFileName = JiveGlobals.getHomeDirectory() + File.separator + "clock.xml";
     private File clockFile;
     private long lastModified;
@@ -34,7 +38,7 @@ public class ClockService extends Thread {
             } catch (InterruptedException e) {
                 break;
             } catch (Exception e) {
-                Log.error("Error updating clock", e);
+                log.error("Error updating clock", e);
             }
 
         }

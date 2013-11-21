@@ -1,8 +1,12 @@
 package ru.ifmo.neerc.chat.xmpp.packet;
 
-import java.util.*;
-import org.jivesoftware.smack.packet.IQ;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+
 import org.xmlpull.v1.XmlPullParser;
+
 import ru.ifmo.neerc.task.Task;
 import ru.ifmo.neerc.task.TaskStatus;
 import ru.ifmo.neerc.utils.XmlUtils;

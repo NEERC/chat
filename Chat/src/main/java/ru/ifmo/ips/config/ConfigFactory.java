@@ -20,10 +20,7 @@
  */
 package ru.ifmo.ips.config;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.List;
-import java.util.ArrayList;
 
 /**
  * Stores global configuration instance
