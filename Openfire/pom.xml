@@ -8,9 +8,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <groupId>ru.ifmo.neerc</groupId>
     <artifactId>service</artifactId>
-    <version>1.0-SNAPSHOT</version>
 
     <name>NEERC Service</name>
     <description>

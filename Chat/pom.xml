@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -8,9 +8,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <groupId>ru.ifmo.neerc</groupId>
     <artifactId>chat</artifactId>
-    <version>1.0-SNAPSHOT</version>
 
     <name>NEERC Chat</name>
     <description>
@@ -74,6 +72,33 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>net.sf.xsltmp</groupId>
+                <artifactId>xslt-generator-maven-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <id>create-chat-launchers</id>
+                        <goals>
+                            <goal>many-to-dynamic</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <xslTemplate>${basedir}/deploy-scripts/users.xsl</xslTemplate>
+                            <srcDir>src/main/etc</srcDir>
+                            <srcIncludes>openfire-users.xml</srcIncludes>
+                            <destDir>${project.build.directory}</destDir>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>net.sf.saxon</groupId>
+                        <artifactId>saxon</artifactId>
+                        <version>8.7</version>
+                    </dependency>
+              </dependencies>
             </plugin>
         </plugins>
     </build>

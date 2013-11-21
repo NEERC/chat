@@ -26,7 +26,7 @@
         <maven.compiler.showWarnings>true</maven.compiler.showWarnings>
         <maven.compiler.encoding>${project.build.sourceEncoding}</maven.compiler.encoding>
 
-        <version.java>1.6</version.java>
+        <version.java>1.7</version.java>
     </properties>
 
     <dependencies>

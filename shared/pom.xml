@@ -8,9 +8,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <groupId>ru.ifmo.neerc</groupId>
     <artifactId>shared</artifactId>
-    <version>1.0-SNAPSHOT</version>
 
     <name>NEERC Shared</name>
     <description>
