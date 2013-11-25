@@ -21,15 +21,15 @@ public final class TaskIcon {
     static {
         STATUS.put(
                 TaskActions.STATUS_SUCCESS,
-                new ImageIcon(TaskList.class.getResource("res/task_state_done.gif"))
+                new ImageIcon(TaskIcon.class.getResource("res/task_state_done.gif"))
         );
         STATUS.put(
                 TaskActions.STATUS_FAIL,
-                new ImageIcon(TaskList.class.getResource("res/task_state_fail.png"))
+                new ImageIcon(TaskIcon.class.getResource("res/task_state_fail.png"))
         );
         STATUS.put(
                 TaskActions.STATUS_RUNNING,
-                new ImageIcon(TaskList.class.getResource("res/task_state_inprogress.png"))
+                new ImageIcon(TaskIcon.class.getResource("res/task_state_inprogress.png"))
         );
         STATUS.put(
                 TaskActions.STATUS_NEW,
@@ -42,15 +42,15 @@ public final class TaskIcon {
 
         ACTION.put(
                 TaskActions.ACTION_DONE,
-                new ImageIcon(TaskPanel.class.getResource("res/task_action_complete.gif"))
+                new ImageIcon(TaskIcon.class.getResource("res/task_action_complete.gif"))
         );
         ACTION.put(
                 TaskActions.ACTION_FAIL,
-                new ImageIcon(TaskPanel.class.getResource("res/task_action_fail.png"))
+                new ImageIcon(TaskIcon.class.getResource("res/task_action_fail.png"))
         );
         ACTION.put(
                 TaskActions.ACTION_START,
-                new ImageIcon(TaskPanel.class.getResource("res/task_action_start.png"))
+                new ImageIcon(TaskIcon.class.getResource("res/task_action_start.png"))
         );
 
         TYPE.put(
