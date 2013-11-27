@@ -46,7 +46,7 @@ public class ChatArea extends JTable {
     private TableCellRenderer cellRenderer = new NewChatMessageRenderer();
     private boolean doScroll = false;
     private static final Logger LOG = LoggerFactory.getLogger(ChatArea.class);
-    private ArrayList<ChatAreaListener> listeners = new ArrayList<ChatAreaListener>();
+    private ArrayList<UserPickListener> userPickListeners = new ArrayList<>();
 
     public ChatArea() {
         this(null);
@@ -85,8 +85,8 @@ public class ChatArea extends JTable {
                 if (row >= 0 && col == 1) {
                     UserEntry entry = (UserEntry)model.getValueAt(row, col);
                     if (entry != null) {
-                        for (ChatAreaListener listener: listeners) {
-                            listener.userClicked((UserEntry)model.getValueAt(row, col));
+                        for (UserPickListener listener: userPickListeners) {
+                            listener.userPicked((UserEntry) model.getValueAt(row, col));
                         }
                     }
                 }
@@ -98,8 +98,8 @@ public class ChatArea extends JTable {
         model.add(message);
     }
 
-    public void addUserClickListener(ChatAreaListener listener) {
-        listeners.add(listener);
+    public void addUserPickListener(UserPickListener listener) {
+        userPickListeners.add(listener);
     }
 
     public void addMessage(final ChatMessage message) {

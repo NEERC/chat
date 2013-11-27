@@ -46,7 +46,7 @@ public class UsersPanel extends JPanel {
 
     private UserEntry user;
     private JSplitPane splitter;
-    private ArrayList<UsersPanelListener> listeners = new ArrayList<UsersPanelListener>();
+    private ArrayList<UserPickListener> listeners = new ArrayList<UserPickListener>();
 
     public UsersPanel(UserEntry user) {
         this.user = user;
@@ -61,8 +61,8 @@ public class UsersPanel extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 UserEntry user = (UserEntry)userList.getSelectedValue();
                 if (user != null && e.getClickCount() % 2 == 0) {
-                    for (UsersPanelListener listener : listeners) {
-                        listener.userClicked(user);
+                    for (UserPickListener listener : listeners) {
+                        listener.userPicked(user);
                     }
                 }
             }
@@ -79,7 +79,7 @@ public class UsersPanel extends JPanel {
         splitter.setDividerLocation(users * USER_ITEM_HEIGHT + 5);
     }
     
-    public void addListener(UsersPanelListener listener) {
+    public void addListener(UserPickListener listener) {
         listeners.add(listener);
     }
 

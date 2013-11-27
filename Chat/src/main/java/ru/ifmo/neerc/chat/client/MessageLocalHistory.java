@@ -30,11 +30,13 @@ public class MessageLocalHistory extends ArrayList<String> {
     
     private int maxSize;
     private int cursor;
+    private String lastPrivate;
 
     public MessageLocalHistory(int maxSize) {
         super(checkSize(maxSize));
         this.maxSize = checkSize(maxSize);
         this.cursor = this.maxSize;
+        this.lastPrivate = "";
     }
 
     private static int checkSize(int maxSize) {
@@ -79,4 +81,11 @@ public class MessageLocalHistory extends ArrayList<String> {
         cursor = size();
     }
 
+    public void setLastPrivateAddressees(String addressees) {
+        lastPrivate = addressees;
+    }
+
+    public String getLastPrivateAddressees() {
+        return lastPrivate;
+    }
 }

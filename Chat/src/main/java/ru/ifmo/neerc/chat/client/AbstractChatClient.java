@@ -25,7 +25,6 @@ import ru.ifmo.neerc.chat.utils.ChatLogger;
 import ru.ifmo.neerc.task.Task;
 import ru.ifmo.neerc.task.TaskActions;
 import ru.ifmo.neerc.task.TaskRegistry;
-import sun.util.LocaleServiceProviderPool;
 
 import javax.swing.*;
 import javax.swing.text.AttributeSet;
@@ -108,28 +107,17 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         chatSplitter.setDividerLocation(526);
         chatPanel.add(chatSplitter, BorderLayout.CENTER);
 
+        UserPickListener setPrivateAddresseesListener = new UserPickListener() {
+            public void userPicked(UserEntry user) {
+                setPrivateAddressees(user.getName());
+            }
+        };
+
 //        JPanel controlPanel = new JPanel(new BorderLayout());
         UsersPanel users = new UsersPanel(user);
-        users.addListener(new UsersPanelListener() {
-            public void userClicked(UserEntry user) {
-                String text = inputArea.getText();
-                text = text.replaceAll("\\A\\w+>\\s*", "");
-                text = user.getName() + "> " + text;
-                inputArea.setText(text);
-                inputArea.requestFocus();
-            }
-        });
+        users.addListener(setPrivateAddresseesListener);
 
-        outputArea.addUserClickListener(new ChatAreaListener() {
-            @Override
-            public void userClicked(UserEntry user) {
-                String text = inputArea.getText();
-                text = text.replaceAll("\\A\\w+>\\s*", "");
-                text = user.getName() + "> " + text;
-                inputArea.setText(text);
-                inputArea.requestFocus();
-            }
-        });
+        outputArea.addUserPickListener(setPrivateAddresseesListener);
 //        TaskPanel personalTasks = new TaskPanel(taskRegistry, user, chat);
 //        JSplitPane controlSplitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, users, personalTasks);
 //        setupSplitter(controlSplitter);
@@ -271,6 +259,12 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
                     if (hasCtrl != sendOnEnter) {
                         String text = inputArea.getText().trim();
                         if (text.equals("")) return;
+
+                        Matcher privateMatcher = Pattern.compile("^([\\w, ]+)>", Pattern.DOTALL).matcher(text);
+                        if (privateMatcher.find() && privateMatcher.groupCount() > 0) {
+                            messageLocalHistory.setLastPrivateAddressees(privateMatcher.group(1));
+                        }
+
                         messageLocalHistory.add(text);
                         send(text);
                     } else {
@@ -287,15 +281,13 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
                         int caretPosition = inputArea.getCaretPosition();
                         int lineNum = inputArea.getLineOfOffset(caretPosition);
                         if (lineNum == 0) {
-
+                            setPrivateAddressees(messageLocalHistory.getLastPrivateAddressees());
                         }
 
                     } catch (BadLocationException e1) {
                         // it's not like anything can be done here
                     }
-                }
-
-                if (e.getKeyCode() == KeyEvent.VK_DOWN && (e.getModifiers() & KeyEvent.CTRL_MASK) > 0) {
+                } else if (e.getKeyCode() == KeyEvent.VK_DOWN && (e.getModifiers() & KeyEvent.CTRL_MASK) > 0) {
                     String message = messageLocalHistory.moveDown();
                     if (message != null) {
                         inputArea.setText(message);
@@ -311,6 +303,16 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
             }
         });
         return inputArea;
+    }
+
+    protected void setPrivateAddressees(String addressees) {
+        if (!"".equals(addressees)) {
+            String text = inputArea.getText();
+            text = text.replaceAll("\\A\\w+>\\s*", "");
+            text = addressees + "> " + text;
+            inputArea.setText(text);
+        }
+        inputArea.requestFocus();
     }
 
     protected void send(String text) {
