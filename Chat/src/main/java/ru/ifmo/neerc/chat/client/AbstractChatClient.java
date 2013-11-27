@@ -25,6 +25,7 @@ import ru.ifmo.neerc.chat.utils.ChatLogger;
 import ru.ifmo.neerc.task.Task;
 import ru.ifmo.neerc.task.TaskActions;
 import ru.ifmo.neerc.task.TaskRegistry;
+import sun.util.LocaleServiceProviderPool;
 
 import javax.swing.*;
 import javax.swing.text.AttributeSet;
@@ -110,6 +111,17 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 //        JPanel controlPanel = new JPanel(new BorderLayout());
         UsersPanel users = new UsersPanel(user);
         users.addListener(new UsersPanelListener() {
+            public void userClicked(UserEntry user) {
+                String text = inputArea.getText();
+                text = text.replaceAll("\\A\\w+>\\s*", "");
+                text = user.getName() + "> " + text;
+                inputArea.setText(text);
+                inputArea.requestFocus();
+            }
+        });
+
+        outputArea.addUserClickListener(new ChatAreaListener() {
+            @Override
             public void userClicked(UserEntry user) {
                 String text = inputArea.getText();
                 text = text.replaceAll("\\A\\w+>\\s*", "");
@@ -270,6 +282,19 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
             }
 
             public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_UP && (e.getModifiers() & KeyEvent.CTRL_MASK) == 0) {
+                    try {
+                        int caretPosition = inputArea.getCaretPosition();
+                        int lineNum = inputArea.getLineOfOffset(caretPosition);
+                        if (lineNum == 0) {
+
+                        }
+
+                    } catch (BadLocationException e1) {
+                        // it's not like anything can be done here
+                    }
+                }
+
                 if (e.getKeyCode() == KeyEvent.VK_DOWN && (e.getModifiers() & KeyEvent.CTRL_MASK) > 0) {
                     String message = messageLocalHistory.moveDown();
                     if (message != null) {

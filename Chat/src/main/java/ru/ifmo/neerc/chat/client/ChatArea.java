@@ -19,6 +19,8 @@
  */
 package ru.ifmo.neerc.chat.client;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.ifmo.neerc.chat.user.UserEntry;
 
 import javax.swing.*;
@@ -43,6 +45,8 @@ public class ChatArea extends JTable {
     private static final int TIME_COLUMN_WIDTH = 60;
     private TableCellRenderer cellRenderer = new NewChatMessageRenderer();
     private boolean doScroll = false;
+    private static final Logger LOG = LoggerFactory.getLogger(ChatArea.class);
+    private ArrayList<ChatAreaListener> listeners = new ArrayList<ChatAreaListener>();
 
     public ChatArea() {
         this(null);
@@ -72,10 +76,30 @@ public class ChatArea extends JTable {
                 }
             }
         });
+
+        addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                int row = rowAtPoint(evt.getPoint());
+                int col = columnAtPoint(evt.getPoint());
+                if (row >= 0 && col == 1) {
+                    UserEntry entry = (UserEntry)model.getValueAt(row, col);
+                    if (entry != null) {
+                        for (ChatAreaListener listener: listeners) {
+                            listener.userClicked((UserEntry)model.getValueAt(row, col));
+                        }
+                    }
+                }
+            }
+        });
     }
 
     public void addToModel(final ChatMessage message) {
         model.add(message);
+    }
+
+    public void addUserClickListener(ChatAreaListener listener) {
+        listeners.add(listener);
     }
 
     public void addMessage(final ChatMessage message) {
