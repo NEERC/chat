@@ -83,13 +83,15 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
             updateRenderer(message);
         } else if (obj instanceof UserEntry && column == 1) {
             ChatMessage message = (ChatMessage) table.getValueAt(row, 2);
+            UserEntry user = message.getUser();
+            setText(user == null ? "" : user.getName());
+            setForeground(generateColor(user.getName()));
+
             if (currentUser != null && message.getText().contains(currentUser.getName())) {
                 setForeground(Color.RED);
             } else if (message.isPrivate()) {
                 setForeground(Color.GRAY);
             }
-            UserEntry user = message.getUser();
-            setText(user == null ? "" : user.getName());
         } else {
             setText(adaptee.getText());
         }
@@ -208,6 +210,12 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
             maximum_height = Math.max(maximum_height, cellHeight);
         }
         return maximum_height;
+    }
+
+    public static Color generateColor(String name) {
+        int hash = name.hashCode();
+        float hue = ((((hash & 0xff) * ((hash & 0xff00) >> 8)) & 0xff) * 1.0f) / 256.0f;
+        return Color.getHSBColor(hue, 0.7f, 0.7f);
     }
     
 }

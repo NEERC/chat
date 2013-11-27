@@ -124,19 +124,7 @@ public class UsersPanel extends JPanel {
         @Override
         public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             UserEntry entry = (UserEntry) value;
-            Color foreground;
-//            if (isSelected) {
-//                setBackground(list.getSelectionBackground());
-//                foreground = list.getSelectionForeground();
-//            } else {
             setBackground(list.getBackground());
-            foreground = list.getForeground();
-//            }
-
-            if (!entry.isOnline()) {
-                foreground = Color.lightGray;
-            }
-            setForeground(foreground);
             setIcon(entry.isPower() ?
                     (entry.isOnline() ? iconUserPower : iconUserPowerOffline) :
                     (entry.isOnline() ? iconUserNormal : iconUserNormalOffline)
@@ -151,6 +139,13 @@ public class UsersPanel extends JPanel {
             }
             setFont(font);
             setText(entry.getName());
+
+            if (entry.isOnline()) {
+                setForeground(NewChatMessageRenderer.generateColor(entry.getName()));
+            } else {
+                setForeground(Color.lightGray);
+            }
+
             setBorder((cellHasFocus) ? UIManager.getBorder("List.focusCellHighlightBorder") : noFocusBorder);
 
             return this;
