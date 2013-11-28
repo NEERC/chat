@@ -88,12 +88,6 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
             UserEntry user = message.getUser();
             setText(user == null ? "" : user.getName());
             setForeground(generateColor(user));
-
-            if (currentUser != null && message.getText().contains(currentUser.getName())) {
-                setForeground(Color.RED);
-            } else if (message.isPrivate()) {
-                setForeground(Color.GRAY);
-            }
         } else {
             setText(adaptee.getText());
         }
@@ -128,9 +122,7 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
                 boolean importantToUs = currentUser != null && messageText.contains(currentUser.getName());
 
                 if (importantToUs) {
-//                    setFont(adaptee.getFont().deriveFont(Font.ITALIC));
                     setForeground(Color.RED);
-//                    setForeground(Color.red);
                 }
 
                 if (user.isPower()) {
@@ -148,7 +140,7 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
                         setForeground(Color.gray);
                     }
                 } else if (message.isPrivate()) {
-                    setForeground(Color.gray);
+                    setForeground(Color.BLUE);
                 }
                 setText(messageText);
                 break;
