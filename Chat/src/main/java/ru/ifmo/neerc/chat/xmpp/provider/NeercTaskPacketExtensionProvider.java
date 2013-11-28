@@ -1,5 +1,7 @@
 package ru.ifmo.neerc.chat.xmpp.provider;
 
+import java.util.Date;
+
 import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smack.provider.PacketExtensionProvider;
 import org.jivesoftware.smack.provider.ProviderManager;
@@ -39,10 +41,16 @@ public class NeercTaskPacketExtensionProvider implements PacketExtensionProvider
     }
 
     private Task parseTask(XmlPullParser parser) throws Exception {
+    	Date date = new Date();
+    	String timestamp = parser.getAttributeValue("", "timestamp");
+    	if (timestamp != null) {
+    		date = new Date(Long.parseLong(timestamp));
+    	}
         Task task = new Task(
                 parser.getAttributeValue("", "id"),
                 parser.getAttributeValue("", "type"),
-                parser.getAttributeValue("", "title")
+                parser.getAttributeValue("", "title"),
+                date
         );
         boolean done = false;
         while (!done) {

@@ -3,6 +3,7 @@ package ru.ifmo.neerc.chat.xmpp.packet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Map;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -74,10 +75,16 @@ public class NeercTaskListIQ extends NeercIQ {
     }
 
 	public static Task parseTask(XmlPullParser parser) throws Exception {
+		Date date = new Date();
+    	String timestamp = parser.getAttributeValue("", "timestamp");
+    	if (timestamp != null) {
+    		date = new Date(Long.parseLong(timestamp));
+    	}
 		Task task = new Task(
 			parser.getAttributeValue("", "id"),
 			parser.getAttributeValue("", "type"),
-			parser.getAttributeValue("", "title")
+			parser.getAttributeValue("", "title"),
+			date
 		);
 		boolean done = false;
 		while (!done) {

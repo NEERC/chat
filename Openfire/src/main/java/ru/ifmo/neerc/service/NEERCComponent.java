@@ -15,8 +15,12 @@
 */
 package ru.ifmo.neerc.service;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 
 import org.dom4j.Element;
 import org.jivesoftware.openfire.XMPPServer;
@@ -110,7 +114,16 @@ public class NEERCComponent implements Component {
     }
     
     public Collection<Task> getTasks() {
-        return tasks.getTasks();
+    	List<Task> result = new ArrayList<>(); 
+    	result.addAll(tasks.getTasks());
+    	Collections.sort(result, new Comparator<Task>() {
+			@Override
+			public int compare(Task arg0, Task arg1) {
+				return arg1.getDate().compareTo(arg1.getDate());
+			}
+    		
+    	});
+        return result;
     }
 
     private void initHandlers() {

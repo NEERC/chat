@@ -112,7 +112,7 @@ public class XmppChatClient extends AbstractChatClient {
                         description.append(task.getTitle()).append("\n");
                         ChatMessage chatMessage = ChatMessage.createTaskMessage(
                                 "!!! New task '" + task.getTitle() + "' has been assigned to you !!!",
-                                (new Date())
+                                task.getDate()
                         );
                         processMessage(chatMessage);
                     }

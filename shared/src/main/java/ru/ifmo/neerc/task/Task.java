@@ -1,6 +1,7 @@
 package ru.ifmo.neerc.task;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,12 +15,19 @@ public class Task {
     private String type;
 
     private String title;
+    
+    private Date date = new Date();
 
     private Map<String, TaskStatus> statuses = new HashMap<String, TaskStatus>();
 
     public Task(String type, String title) {
+    	this.type = type;
         this.title = title;
-        this.type = type;
+    }
+    
+    public Task(String id, String type, String title, Date date) {
+    	this(id, type, title);
+        this.date = date;
     }
 
     public Task(String id, String type, String title) {
@@ -37,6 +45,10 @@ public class Task {
 
     public String getTitle() {
         return title;
+    }
+    
+    public Date getDate() {
+        return date;
     }
 
     public Map<String, TaskStatus> getStatuses() {

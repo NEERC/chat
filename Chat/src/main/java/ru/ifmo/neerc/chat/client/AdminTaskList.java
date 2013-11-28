@@ -137,6 +137,9 @@ public class AdminTaskList extends JTable {
             }
             tasks.set(id, task);
             fireTableRowsUpdated(id, id);
+            if (!users.containsAll(task.getStatuses().keySet())) {
+            	updateTasks();
+            }
         }
         
         private boolean isAdmin() {
@@ -148,7 +151,17 @@ public class AdminTaskList extends JTable {
         }
         
         private boolean isUserRelevant(UserEntry user) {
-            return isAdmin() || !user.isPower();
+            return (isAdmin() && userHasTasks(user)) || !user.isPower();
+        }
+        
+        private boolean userHasTasks(UserEntry user) {
+        	for (Task t : tasks) {
+        		if (t.getStatuses().keySet().contains(user.getName())) {
+        			return true;
+        		}
+        	}
+        	
+        	return false;
         }
 
         private void insertTask(Task task) {
@@ -158,6 +171,9 @@ public class AdminTaskList extends JTable {
                 taskIds.put(task.getId(), id);
                 int row = reverseTaskList ? 0 : id;
                 fireTableRowsInserted(row, row);
+                if (!users.containsAll(task.getStatuses().keySet())) {
+                	updateTasks();
+                }
             }
         }
         
