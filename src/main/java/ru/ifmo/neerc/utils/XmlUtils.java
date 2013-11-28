@@ -6,6 +6,8 @@ import ru.ifmo.neerc.clock.Clock;
 import ru.ifmo.neerc.task.Task;
 import ru.ifmo.neerc.task.TaskStatus;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -28,6 +30,7 @@ public final class XmlUtils {
         taskElement.addAttribute("id", task.getId());
         taskElement.addAttribute("title", task.getTitle());
         taskElement.addAttribute("type", task.getType());
+        taskElement.addAttribute("timestamp", Long.toString(task.getDate().getTime()));
         for (Map.Entry<String, TaskStatus> entry : task.getStatuses().entrySet()) {
             TaskStatus status = entry.getValue();
             Element statusElement = taskElement.addElement("status");
@@ -54,8 +57,11 @@ public final class XmlUtils {
     public static Task taskFromXml(Element taskElement) {
         String id = taskElement.attributeValue("id");
         String type = taskElement.attributeValue("type");
+        
         String title = taskElement.attributeValue("title");
-        Task task = new Task(id, type, title);
+        String timestamp = taskElement.attributeValue("timestamp");
+        Date date = timestamp == null ? new Date() : new Date(Long.parseLong(timestamp));
+        Task task = new Task(id, type, title, date);
 
         for (Object childElement : taskElement.elements()) {
             Element child = (Element) childElement;
