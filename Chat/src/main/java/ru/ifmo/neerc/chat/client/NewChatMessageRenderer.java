@@ -44,6 +44,7 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
     private final Map<JTable, Map<Integer, Map<Integer, Integer>>> cellSizes
             = new HashMap<JTable, Map<Integer, Map<Integer, Integer>>>();
     private int fontStyle = -1;
+    private NameColorizer nameColorizer;
 
     public NewChatMessageRenderer() {
         this(-1);
@@ -60,8 +61,9 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
         setWrapStyleWord(true);
     }
 
-    public NewChatMessageRenderer(int fontStyle, UserEntry user) {
+    public NewChatMessageRenderer(int fontStyle, NameColorizer colorizer, UserEntry user) {
         this(fontStyle);
+        nameColorizer = colorizer;
         currentUser = user;
     }
 
@@ -212,10 +214,9 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
         return maximum_height;
     }
 
-    public static Color generateColor(String name) {
-        int hash = name.hashCode();
-        float hue = ((((hash & 0xff) * ((hash & 0xff00) >> 8)) & 0xff) * 1.0f) / 256.0f;
-        return Color.getHSBColor(hue, 0.7f, 0.7f);
+    public Color generateColor(String name) {
+        if (nameColorizer == null) return Color.BLACK;
+        return nameColorizer.generateColor(name);
     }
-    
+
 }

@@ -35,6 +35,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -55,6 +56,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     protected JButton resetButton;
     protected TaskRegistry taskRegistry = TaskRegistry.getInstance();
     protected UserEntry user;
+    UsersPanel usersPanel;
     protected int localHistorySize;
     private static final int MAX_MESSAGE_LENGTH = 500;
 
@@ -65,6 +67,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     protected boolean sendOnEnter = false;
 
     protected TimerTicker ticker = new TimerTicker(neercTimer);
+    protected NameColorizer colorizer = new NameColorizer();
 
     protected Chat chat;
 
@@ -91,7 +94,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 
     private JPanel createMainPanel() {
         JPanel chatPanel = new JPanel(new BorderLayout());
-        outputArea = new ChatArea(user);
+        outputArea = new ChatArea(user, colorizer);
         outputAreaJury = new ChatArea();
         inputArea = createInputArea();
         JScrollPane outputAreaScroller = new JScrollPane(outputArea);
@@ -114,8 +117,8 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         };
 
 //        JPanel controlPanel = new JPanel(new BorderLayout());
-        UsersPanel users = new UsersPanel(user);
-        users.addListener(setPrivateAddresseesListener);
+        usersPanel = new UsersPanel(user, colorizer);
+        usersPanel.addListener(setPrivateAddresseesListener);
 
         outputArea.addUserPickListener(setPrivateAddresseesListener);
 //        TaskPanel personalTasks = new TaskPanel(taskRegistry, user, chat);
@@ -127,7 +130,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 //        users.setSplitter(controlSplitter);
 
         JPanel topPanel = new JPanel(new BorderLayout());
-        JSplitPane mainSplitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, users, chatPanel);
+        JSplitPane mainSplitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, usersPanel, chatPanel);
         setupSplitter(mainSplitter);
         mainSplitter.setDividerLocation(100);
         topPanel.add(mainSplitter);
@@ -206,22 +209,28 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         });
         toolBar.add(taskReverseSwitch);
 
+        final ImageIcon coloredImage = new ImageIcon(AbstractChatClient.class.getResource("res/btn_colored.png"));
+        final ImageIcon blackAndWhiteImage = new ImageIcon(AbstractChatClient.class.getResource("res/btn_black_and_white.png"));
+        final JButton chatColorSwitch = new JButton(coloredImage);
+        chatColorSwitch.setFocusable(false);
+        final String chatColored = "Colored names in chat";
+        final String chatBlackAndWhite = "Black names in chat";
+        chatColorSwitch.setToolTipText(chatColored);
+        chatColorSwitch.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                colorizer.setColored(!colorizer.isColored());
+                chatColorSwitch.setIcon(colorizer.isColored() ? coloredImage : blackAndWhiteImage);
+                chatColorSwitch.setToolTipText(colorizer.isColored() ? chatColored : chatBlackAndWhite);
+
+                outputArea.repaint();
+                usersPanel.repaint();
+
+            }
+        });
+        toolBar.add(chatColorSwitch);
+
         resetButton = new JButton("Reconnect");
         resetButton.setFocusable(false);
-
-//        java.util.List<ChatPlugin> plugins = pluginManager.getPlugins();
-//        if (plugins.size() > 0) {
-//            toolBar.addSeparator();
-//            for (final ChatPlugin plugin : plugins) {
-//                JButton button = new JButton(plugin.getIcon());
-//                button.addActionListener(new ActionListener()  {
-//                    public void actionPerformed(ActionEvent e) {
-//                        plugin.start();
-//                    }
-//                });
-//                toolBar.add(button);
-//            }
-//        }
 
         toolBar.add(Box.createHorizontalGlue());
         toolBar.add(connectionStatus);

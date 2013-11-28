@@ -49,10 +49,10 @@ public class ChatArea extends JTable {
     private ArrayList<UserPickListener> userPickListeners = new ArrayList<>();
 
     public ChatArea() {
-        this(null);
+        this(null, null);
     }
 
-    public ChatArea(UserEntry user) {
+    public ChatArea(UserEntry user, NameColorizer colorizer) {
         model = new ChatModel();
         setModel(model);
         setShowHorizontalLines(false);
@@ -63,7 +63,7 @@ public class ChatArea extends JTable {
         timeColumn.setResizable(false);
         timeColumn.setCellRenderer(new NewChatMessageRenderer());
         final TableColumn userColumn = getColumnModel().getColumn(1);
-        userColumn.setCellRenderer(new NewChatMessageRenderer(Font.BOLD, user));
+        userColumn.setCellRenderer(new NewChatMessageRenderer(Font.BOLD, colorizer, user));
         final TableColumn messageColumn = getColumnModel().getColumn(2);
         messageColumn.setCellRenderer(new NewChatMessageRenderer(user));
         addComponentListener(new ComponentAdapter() {

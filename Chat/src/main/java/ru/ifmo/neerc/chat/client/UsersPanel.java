@@ -47,9 +47,12 @@ public class UsersPanel extends JPanel {
     private UserEntry user;
     private JSplitPane splitter;
     private ArrayList<UserPickListener> listeners = new ArrayList<UserPickListener>();
+    private NameColorizer colorizer;
 
-    public UsersPanel(UserEntry user) {
+    public UsersPanel(UserEntry user, NameColorizer colorizer) {
         this.user = user;
+        this.colorizer = colorizer;
+
         setLayout(new BorderLayout());
         ListData model = new ListData();
         final JList<UserEntry> userList = new JList<UserEntry>();
@@ -141,7 +144,7 @@ public class UsersPanel extends JPanel {
             setText(entry.getName());
 
             if (entry.isOnline()) {
-                setForeground(NewChatMessageRenderer.generateColor(entry.getName()));
+                setForeground(colorizer.generateColor(entry.getName()));
             } else {
                 setForeground(Color.lightGray);
             }
