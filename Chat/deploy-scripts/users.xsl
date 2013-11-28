@@ -3,7 +3,7 @@
 <xsl:variable name="javaw">@start javaw </xsl:variable>
 <xsl:variable name="p1">-Dserver.host=10.0.0.1 -Dusername=</xsl:variable>
 <xsl:variable name="p2"> -Dpassword=</xsl:variable>
-<xsl:variable name="p3"> -Dping=5 -Dconsole.encoding=CP866 -cp chat-client.jar ru.ifmo.neerc.chat.xmpp.XmppChatClient</xsl:variable>
+<xsl:variable name="p3"> -Dping=5 -Dconsole.encoding=CP866 -jar chat-client.jar</xsl:variable>
             
 
     <xsl:template match="/">

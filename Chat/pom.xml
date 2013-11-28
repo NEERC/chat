@@ -43,6 +43,13 @@
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>ru.ifmo.neerc.chat.xmpp.XmppChatClient</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
                 <executions>
                     <execution>
                         <id>jar-with-dependencies</id>
@@ -54,7 +61,7 @@
                             <descriptorRefs>
                                 <descriptorRef>jar-with-dependencies</descriptorRef>
                             </descriptorRefs>
-                            <attach>flase</attach>
+                            <attach>false</attach>
                             <finalName>chat-client</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                         </configuration>
