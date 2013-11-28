@@ -87,7 +87,7 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
             ChatMessage message = (ChatMessage) table.getValueAt(row, 2);
             UserEntry user = message.getUser();
             setText(user == null ? "" : user.getName());
-            setForeground(generateColor(user.getName()));
+            setForeground(generateColor(user));
 
             if (currentUser != null && message.getText().contains(currentUser.getName())) {
                 setForeground(Color.RED);
@@ -214,7 +214,7 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
         return maximum_height;
     }
 
-    public Color generateColor(String name) {
+    public Color generateColor(UserEntry name) {
         if (nameColorizer == null) return Color.BLACK;
         return nameColorizer.generateColor(name);
     }

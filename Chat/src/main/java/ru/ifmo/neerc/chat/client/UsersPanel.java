@@ -144,7 +144,7 @@ public class UsersPanel extends JPanel {
             setText(entry.getName());
 
             if (entry.isOnline()) {
-                setForeground(colorizer.generateColor(entry.getName()));
+                setForeground(colorizer.generateColor(entry));
             } else {
                 setForeground(Color.lightGray);
             }
