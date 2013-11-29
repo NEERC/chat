@@ -193,22 +193,6 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         });
         toolBar.add(sendModeSwitch);
 
-        final ImageIcon normalImage = new ImageIcon(AbstractChatClient.class.getResource("res/task_normal.png"));
-        final ImageIcon reverseImage = new ImageIcon(AbstractChatClient.class.getResource("res/task_reverse.png"));
-        final JButton taskReverseSwitch = new JButton(reverseImage);
-        taskReverseSwitch.setFocusable(false);
-        final String taskReverse = "Latest task first";
-        final String taskNormal = "Older task first";
-        taskReverseSwitch.setToolTipText(taskReverse);
-        taskReverseSwitch.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                taskPanel.setReverseTaskList(!taskPanel.getReverseTaskList());
-                taskReverseSwitch.setIcon(taskPanel.getReverseTaskList() ? reverseImage : normalImage);
-                taskReverseSwitch.setToolTipText(taskPanel.getReverseTaskList() ? taskReverse : taskNormal);
-            }
-        });
-        toolBar.add(taskReverseSwitch);
-
         final ImageIcon coloredImage = new ImageIcon(AbstractChatClient.class.getResource("res/btn_colored.png"));
         final ImageIcon blackAndWhiteImage = new ImageIcon(AbstractChatClient.class.getResource("res/btn_black_and_white.png"));
         final JButton chatColorSwitch = new JButton(coloredImage);

@@ -22,46 +22,80 @@ package ru.ifmo.neerc.chat.client;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
 import ru.ifmo.neerc.chat.user.UserRegistryListener;
+import ru.ifmo.neerc.chat.xmpp.XmppChat;
 import ru.ifmo.neerc.task.*;
 
 import javax.swing.*;
+import javax.swing.RowSorter.SortKey;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import java.awt.*;
+import javax.swing.table.TableRowSorter;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Component;
+import java.awt.Insets;
 import java.util.*;
 
 /**
  * @author Matvey Kazakov
  */
 public class AdminTaskList extends JTable {
-    private static final int TASK_DEFAULT_WIDTH = 250;
+	private static final Logger LOG = LoggerFactory.getLogger(XmppChat.class);
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+
+	private static final int TASK_DEFAULT_WIDTH = 250;
 
     private TaskRegistry registry;
     private String username;
-    private boolean reverseTaskList = true;
+
+	private TaskListModel dataModel;
+
+	private TableRowSorter<TaskListModel> sorter;
+	private SortOrder lastOrder = SortOrder.DESCENDING;
 
     public AdminTaskList(TaskRegistry taskRegistry, String username) {
         this.registry = taskRegistry;
         this.username = username;
-        TaskListModel dataModel = new TaskListModel(username);
+        dataModel = new TaskListModel(username);
         this.registry.addListener(dataModel);
         UserRegistry.getInstance().addListener(dataModel);
         setModel(dataModel);
         setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         AdminTaskRenderer renderer = new AdminTaskRenderer();
         setDefaultRenderer(Object.class, renderer);
+        sorter = new TableRowSorter<>(dataModel);
+        setRowSorter(sorter);
+        sorter.setSortsOnUpdates(true);
     }
-
-    boolean getReverseTaskList() {
-        return reverseTaskList;
+    
+    private void sort() {
+    	List<? extends SortKey> keys = sorter.getSortKeys();
+    	if (keys != null && keys.isEmpty()) {
+	    	ArrayList<SortKey> list = new ArrayList<SortKey>();
+	    	list.add( new RowSorter.SortKey(0, lastOrder));
+	    	sorter.setSortKeys(list);
+    	}
+        sorter.sort();
     }
-
-    void setReverseTaskList(boolean reverse) {
-        reverseTaskList = reverse;
-        repaint();
+    
+    private void saveSort() {
+    	if (sorter == null) {
+    		return;
+    	}
+    	
+    	List<? extends SortKey> keys = sorter.getSortKeys();
+    	if (keys != null && !keys.isEmpty()) {
+    		lastOrder = keys.get(0).getSortOrder();
+    	}
     }
     
     public void doLayout() {
@@ -69,14 +103,14 @@ public class AdminTaskList extends JTable {
         taskColumn.setPreferredWidth(TASK_DEFAULT_WIDTH);
         super.doLayout();
     }
-
+    
     private class TaskListModel extends AbstractTableModel implements TaskRegistryListener, UserRegistryListener {
         private static final long serialVersionUID = 7990317100207622830L;
 
-        private ArrayList<Task> tasks;
-        private HashMap<String, Integer> taskIds;
-        private ArrayList<UserEntry> users;
+        private List<Task> tasks = new ArrayList<>();
+        private ArrayList<UserEntry> users = new ArrayList<>();
         private String username;
+        
 
         public TaskListModel(String username) {
             this.username = username;
@@ -95,21 +129,25 @@ public class AdminTaskList extends JTable {
             if (rowIndex >= getRowCount() || columnIndex >= getColumnCount()) {
                 return null;
             }
+            
             if (columnIndex == 0) {
-                return tasks.get(reverseTaskList ? tasks.size() - rowIndex - 1 : rowIndex);
+                return tasks.get(rowIndex);
             } else {
                 UserEntry currentUser = users.get(columnIndex - 1);
-                Task currentTask = tasks.get(reverseTaskList ? tasks.size() - rowIndex - 1 : rowIndex);
+                Task currentTask = tasks.get(rowIndex);
                 return currentTask.getStatuses().get(currentUser.getName());
             }
         }
 
         public void taskChanged(Task task) {
-            if (taskIds.containsKey(task.getId())) {
-                updateTask(task);
-            } else {
-                insertTask(task);
-            }
+        	for (int i = 0; i < tasks.size(); ++i) {
+        		if (tasks.get(i).getId().equals(task.getId())) {
+        			updateTask(i, task);
+        			return;
+        		}
+        	}
+            
+            insertTask(task);
         }
 
         public void tasksReset() {
@@ -124,21 +162,24 @@ public class AdminTaskList extends JTable {
             // ignore
         }
 
-        private void updateTask(Task task) {
-            int id = taskIds.get(task.getId());
+        private void updateTask(int position, Task task) {
             if ("remove".equals(task.getType())) {
-                int row = reverseTaskList ? tasks.size() - id - 1 : id;
-                tasks.remove(id);
-                for (int i = id; i < tasks.size(); i++) {
-                    taskIds.put(tasks.get(i).getId(), i);
-                }
-                fireTableRowsDeleted(row, row);
+            	saveSort();
+                tasks.remove(position);
+                fireTableRowsDeleted(position, position);
                 updateTasks();
                 return;
             }
-            tasks.set(id, task);
-            fireTableRowsUpdated(id, id);
-            if (!users.containsAll(task.getStatuses().keySet())) {
+            
+            tasks.set(position, task);
+            fireTableRowsUpdated(position, position);
+            
+            Set<String> taskUsers = new HashSet<>();
+            taskUsers.addAll(task.getStatuses().keySet());
+            for (UserEntry ue : users) {
+            	taskUsers.remove(ue.getName());
+            }
+            if (!taskUsers.isEmpty()) {
             	updateTasks();
             }
         }
@@ -152,7 +193,7 @@ public class AdminTaskList extends JTable {
         }
         
         private boolean isUserRelevant(UserEntry user) {
-            return (isAdmin() && !user.isPower()) || userHasTasks(user);
+            return (isAdmin() && user.getName().toLowerCase().startsWith("hall")) || userHasTasks(user);
         }
         
         private boolean userHasTasks(UserEntry user) {
@@ -166,26 +207,31 @@ public class AdminTaskList extends JTable {
         }
 
         private void insertTask(Task task) {
-            int id = tasks.size();
             if (isTaskRelevant(task)) {
                 tasks.add(task);
-                taskIds.put(task.getId(), id);
-                int row = reverseTaskList ? 0 : id;
-                fireTableRowsInserted(row, row);
-                if (!users.containsAll(task.getStatuses().keySet())) {
+                fireTableRowsInserted(tasks.size() - 1, tasks.size() - 1);
+                if (tasks.size() == 1) {
+                	sort();
+                }
+                
+                Set<String> taskUsers = new HashSet<>();
+                taskUsers.addAll(task.getStatuses().keySet());
+                for (UserEntry ue : users) {
+                	taskUsers.remove(ue.getName());
+                }
+                if (!taskUsers.isEmpty()) {
                 	updateTasks();
                 }
             }
         }
         
         private void updateTasks() {
+        	saveSort();
             tasks = new ArrayList<Task>();
             users = new ArrayList<UserEntry>();
-            taskIds = new HashMap<String, Integer>();
             for (Task task : registry.getTasks()) {
                 if (isTaskRelevant(task)) {
                     tasks.add(task);
-                    taskIds.put(task.getId(), tasks.size() - 1);
                 }
             }
             for (UserEntry user : UserRegistry.getInstance().getUsers()) {
@@ -195,16 +241,30 @@ public class AdminTaskList extends JTable {
             }
             Collections.sort(users);
 	        fireTableStructureChanged();
+	        for (int i = 1; i < users.size(); ++i) {
+	        	sorter.setSortable(i, false);
+	        }
         }
 
         public String getColumnName(int column) {
             return (column == 0) ? "Task" : users.get(column - 1).getName();
         }
+        
+        @Override
+        public Class<?> getColumnClass(int i) {
+			return Task.class;
+        	
+        }
     }
 
 
     private class AdminTaskRenderer extends JTextPane implements TableCellRenderer {
-        private final Map<Integer, Map<Integer, Integer>> cellSizes
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		private final Map<Integer, Map<Integer, Integer>> cellSizes
                 = new HashMap<Integer, Map<Integer, Integer>>();
 
         private final DefaultTableCellRenderer adaptee = new DefaultTableCellRenderer();

@@ -93,14 +93,6 @@ public class AdminTaskPanel extends JPanel {
         adminToolBar.setVisible(false);
     }
 
-    boolean getReverseTaskList() {
-        return taskList.getReverseTaskList();
-    }
-
-    void setReverseTaskList(boolean reverse) {
-        taskList.setReverseTaskList(reverse);
-    }
-
     private void enableButtons() {
         boolean enable = taskList.getSelectedRow() != -1;
         enableButton(enable, btnAssignTask);

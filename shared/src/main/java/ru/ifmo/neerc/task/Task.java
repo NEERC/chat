@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * @author Evgeny Mandrikov
  */
-public class Task {
+public class Task implements Comparable<Task>{
 
     private String id;
 
@@ -72,4 +72,10 @@ public class Task {
     public void setId(String id) {
         this.id = id;
     }
+
+	@Override
+	public int compareTo(Task arg0) {
+		return date.compareTo(arg0.getDate());
+	}
+
 }
