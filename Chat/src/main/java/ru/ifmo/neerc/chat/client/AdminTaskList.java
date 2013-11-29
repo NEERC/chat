@@ -133,6 +133,7 @@ public class AdminTaskList extends JTable {
                     taskIds.put(tasks.get(i).getId(), i);
                 }
                 fireTableRowsDeleted(row, row);
+                updateTasks();
                 return;
             }
             tasks.set(id, task);
@@ -151,7 +152,7 @@ public class AdminTaskList extends JTable {
         }
         
         private boolean isUserRelevant(UserEntry user) {
-            return (isAdmin() && userHasTasks(user)) || !user.isPower();
+            return (isAdmin() && !user.isPower()) || userHasTasks(user);
         }
         
         private boolean userHasTasks(UserEntry user) {
