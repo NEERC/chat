@@ -137,7 +137,7 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
                     } else if (c == '?') {
                         messageText = setupPowerMessage(messageText, Color.blue.darker());
                     } else if (message.isPrivate()) {
-                        setForeground(Color.gray);
+                        setForeground(new Color(0xFF5767));
                     }
                 } else if (message.isPrivate()) {
                     setForeground(new Color(0xFF5767));
