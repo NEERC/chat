@@ -140,7 +140,8 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
                         setForeground(Color.gray);
                     }
                 } else if (message.isPrivate()) {
-                    setForeground(Color.BLUE);
+                    setForeground(new Color(0xFF5767));
+					setFont(adaptee.getFont().deriveFont(Font.BOLD));
                 }
                 setText(messageText);
                 break;
