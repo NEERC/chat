@@ -94,7 +94,9 @@ public class AdminTaskList extends JTable {
     	
     	List<? extends SortKey> keys = sorter.getSortKeys();
     	if (keys != null && !keys.isEmpty()) {
-    		lastOrder = keys.get(0).getSortOrder();
+    		if (keys.get(0).getSortOrder() != SortOrder.UNSORTED) {
+    			lastOrder = keys.get(0).getSortOrder();
+    		}
     	}
     }
     
@@ -210,9 +212,6 @@ public class AdminTaskList extends JTable {
             if (isTaskRelevant(task)) {
                 tasks.add(task);
                 fireTableRowsInserted(tasks.size() - 1, tasks.size() - 1);
-                if (tasks.size() == 1) {
-                	sort();
-                }
                 
                 Set<String> taskUsers = new HashSet<>();
                 taskUsers.addAll(task.getStatuses().keySet());
@@ -221,6 +220,10 @@ public class AdminTaskList extends JTable {
                 }
                 if (!taskUsers.isEmpty()) {
                 	updateTasks();
+                }
+                
+                if (tasks.size() == 1) {
+                	sort();
                 }
             }
         }
