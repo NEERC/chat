@@ -234,14 +234,14 @@ public class AdminTaskPanel extends JPanel {
         int[] selectedIndices = taskList.getSelectedRows();
         Task[] tasks = new Task[selectedIndices.length];
         for (int i = 0; i < selectedIndices.length; i++) {
-            tasks[i] = (Task) taskList.getValueAt(selectedIndices[i], 0);
+            tasks[i] = (Task) taskList.getValueAt(taskList.convertRowIndexToModel(selectedIndices[i]), 0);
         }
         return tasks;
     }
     
     private Task getSelectedTask() {
         int selectedRow = taskList.getSelectedRow();
-        return selectedRow != -1 ? (Task) taskList.getModel().getValueAt(selectedRow, 0) : null;
+        return selectedRow != -1 ? (Task) taskList.getModel().getValueAt(taskList.convertRowIndexToModel(selectedRow), 0) : null;
     }
 
     private void performDefaultAction() {
