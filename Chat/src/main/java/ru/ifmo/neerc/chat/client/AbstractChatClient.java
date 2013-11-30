@@ -35,7 +35,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -53,12 +52,15 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     public JTextArea inputArea;
     public JLabel neercTimer = new JLabel();
     protected JLabel connectionStatus = new JLabel();
+    private JLabel subscriptionsList = new JLabel();
     protected JButton resetButton;
     protected TaskRegistry taskRegistry = TaskRegistry.getInstance();
     protected UserEntry user;
     UsersPanel usersPanel;
     protected int localHistorySize;
     private static final int MAX_MESSAGE_LENGTH = 500;
+
+    ChannelList channelsSubscription = new ChannelList();
 
     private JSplitPane powerSplitter;
 
@@ -216,7 +218,11 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         resetButton = new JButton("Reconnect");
         resetButton.setFocusable(false);
 
+        subscriptionsList.setText(channelsSubscription.toString());
+
         toolBar.add(Box.createHorizontalGlue());
+        toolBar.add(subscriptionsList);
+        toolBar.add(Box.createHorizontalStrut(10));
         toolBar.add(connectionStatus);
         toolBar.add(Box.createHorizontalStrut(10));
         toolBar.add(neercTimer);
@@ -253,7 +259,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
                         String text = inputArea.getText().trim();
                         if (text.equals("")) return;
 
-                        Matcher privateMatcher = Pattern.compile("^([\\w, ]+)>", Pattern.DOTALL).matcher(text);
+                        Matcher privateMatcher = Pattern.compile(ChatMessage.PRIVATE_FIND_REGEX, Pattern.DOTALL).matcher(text);
                         if (privateMatcher.find() && privateMatcher.groupCount() > 0) {
                             messageLocalHistory.setLastPrivateAddressees(privateMatcher.group(1));
                         }
@@ -301,7 +307,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     protected void setPrivateAddressees(String addressees) {
         if (!"".equals(addressees)) {
             String text = inputArea.getText();
-            text = text.replaceAll("\\A\\w+>\\s*", "");
+            text = text.replaceAll("\\A[a-zA-Z0-9%]+>\\s*", "");
             text = addressees + "> " + text;
             inputArea.setText(text);
         }
@@ -327,9 +333,22 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
             chat.write(task);
         }
 
+        // channels support
+        Matcher channelMatches = Pattern.compile("^/s\\s+" + ChatMessage.CHANNEL_MATCH_REGEX + "\\s*$", Pattern.DOTALL).matcher(text);
+        if (channelMatches.find()) {
+            channelsSubscription.subscribeTo(channelMatches.group(1));
+            subscriptionsList.setText(channelsSubscription.toString());
+        }
+
+        channelMatches = Pattern.compile("^/d\\s+" + ChatMessage.CHANNEL_MATCH_REGEX + "\\s*$", Pattern.DOTALL).matcher(text);
+        if (channelMatches.find()) {
+            channelsSubscription.unsubscribeFrom(channelMatches.group(1));
+            subscriptionsList.setText(channelsSubscription.toString());
+        }
+
         int destination = -1;
         // do not echo commands (including mistyped) to chat
-        if (!Pattern.compile("^@\\w+ .*", Pattern.DOTALL).matcher(text).matches()) {
+        if (!Pattern.compile("^(@|/)\\w+ .*", Pattern.DOTALL).matcher(text).matches()) {
             chat.write(new UserMessage(user.getJid(), destination, text));
         }
         inputArea.setText("");
@@ -349,6 +368,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
             if (chatMessage.isPrivate()
                     && !jid.equals(chatMessage.getUser().getJid())
                     && !jid.equals(chatMessage.getTo())
+                    && !channelsSubscription.isSubscribed(chatMessage.getTo())
                     ) {
                 // foreign private message
                 return;

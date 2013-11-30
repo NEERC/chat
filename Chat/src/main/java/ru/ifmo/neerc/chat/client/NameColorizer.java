@@ -4,7 +4,9 @@ import ru.ifmo.neerc.chat.user.UserEntry;
 
 import java.awt.*;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 public class NameColorizer {
     private boolean isColored;
@@ -24,6 +26,7 @@ public class NameColorizer {
     }
 
     public void setColored(boolean colored) {
+        if (!isColored) mapping.clear();
         isColored = colored;
     }
 
@@ -35,8 +38,8 @@ public class NameColorizer {
         } else {
             if (!isColored()) return Color.BLACK;
             if (!mapping.containsKey(userEntry.getName())) {
-                float hue = (generator.nextInt(30) * 10 + 30) / 360.f;
-                mapping.put(userEntry.getName(), Color.getHSBColor(hue, 0.7f, 0.7f));
+                float hue = (generator.nextInt(31) * 10 + 30) / 360.f;
+                mapping.put(userEntry.getName(), Color.getHSBColor(hue, 1.0f, 0.8f));
             }
             return mapping.get(userEntry.getName());
         }

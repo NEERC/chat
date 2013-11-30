@@ -42,6 +42,8 @@ public class UsersPanel extends JPanel {
             UsersPanel.class.getResource("res/user_normal_offline.gif"));
     public static final ImageIcon iconUserPowerOffline = new ImageIcon(
             UsersPanel.class.getResource("res/user_power_offline.gif"));
+    public static final ImageIcon iconChannel = new ImageIcon(
+            UsersPanel.class.getResource("res/user_channel.gif"));
     private static final int USER_ITEM_HEIGHT = 26;
 
     private UserEntry user;

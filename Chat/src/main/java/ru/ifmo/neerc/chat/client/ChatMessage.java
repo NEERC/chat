@@ -35,6 +35,8 @@ import java.util.regex.Pattern;
  */
 public class ChatMessage implements Comparable<ChatMessage> {
     public static final String LOG_TIME_FORMAT = "HH:mm:ss";
+    public static final String PRIVATE_FIND_REGEX = "^([a-zA-Z0-9%]+)>";
+    public static final String CHANNEL_MATCH_REGEX = "(%\\w+)";
 
     public static enum Type {
         SERVER_MESSAGE,
@@ -77,7 +79,7 @@ public class ChatMessage implements Comparable<ChatMessage> {
         // check if private
         String to = "";
         boolean priv = false;
-        Matcher matcher = Pattern.compile("(\\w+)>.*", Pattern.DOTALL).matcher(text);
+        Matcher matcher = Pattern.compile(PRIVATE_FIND_REGEX + ".*", Pattern.DOTALL).matcher(text);
         if (matcher.matches()) {
             to = matcher.group(1);
             priv = true;
