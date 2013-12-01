@@ -124,21 +124,25 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
                 if (importantToUs) {
                     setForeground(Color.RED);
                 }
+                char c = '.';
+                if (messageText != null && messageText.length() > 0) {
+                    c = messageText.charAt(0);
+                }
 
                 if (user.isPower()) {
-                    char c = '.';
-                    if (messageText != null && messageText.length() > 0) {
-                        c = messageText.charAt(0);
-                    }
+
                     if (c == '#' || c == '\uFFFD') {
                         messageText = setupPowerMessage(messageText, Color.green.darker());
                     } else if (c == '!') {
                         messageText = setupPowerMessage(messageText, Color.red);
                     } else if (c == '?') {
                         messageText = setupPowerMessage(messageText, Color.blue.darker());
-                    } else if (message.isPrivate()) {
+                    }  else if (message.isPrivate()) {
                         setForeground(new Color(0xFF5767));
+                        setFont(adaptee.getFont().deriveFont(Font.BOLD));
                     }
+                } else if (message.isPrivate() && c == '%') {
+                    setForeground(Color.BLUE);
                 } else if (message.isPrivate()) {
                     setForeground(new Color(0xFF5767));
 					setFont(adaptee.getFont().deriveFont(Font.BOLD));
