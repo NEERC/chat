@@ -42,7 +42,6 @@ public class XmppChat implements Chat {
     private static final String ROOM = "neerc@conference." + SERVER_HOSTNAME;
     private static final boolean DEBUG = Boolean.parseBoolean(System.getProperty("smack.debug", "false"));
 	private static final String NEERC_SERVICE = "neerc." + SERVER_HOSTNAME;
-    private static final int PING_INTERVAL = Integer.parseInt(System.getProperty("ping", "5")) * 1000;
 
     private MultiUserChat muc;
     private XMPPConnection connection;
@@ -65,9 +64,6 @@ public class XmppChat implements Chat {
         NeercClockPacketExtensionProvider.register();
         NeercIQProvider.register();
         SASLAuthentication.supportSASLMechanism("PLAIN", 0);
-        if (PING_INTERVAL > 0) {
-            (new Pinger()).start();
-        }
     }
 
     public synchronized void disconnect() {
@@ -312,32 +308,6 @@ public class XmppChat implements Chat {
             }
 
             lastActivity = timestamp;
-        }
-    }
-    
-    private class Pinger extends Thread {
-        public void run() {
-            while (true) {
-                try {
-                    sleep(PING_INTERVAL);
-                    if (!connected) {
-                        continue;
-                    }
-                    query("ping");
-                } catch (InterruptedException e) {
-                    break;
-                } catch (XMPPException e) {
-                    LOG.debug("ping failed");
-                    if (!connected) {
-                        continue;
-                    }
-                    try {
-                        disconnect();
-                    } catch (Exception ex) {
-
-                    }
-                }
-            }
         }
     }
 }
