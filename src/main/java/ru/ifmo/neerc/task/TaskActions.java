@@ -8,6 +8,7 @@ public class TaskActions {
     public static final String TYPE_CONFIRM = "confirm";
     public static final String TYPE_REASON = "okfail";
     public static final String TYPE_QUESTION = "question";
+    public static final String TYPE_TODOFAIL = "todofail";
 
     public static final String STATUS_NEW = "none";
     public static final String STATUS_ACK = "acknowledged";
@@ -40,6 +41,14 @@ public class TaskActions {
             return action == ACTION_DONE || action == ACTION_FAIL;
         } else if (TYPE_QUESTION.equals(type)) {
             return action == ACTION_DONE;
+        } else if (TYPE_TODOFAIL.equals(type)) {
+            if (action == ACTION_FAIL)
+                return true;
+
+            if (STATUS_RUNNING.equals(status.getType()))
+                return action == ACTION_DONE;
+            else
+                return action == ACTION_START;
         }
         return false;
     }
