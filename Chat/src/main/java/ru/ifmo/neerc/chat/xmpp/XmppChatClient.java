@@ -59,13 +59,15 @@ public class XmppChatClient extends AbstractChatClient {
         userRegistry.putOnline(name);
         userRegistry.setRole(name, "moderator");
 
-        chat = new MyChat();
-        setupUI();
-
         MyListener listener = new MyListener();
         taskRegistry.addListener(listener);
 
-        xmppChat = new XmppChat(name, listener);
+        chat = xmppChat = new XmppChat(name, listener);
+
+        setupUI();
+
+        xmppChat.connect();
+
         resetButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
@@ -165,23 +167,6 @@ public class XmppChatClient extends AbstractChatClient {
 
     private String getNick(String participant) {
         return UserRegistry.getInstance().findOrRegister(participant).getName();
-    }
-
-    private class MyChat implements Chat {
-        @Override
-        public void write(ru.ifmo.neerc.chat.message.Message message) {
-            xmppChat.write(message);
-        }
-
-        @Override
-        public void write(Task task) {
-            xmppChat.write(task);
-        }
-
-        @Override
-        public void write(Task task, TaskStatus status) {
-            xmppChat.write(task, status);
-        }
     }
 
     protected void send(String text) {
@@ -305,7 +290,6 @@ public class XmppChatClient extends AbstractChatClient {
 
         @Override
         public void historyMessageReceived(String jid, String message, Date timestamp) {
-//            addToModel(ChatMessage.createUserMessage(new UserMessage(jid, message, timestamp)));
             processMessage(new UserMessage(jid, message, timestamp));
         }
 

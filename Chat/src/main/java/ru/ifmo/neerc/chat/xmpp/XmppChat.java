@@ -69,7 +69,6 @@ public class XmppChat implements Chat {
         NeercIQProvider.register();
         reconnectListener = new ReconnectListener();
         SASLAuthentication.supportSASLMechanism("PLAIN", 0);
-        connect();
         if (PING_INTERVAL > 0) {
             (new Pinger()).start();
         }
