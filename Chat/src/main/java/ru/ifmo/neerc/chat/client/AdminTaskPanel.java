@@ -146,6 +146,7 @@ public class AdminTaskPanel extends JPanel {
         toolBar.setRollover(true);
 
         toolBar.add(createAddTaskButton(TaskActions.TYPE_TODO, "Add TODO (@todo)"));
+        toolBar.add(createAddTaskButton(TaskActions.TYPE_TODOFAIL, "Add TODOFAIL (@todofail)"));
         toolBar.add(createAddTaskButton(TaskActions.TYPE_CONFIRM, "Add Confirmation (@confirm)"));
         toolBar.add(createAddTaskButton(TaskActions.TYPE_REASON, "Add Ok/Fail Reason (@okfail)"));
         toolBar.add(createAddTaskButton(TaskActions.TYPE_QUESTION, "Add Question (@q)"));
@@ -257,7 +258,7 @@ public class AdminTaskPanel extends JPanel {
         String status = taskStatus.getType();
         
         int action = TaskActions.ACTION_DONE;
-        if (type.equals(TaskActions.TYPE_TODO)) {
+        if (type.equals(TaskActions.TYPE_TODO) || type.equals(TaskActions.TYPE_TODOFAIL)) {
             action = status.equals(TaskActions.STATUS_RUNNING) ? TaskActions.ACTION_DONE : TaskActions.ACTION_START;
         }
         else if (type.equals(TaskActions.TYPE_REASON)) {

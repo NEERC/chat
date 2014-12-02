@@ -317,7 +317,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     protected void send(String text) {
         // ensure that null won't be here
         text = String.valueOf(text);
-        String pattern = "^@(todo|task|confirm|ok|okfail|reason|question|q)( [\\w,]+)? (.*)$";
+        String pattern = "^@(todo|todofail|task|confirm|ok|okfail|reason|question|q)( [\\w,]+)? (.*)$";
         Matcher matcher = Pattern.compile(pattern, Pattern.MULTILINE).matcher(text);
         while (matcher.find()) {
             String type = TaskActions.getTypeByAlias(matcher.group(1));

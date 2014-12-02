@@ -58,6 +58,10 @@ public final class TaskIcon {
                 new ImageIcon(AdminTaskPanel.class.getResource("res/task_add_todo.png"))
         );
         TYPE.put(
+                TaskActions.TYPE_TODOFAIL,
+                new ImageIcon(AdminTaskPanel.class.getResource("res/task_add_todofail.png"))
+        );
+        TYPE.put(
                 TaskActions.TYPE_CONFIRM,
                 new ImageIcon(AdminTaskPanel.class.getResource("res/task_add_confirm.png"))
         );
