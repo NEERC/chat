@@ -48,9 +48,6 @@ public class XmppChat implements Chat {
     private XMPPConnection connection;
     private boolean connected;
     
-    private ReconnectThread reconnectThread;
-    private ReconnectListener reconnectListener;
-
     private String name;
     private String password = System.getProperty("password", "12345");
 
@@ -67,7 +64,6 @@ public class XmppChat implements Chat {
         NeercTaskPacketExtensionProvider.register();
         NeercClockPacketExtensionProvider.register();
         NeercIQProvider.register();
-        reconnectListener = new ReconnectListener();
         SASLAuthentication.supportSASLMechanism("PLAIN", 0);
         if (PING_INTERVAL > 0) {
             (new Pinger()).start();
@@ -82,19 +78,12 @@ public class XmppChat implements Chat {
     }
     
     public synchronized void connect() {
-        if (connection != null) {
-            connection.removeConnectionListener(reconnectListener);
-        }
         disconnect();
         LOG.info("connecting to server");
-        if (connection != null) {
-            ((ConnectionListener)mucListener).reconnectingIn(0);
-        }
         // Create the configuration for this new connection
         ConnectionConfiguration config = new ConnectionConfiguration(SERVER_HOST, SERVER_PORT);
         config.setCompressionEnabled(true);
         config.setSASLAuthenticationEnabled(true);
-        config.setReconnectionAllowed(false);
         config.setDebuggerEnabled(DEBUG);
 
         connection = new XMPPConnection(config);
@@ -104,11 +93,8 @@ public class XmppChat implements Chat {
             authenticate();
         } catch (XMPPException e) {
             LOG.error("Unable to connect", e);
-            ((ConnectionListener)mucListener).reconnectionFailed(e);
             throw new RuntimeException(e);
         }
-        connection.addConnectionListener(reconnectListener);
-
 
         // Create a MultiUserChat using an XMPPConnection for a room
         muc = new MultiUserChat(connection, ROOM);
@@ -123,19 +109,6 @@ public class XmppChat implements Chat {
 
         connected = true;
         mucListener.connected(this);
-    }
-    
-    public void initAutoReconnect(ConnectionListener listener) {
-        stopAutoReconnect();
-        reconnectThread = new ReconnectThread(listener);
-        reconnectThread.setDaemon(true);
-        reconnectThread.start();
-    }
-    
-    public void stopAutoReconnect() {
-        if (reconnectThread != null && reconnectThread.isAlive()) {
-            reconnectThread.setDone();
-        }        
     }
     
     public boolean isConnected() {
@@ -365,57 +338,6 @@ public class XmppChat implements Chat {
                     }
                 }
             }
-        }
-    }
-
-    private class ReconnectThread extends Thread {
-        private ConnectionListener listener;
-        private final int RECONNECT_IN = 10;
-        private boolean done;
-
-        public ReconnectThread(ConnectionListener listener) {
-            super();
-            this.listener = listener;
-        }
-        
-        public void setDone() {
-            this.done = true;
-        }
-
-        public void run() {
-            done = false;
-            do {
-                try {
-                    for (int i = RECONNECT_IN; i > 0; i--) {
-                        listener.reconnectingIn(i);
-                        sleep(1000);
-                        if (done) break;
-                    }
-                    if (done) break;
-                    connect();
-                    listener.reconnectionSuccessful();
-                    done = true;
-                } catch (InterruptedException e) {
-                    break;
-                } catch (RuntimeException e)  {
-                    listener.reconnectionFailed(e);
-                }
-            } while (!done);
-        }
-    }
-
-
-    private class ReconnectListener extends DefaultConnectionListener {
-        @Override
-        public void connectionClosed() {
-            connected = false;
-            initAutoReconnect((ConnectionListener)mucListener);
-        }
-
-        @Override
-        public void connectionClosedOnError(Exception e) {
-            connected = false;
-            initAutoReconnect((ConnectionListener)mucListener);
         }
     }
 }
