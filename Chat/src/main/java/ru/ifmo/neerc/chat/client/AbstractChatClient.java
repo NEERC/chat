@@ -160,7 +160,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         about.setFocusable(false);
         about.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                new AboutBox(AbstractChatClient.this).setVisible(true);
+                new AboutBox(AbstractChatClient.this, "res/help.html").setVisible(true);
             }
         });
         toolBar.add(about);
