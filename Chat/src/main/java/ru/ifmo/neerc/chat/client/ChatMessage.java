@@ -23,6 +23,7 @@ import ru.ifmo.neerc.chat.message.UserMessage;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
 
+import java.io.Serializable;
 import java.text.CharacterIterator;
 import java.text.SimpleDateFormat;
 import java.text.StringCharacterIterator;
@@ -33,7 +34,9 @@ import java.util.regex.Pattern;
 /**
  * @author Matvey Kazakov
  */
-public class ChatMessage implements Comparable<ChatMessage> {
+public class ChatMessage implements Comparable<ChatMessage>, Serializable {
+    private static final long serialVersionUID = 1L;
+
     public static final String LOG_TIME_FORMAT = "HH:mm:ss";
     public static final String PRIVATE_FIND_REGEX = "^([a-zA-Z0-9%]+)>";
     public static final String CHANNEL_MATCH_REGEX = "(%\\w+)";
@@ -50,7 +53,7 @@ public class ChatMessage implements Comparable<ChatMessage> {
     private boolean priv;
     private String to;
     private Date timestamp;
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
     private boolean special;
 

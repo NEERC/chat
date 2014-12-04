@@ -25,6 +25,7 @@ import ru.ifmo.neerc.chat.utils.ChatLogger;
 import ru.ifmo.neerc.task.Task;
 import ru.ifmo.neerc.task.TaskActions;
 import ru.ifmo.neerc.task.TaskRegistry;
+import ru.ifmo.neerc.chat.bluetooth.BluetoothServer;
 
 import javax.swing.*;
 import javax.swing.text.AttributeSet;
@@ -73,7 +74,10 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 
     protected Chat chat;
 
+    protected BluetoothServer btServer = new BluetoothServer();
+
     public AbstractChatClient() {
+        (new Thread(btServer)).start();
     }
 
     protected AdminTaskPanel taskPanel;
@@ -408,6 +412,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
                     showMessage(chatMessage);
                 }
             }
+            btServer.broadcastMessage(chatMessage);
         }
     }
 
