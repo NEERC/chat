@@ -15,6 +15,7 @@ public class TaskActions {
     public static final String STATUS_RUNNING = "running";
     public static final String STATUS_SUCCESS = "success";
     public static final String STATUS_FAIL = "fail";
+    public static final String STATUS_SCHEDULED = "scheduled";
 
     public static final int ACTION_START = 0;
     public static final int ACTION_DONE = 1;
@@ -24,6 +25,8 @@ public class TaskActions {
         if (task == null) {
             return false;
         }
+        if (task.getScheduleType() != Task.ScheduleType.NONE)
+            return false;
         String type = task.getType();
         TaskStatus status = task.getStatuses().get(user);
         if (status == null) {

@@ -10,6 +10,13 @@ import java.util.Map;
  */
 public class Task implements Comparable<Task>{
 
+    public static enum ScheduleType {
+        NONE,
+        CONTEST_START,
+        CONTEST_END,
+        ABSOLUTE
+    }
+
     private String id;
 
     private String type;
@@ -20,11 +27,14 @@ public class Task implements Comparable<Task>{
 
     private Map<String, TaskStatus> statuses = new HashMap<String, TaskStatus>();
 
+    private ScheduleType scheduleType = ScheduleType.NONE;
+    private long scheduleTime = 0;
+
     public Task(String type, String title) {
     	this.type = type;
         this.title = title;
     }
-    
+
     public Task(String id, String type, String title, Date date) {
     	this(id, type, title);
         this.date = date;
@@ -71,6 +81,19 @@ public class Task implements Comparable<Task>{
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public void schedule(ScheduleType type, long time) {
+        scheduleType = type;
+        scheduleTime = time;
+    }
+
+    public ScheduleType getScheduleType() {
+        return scheduleType;
+    }
+
+    public long getScheduleTime() {
+        return scheduleTime;
     }
 
 	@Override
