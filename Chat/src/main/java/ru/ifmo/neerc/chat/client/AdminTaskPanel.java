@@ -235,7 +235,7 @@ public class AdminTaskPanel extends JPanel {
         int[] selectedIndices = taskList.getSelectedRows();
         Task[] tasks = new Task[selectedIndices.length];
         for (int i = 0; i < selectedIndices.length; i++) {
-            tasks[i] = (Task) taskList.getValueAt(taskList.convertRowIndexToModel(selectedIndices[i]), 0);
+            tasks[i] = (Task) taskList.getModel().getValueAt(taskList.convertRowIndexToModel(selectedIndices[i]), 0);
         }
         return tasks;
     }
