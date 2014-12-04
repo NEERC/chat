@@ -282,13 +282,35 @@ public class AdminTaskList extends JTable {
             setToolTipText(null);
             if (value instanceof Task) {
                 Task task = (Task) value;
-                setText(task.getTitle());
+                Task.ScheduleType type = task.getScheduleType();
+                long time = task.getScheduleTime() / 60000;
+
+                StringBuilder scheduled = new StringBuilder();
+
+                if (type != Task.ScheduleType.NONE) {
+                    scheduled.append(" (at ");
+
+                    if (type == Task.ScheduleType.CONTEST_START)
+                        scheduled.append("contest start ");
+                    else if (type == Task.ScheduleType.CONTEST_END)
+                        scheduled.append("contest end ");
+
+                    if (type != Task.ScheduleType.ABSOLUTE)
+                        scheduled.append((time < 0) ? "- " : "+ ");
+
+                    scheduled.append(String.format("%02d:%02d", Math.abs(time) / 60, Math.abs(time) % 60));
+                    scheduled.append(")");
+                }
+
+                setText(task.getTitle() + scheduled);
                 setToolTipText(task.getTitle());
 
                 TaskStatus ourStatus = task.getStatus(username);
                 String displayStatus = null;
                 
-                if (ourStatus != null) {
+                if (type != Task.ScheduleType.NONE)
+                    displayStatus = TaskActions.STATUS_SCHEDULED;
+                else if (ourStatus != null) {
                     displayStatus = ourStatus.getType();
                 } else if (task.getStatuses().size() > 0) {
                     displayStatus = TaskActions.STATUS_SUCCESS;

@@ -166,7 +166,9 @@ public class AdminTaskPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 Task[] tasks = getSelectedTasks();
                 for (Task task : tasks) {
-                    chat.write(new Task(task.getId(), "remove", ""));
+                    Task remove = new Task(task.getId(), "remove", "");
+                    remove.schedule(task.getScheduleType(), task.getScheduleTime());
+                    chat.write(remove);
                 }
                 enableButtons();
             }

@@ -173,9 +173,13 @@ public class XmppChat implements Chat {
     
 	@Override
 	public void write(Task task) {
-		NeercTaskIQ packet = new NeercTaskIQ(task);
-		packet.setTo(NEERC_SERVICE);
-		connection.sendPacket(packet);
+        if (task.getScheduleType() == Task.ScheduleType.NONE) {
+            NeercTaskIQ packet = new NeercTaskIQ(task);
+            packet.setTo(NEERC_SERVICE);
+            connection.sendPacket(packet);
+        }
+        else
+            TaskRegistry.getInstance().update(task);
     }
 
 	@Override

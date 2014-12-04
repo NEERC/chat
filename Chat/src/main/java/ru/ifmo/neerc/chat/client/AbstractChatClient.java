@@ -317,13 +317,31 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     protected void send(String text) {
         // ensure that null won't be here
         text = String.valueOf(text);
-        String pattern = "^@(todo|todofail|task|confirm|ok|okfail|reason|question|q)( [\\w,]+)? (.*)$";
+        String pattern = "^@(todo|todofail|task|confirm|ok|okfail|reason|question|q)( [\\w,]+)?( (start|end)([+-]\\d+)?)? (.*)$";
         Matcher matcher = Pattern.compile(pattern, Pattern.MULTILINE).matcher(text);
         while (matcher.find()) {
             String type = TaskActions.getTypeByAlias(matcher.group(1));
             String to = matcher.group(2) == null ? "" : matcher.group(2).substring(1);
-            String title = matcher.group(3);
+            String title = matcher.group(6);
             Task task = new Task(type, title);
+
+            if (matcher.group(3) != null) {
+                Task.ScheduleType scheduleType = Task.ScheduleType.NONE;
+
+                switch (matcher.group(4)) {
+                    case "start":
+                        scheduleType = Task.ScheduleType.CONTEST_START;
+                        break;
+                    case "end":
+                        scheduleType = Task.ScheduleType.CONTEST_END;
+                        break;
+                }
+
+                long time = matcher.group(5) == null ? 0 : Integer.parseInt(matcher.group(5)) * 60000;
+
+                task.schedule(scheduleType, time);
+            }
+
             for (UserEntry user : UserRegistry.getInstance().findMatchingUsers(to)) {
                 String username = user.getName();
                 if (task.getStatus(username) == null) {

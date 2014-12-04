@@ -54,7 +54,14 @@ public final class TaskRegistry {
     }
     
     public void reset() {
-        tasks.clear();
+        Iterator<Map.Entry<String, Task>> it = tasks.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<String, Task> entry = it.next();
+
+            if (entry.getValue().getScheduleType() == Task.ScheduleType.NONE)
+                it.remove();
+        }
+
         notifyResetListeners();
     }
     
@@ -64,6 +71,8 @@ public final class TaskRegistry {
             tasks.remove(id);
         } else if (id == null) {
             id = genId();
+            if (task.getScheduleType() != Task.ScheduleType.NONE)
+                id = "s" + id;
             task.setId(id);
             tasks.put(id, task);
         } else {
