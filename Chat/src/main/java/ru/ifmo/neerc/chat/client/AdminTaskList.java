@@ -288,15 +288,15 @@ public class AdminTaskList extends JTable {
                 StringBuilder scheduled = new StringBuilder();
 
                 if (type != Task.ScheduleType.NONE) {
-                    scheduled.append(" (at ");
+                    scheduled.append(" (");
 
                     if (type == Task.ScheduleType.CONTEST_START)
-                        scheduled.append("contest start ");
+                        scheduled.append("start");
                     else if (type == Task.ScheduleType.CONTEST_END)
-                        scheduled.append("contest end ");
+                        scheduled.append("end");
 
                     if (type != Task.ScheduleType.ABSOLUTE)
-                        scheduled.append((time < 0) ? "- " : "+ ");
+                        scheduled.append((time < 0) ? " - " : " + ");
 
                     scheduled.append(String.format("%02d:%02d", Math.abs(time) / 60, Math.abs(time) % 60));
                     scheduled.append(")");
