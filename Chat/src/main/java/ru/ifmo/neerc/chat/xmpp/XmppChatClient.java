@@ -283,6 +283,7 @@ public class XmppChatClient extends AbstractChatClient {
         public void reconnectingIn(int i) {
             if (i == 0) {
                 setConnectionStatus("Reconnecting...");
+                xmppChat.connect();
                 resetButton.setEnabled(false);
                 return;
             }
