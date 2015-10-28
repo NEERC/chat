@@ -49,7 +49,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 
     public ChatArea outputArea;
     public ChatArea outputAreaJury;
-    public JTextArea inputArea;
+    public ChatInputArea inputArea;
     public JLabel neercTimer = new JLabel();
     protected JLabel connectionStatus = new JLabel();
     private JLabel subscriptionsList = new JLabel();
@@ -57,7 +57,6 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     protected TaskRegistry taskRegistry = TaskRegistry.getInstance();
     protected UserEntry user;
     UsersPanel usersPanel;
-    protected int localHistorySize;
     private static final int MAX_MESSAGE_LENGTH = 500;
 
     ChannelList channelsSubscription = new ChannelList();
@@ -98,7 +97,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         JPanel chatPanel = new JPanel(new BorderLayout());
         outputArea = new ChatArea(user, colorizer);
         outputAreaJury = new ChatArea();
-        inputArea = createInputArea();
+        inputArea = new ChatInputArea(this, null);
         JScrollPane outputAreaScroller = new JScrollPane(outputArea);
         JScrollPane outputAreaScrollerJury = new JScrollPane(outputAreaJury);
         JSplitPane outputSplitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, outputAreaScrollerJury,
@@ -114,7 +113,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 
         UserPickListener setPrivateAddresseesListener = new UserPickListener() {
             public void userPicked(UserEntry user) {
-                setPrivateAddressees(user.getName());
+                inputArea.setPrivateAddressees(user.getName());
             }
         };
 
@@ -236,82 +235,8 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         chatSplitter.setOneTouchExpandable(false);
     }
 
-    private JTextArea createInputArea() {
-        final JTextArea inputArea = new JTextArea(2, 45);
-        inputArea.setLineWrap(true);
-        inputArea.setWrapStyleWord(true);
-        if (!user.isPower()) {
-            inputArea.setDocument(new PlainDocument() {
-                public void insertString(int offs, String str, AttributeSet a) throws BadLocationException {
-                    if (getLength() + str.length() > MAX_MESSAGE_LENGTH) {
-                        str = str.substring(0, MAX_MESSAGE_LENGTH - getLength());
-                    }
-                    super.insertString(offs, str, a);
-                }
-            });
-        }
-        final MessageLocalHistory messageLocalHistory = new MessageLocalHistory(localHistorySize);
-        inputArea.addKeyListener(new KeyAdapter() {
-            public void keyTyped(KeyEvent e1) {
-                if (e1.getKeyChar() == KeyEvent.VK_ENTER) {
-                    boolean hasCtrl = e1.isControlDown();
-                    if (hasCtrl != sendOnEnter) {
-                        String text = inputArea.getText().trim();
-                        if (text.isEmpty())
-                            return;
-
-                        Matcher privateMatcher = Pattern.compile(ChatMessage.PRIVATE_FIND_REGEX, Pattern.DOTALL).matcher(text);
-                        if (privateMatcher.find() && privateMatcher.groupCount() > 0) {
-                            messageLocalHistory.setLastPrivateAddressees(privateMatcher.group(1));
-                        }
-
-                        messageLocalHistory.add(text);
-                        send(text);
-                    } else {
-                        if (hasCtrl)
-                            inputArea.append("\n");
-                    }
-                }
-            }
-
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_UP && !e.isControlDown()) {
-                    try {
-                        int caretPosition = inputArea.getCaretPosition();
-                        int lineNum = inputArea.getLineOfOffset(caretPosition);
-                        if (lineNum == 0) {
-                            setPrivateAddressees(messageLocalHistory.getLastPrivateAddressees());
-                        }
-
-                    } catch (BadLocationException e1) {
-                        // it's not like anything can be done here
-                    }
-                } else if (e.getKeyCode() == KeyEvent.VK_DOWN && e.isControlDown()) {
-                    String message = messageLocalHistory.moveDown();
-                    if (message != null) {
-                        inputArea.setText(message);
-                    }
-                } else if (e.getKeyCode() == KeyEvent.VK_UP && e.isControlDown()) {
-                    String message = messageLocalHistory.moveUp();
-                    if (message != null) {
-                        inputArea.setText(message);
-                    }
-                } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                    inputArea.setText("");
-                }
-            }
-        });
-        return inputArea;
-    }
-
-    protected void setPrivateAddressees(String addressees) {
-        if (!"".equals(addressees)) {
-            String text = inputArea.getText();
-            text = text.replaceAll("\\A[a-zA-Z0-9%]+>\\s*", "");
-            text = addressees + "> " + text;
-            inputArea.setText(text);
-        }
-        inputArea.requestFocus();
+    public boolean sendOnEnter() {
+        return sendOnEnter;
     }
 
     protected void send(String text) {
@@ -369,7 +294,6 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         if (!Pattern.compile("^(@|/)\\w+ .*", Pattern.DOTALL).matcher(text).matches()) {
             chat.write(new UserMessage(user.getJid(), destination, text));
         }
-        inputArea.setText("");
     }
 
     public void processMessage(Message message) {
