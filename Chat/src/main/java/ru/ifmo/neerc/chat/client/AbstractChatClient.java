@@ -95,7 +95,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 
     private JPanel createMainPanel() {
         JPanel chatPanel = new JPanel(new BorderLayout());
-        outputArea = new ChatArea(user, colorizer);
+        outputArea = new ChatArea(user, colorizer, channelsSubscription);
         outputAreaJury = new ChatArea();
         inputArea = new ChatInputArea(this, null);
         JScrollPane outputAreaScroller = new JScrollPane(outputArea);
@@ -310,11 +310,9 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
             chatMessage = ChatMessage.createUserMessage((UserMessage) message);
             String jid = user.getJid();
 
-            if (chatMessage.isPrivate()
+            if (chatMessage.isPrivate() && !chatMessage.isChannel()
                     && !jid.equals(chatMessage.getUser().getJid())
-                    && !jid.equals(chatMessage.getTo())
-                    && !channelsSubscription.isSubscribed(chatMessage.getTo())
-                    ) {
+                    && !jid.equals(chatMessage.getTo())) {
                 // foreign private message
                 return;
             }

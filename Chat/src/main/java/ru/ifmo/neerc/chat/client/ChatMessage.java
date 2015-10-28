@@ -112,6 +112,10 @@ public class ChatMessage implements Comparable<ChatMessage> {
         return priv;
     }
 
+    public boolean isChannel() {
+        return isPrivate() && getTo().charAt(0) == '%';
+    }
+
     public String getTo() {
         return to;
     }

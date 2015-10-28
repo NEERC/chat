@@ -49,11 +49,11 @@ public class ChatArea extends JTable {
     private ArrayList<UserPickListener> userPickListeners = new ArrayList<>();
 
     public ChatArea() {
-        this(null, null);
+        this(null, null, null);
     }
 
-    public ChatArea(UserEntry user, NameColorizer colorizer) {
-        model = new ChatModel();
+    public ChatArea(UserEntry user, NameColorizer colorizer, ChannelList channels) {
+        model = new ChatModel(channels);
         setModel(model);
         setShowHorizontalLines(false);
         setShowGrid(false);
@@ -141,12 +141,36 @@ public class ChatArea extends JTable {
     private class ChatModel extends AbstractTableModel {
         private ArrayList<ChatMessage> cache = new ArrayList<ChatMessage>();
         private TreeSet<ChatMessage> messages = new TreeSet<ChatMessage>();
+        private ChannelList channels;
         private boolean valid = true;
+
+        public ChatModel(ChannelList channels) {
+            this.channels = channels;
+
+            if (this.channels != null) {
+                this.channels.addListener(new SubscriptionListener() {
+                    public void subscriptionChanged() {
+                        valid = false;
+                        validate();
+                        fireTableDataChanged();
+                    }
+                });
+            }
+        }
+
+        public boolean isMessageVisible(ChatMessage message) {
+            return (channels == null
+                || !message.isChannel()
+                || channels.isSubscribed(message.getTo()));
+        }
 
         private synchronized void validate() {
             if (valid) return;
             cache.clear();
-            cache.addAll(messages);
+            for (ChatMessage message : messages) {
+                if (isMessageVisible(message))
+                    cache.add(message);
+            }
             valid = true;
         }
 
@@ -155,7 +179,7 @@ public class ChatArea extends JTable {
         }
 
         public int getRowCount() {
-            return messages.size();
+            return cache.size();
         }
 
         public Object getValueAt(int rowIndex, int columnIndex) {
@@ -187,7 +211,8 @@ public class ChatArea extends JTable {
                 size--;
             }
             messages.add(message);
-            cache.add(message);
+            if (isMessageVisible(message))
+                cache.add(message);
             fireTableRowsInserted(size, size);
             return size;
         }
