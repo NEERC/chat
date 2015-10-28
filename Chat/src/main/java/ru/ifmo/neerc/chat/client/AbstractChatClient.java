@@ -254,10 +254,11 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         inputArea.addKeyListener(new KeyAdapter() {
             public void keyTyped(KeyEvent e1) {
                 if (e1.getKeyChar() == KeyEvent.VK_ENTER) {
-                    boolean hasCtrl = (e1.getModifiers() & KeyEvent.CTRL_MASK) > 0;
+                    boolean hasCtrl = e1.isControlDown();
                     if (hasCtrl != sendOnEnter) {
                         String text = inputArea.getText().trim();
-                        if (text.equals("")) return;
+                        if (text.isEmpty())
+                            return;
 
                         Matcher privateMatcher = Pattern.compile(ChatMessage.PRIVATE_FIND_REGEX, Pattern.DOTALL).matcher(text);
                         if (privateMatcher.find() && privateMatcher.groupCount() > 0) {
@@ -267,15 +268,14 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
                         messageLocalHistory.add(text);
                         send(text);
                     } else {
-                        if (hasCtrl) {
-                            inputArea.setText(inputArea.getText() + "\n");
-                        }
+                        if (hasCtrl)
+                            inputArea.append("\n");
                     }
                 }
             }
 
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_UP && (e.getModifiers() & KeyEvent.CTRL_MASK) == 0) {
+                if (e.getKeyCode() == KeyEvent.VK_UP && !e.isControlDown()) {
                     try {
                         int caretPosition = inputArea.getCaretPosition();
                         int lineNum = inputArea.getLineOfOffset(caretPosition);
@@ -286,12 +286,12 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
                     } catch (BadLocationException e1) {
                         // it's not like anything can be done here
                     }
-                } else if (e.getKeyCode() == KeyEvent.VK_DOWN && (e.getModifiers() & KeyEvent.CTRL_MASK) > 0) {
+                } else if (e.getKeyCode() == KeyEvent.VK_DOWN && e.isControlDown()) {
                     String message = messageLocalHistory.moveDown();
                     if (message != null) {
                         inputArea.setText(message);
                     }
-                } else if (e.getKeyCode() == KeyEvent.VK_UP && (e.getModifiers() & KeyEvent.CTRL_MASK) > 0) {
+                } else if (e.getKeyCode() == KeyEvent.VK_UP && e.isControlDown()) {
                     String message = messageLocalHistory.moveUp();
                     if (message != null) {
                         inputArea.setText(message);
