@@ -218,6 +218,11 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         resetButton.setFocusable(false);
 
         subscriptionsList.setText(channelsSubscription.toString());
+        channelsSubscription.addListener(new SubscriptionListener() {
+            public void subscriptionChanged() {
+                subscriptionsList.setText(channelsSubscription.toString());
+            }
+        });
 
         toolBar.add(Box.createHorizontalGlue());
         toolBar.add(subscriptionsList);
@@ -280,13 +285,11 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         Matcher channelMatches = Pattern.compile("^/s\\s+" + ChatMessage.CHANNEL_MATCH_REGEX + "\\s*$", Pattern.DOTALL).matcher(text);
         if (channelMatches.find()) {
             channelsSubscription.subscribeTo(channelMatches.group(1));
-            subscriptionsList.setText(channelsSubscription.toString());
         }
 
         channelMatches = Pattern.compile("^/d\\s+" + ChatMessage.CHANNEL_MATCH_REGEX + "\\s*$", Pattern.DOTALL).matcher(text);
         if (channelMatches.find()) {
             channelsSubscription.unsubscribeFrom(channelMatches.group(1));
-            subscriptionsList.setText(channelsSubscription.toString());
         }
 
         int destination = -1;
