@@ -161,7 +161,7 @@ public class ChatArea extends JTable {
         public boolean isMessageVisible(ChatMessage message) {
             return (channels == null
                 || !message.isChannel()
-                || channels.isSubscribed(message.getTo()));
+                || (!channels.isSeparated() && channels.isSubscribed(message.getTo())));
         }
 
         private synchronized void validate() {

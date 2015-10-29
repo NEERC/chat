@@ -59,7 +59,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     UsersPanel usersPanel;
     private static final int MAX_MESSAGE_LENGTH = 500;
 
-    ChannelList channelsSubscription = new ChannelList();
+    ChannelList channelsSubscription = new ChannelList(this);
 
     private JSplitPane powerSplitter;
 
@@ -189,6 +189,17 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         });
         toolBar.add(chatColorSwitch);
 
+        final ToggleIconButton separateChannelsSwitch = new ToggleIconButton(
+            "res/channels_together.png", "Channel messages in main window",
+            "res/channels_separated.png", "Channel messages in separate window"
+        );
+        separateChannelsSwitch.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                channelsSubscription.setSeparated(!channelsSubscription.isSeparated());
+            }
+        });
+        toolBar.add(separateChannelsSwitch);
+
         resetButton = new JButton("Reconnect");
         resetButton.setFocusable(false);
 
@@ -316,6 +327,9 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     }
 
     private void showMessage(ChatMessage chatMessage) {
+        if (chatMessage.isChannel())
+            channelsSubscription.showMessage(chatMessage);
+
         outputArea.addMessage(chatMessage);
         if (chatMessage.isSpecial()) {
             outputAreaJury.addMessage(chatMessage);
