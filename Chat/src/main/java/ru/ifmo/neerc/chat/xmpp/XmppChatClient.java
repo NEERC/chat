@@ -124,7 +124,7 @@ public class XmppChatClient extends AbstractChatClient {
                         return;
                     }
 
-                    if (isBeepOn) {
+                    if (isBeepOn()) {
                         System.out.print('\u0007'); // PC-speaker beep
                     }
                     setAlwaysOnTop(true);

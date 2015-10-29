@@ -63,9 +63,8 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 
     private JSplitPane powerSplitter;
 
-    protected boolean isBeepOn = false;
-
-    protected boolean sendOnEnter = false;
+    protected ToggleIconButton beepSwitch;
+    protected ToggleIconButton sendModeSwitch;
 
     protected TimerTicker ticker = new TimerTicker(neercTimer);
     protected NameColorizer colorizer = new NameColorizer();
@@ -164,52 +163,28 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         });
         toolBar.add(about);
 
-        final ImageIcon beepOnImage = new ImageIcon(AbstractChatClient.class.getResource("res/btn_beep_on.png"));
-        final ImageIcon beepOffImage = new ImageIcon(AbstractChatClient.class.getResource("res/btn_beep_off.png"));
-        final JButton mute = new JButton(beepOffImage);
-        mute.setFocusable(false);
-        mute.setToolTipText(isBeepOn ? "Turn beep off" : "Turn beep on");
-        mute.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                isBeepOn = !isBeepOn;
-                mute.setIcon(isBeepOn ? beepOnImage : beepOffImage);
-                mute.setToolTipText(isBeepOn ? "Turn beep off" : "Turn beep on");
-            }
-        });
-        toolBar.add(mute);
+        beepSwitch = new ToggleIconButton(
+            "res/btn_beep_off.png", "Turn beep on",
+            "res/btn_beep_on.png", "Turn beep off"
+        );
+        toolBar.add(beepSwitch);
 
-        final ImageIcon enterImage = new ImageIcon(AbstractChatClient.class.getResource("res/btn_enter.png"));
-        final ImageIcon ctrlEnterImage = new ImageIcon(AbstractChatClient.class.getResource("res/btn_ctrl_enter.png"));
-        final JButton sendModeSwitch = new JButton(ctrlEnterImage);
-        sendModeSwitch.setFocusable(false);
-        final String sendModeEnter = "Messages are sent on Enter";
-        final String sendModeCtrlEnter = "Messages are sent on Ctrl+Enter";
-        sendModeSwitch.setToolTipText(sendOnEnter ? sendModeEnter : sendModeCtrlEnter);
-        sendModeSwitch.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                sendOnEnter = !sendOnEnter;
-                sendModeSwitch.setIcon(sendOnEnter ? enterImage : ctrlEnterImage);
-                sendModeSwitch.setToolTipText(sendOnEnter ? sendModeEnter : sendModeCtrlEnter);
-            }
-        });
+        sendModeSwitch = new ToggleIconButton(
+            "res/btn_ctrl_enter.png", "Messages are sent on Ctrl+Enter",
+            "res/btn_enter.png", "Messages are sent on Enter"
+        );
         toolBar.add(sendModeSwitch);
 
-        final ImageIcon coloredImage = new ImageIcon(AbstractChatClient.class.getResource("res/btn_colored.png"));
-        final ImageIcon blackAndWhiteImage = new ImageIcon(AbstractChatClient.class.getResource("res/btn_black_and_white.png"));
-        final JButton chatColorSwitch = new JButton(coloredImage);
-        chatColorSwitch.setFocusable(false);
-        final String chatColored = "Colored names in chat";
-        final String chatBlackAndWhite = "Black names in chat";
-        chatColorSwitch.setToolTipText(chatColored);
+        final ToggleIconButton chatColorSwitch = new ToggleIconButton(
+            "res/btn_black_and_white.png", "Black names in chat",
+            "res/btn_colored.png", "Colored names in chat"
+        );
+        chatColorSwitch.setSelected(true);
         chatColorSwitch.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 colorizer.setColored(!colorizer.isColored());
-                chatColorSwitch.setIcon(colorizer.isColored() ? coloredImage : blackAndWhiteImage);
-                chatColorSwitch.setToolTipText(colorizer.isColored() ? chatColored : chatBlackAndWhite);
-
                 outputArea.repaint();
                 usersPanel.repaint();
-
             }
         });
         toolBar.add(chatColorSwitch);
@@ -240,8 +215,12 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         chatSplitter.setOneTouchExpandable(false);
     }
 
+    public boolean isBeepOn() {
+        return beepSwitch.isSelected();
+    }
+
     public boolean sendOnEnter() {
-        return sendOnEnter;
+        return sendModeSwitch.isSelected();
     }
 
     protected void send(String text) {
