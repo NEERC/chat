@@ -29,6 +29,7 @@ public class Task implements Comparable<Task>{
 
     private ScheduleType scheduleType = ScheduleType.NONE;
     private long scheduleTime = 0;
+    private boolean needsConfirmation = true;
 
     public Task(String type, String title) {
     	this.type = type;
@@ -94,6 +95,14 @@ public class Task implements Comparable<Task>{
 
     public long getScheduleTime() {
         return scheduleTime;
+    }
+
+    public void setNeedsConfirmation(boolean needsConfirmation) {
+        this.needsConfirmation = needsConfirmation;
+    }
+
+    public boolean getNeedsConfirmation() {
+        return needsConfirmation;
     }
 
 	@Override
