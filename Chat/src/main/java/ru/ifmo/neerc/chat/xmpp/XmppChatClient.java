@@ -226,6 +226,11 @@ public class XmppChatClient extends AbstractChatClient {
 
         @Override
         public void run() {
+            if (!task.getNeedsConfirmation()) {
+                chat.write(task);
+                return;
+            }
+
             final Runnable sound = (Runnable)Toolkit.getDefaultToolkit().getDesktopProperty("win.sound.exclamation");
             if (sound != null)
                 sound.run();

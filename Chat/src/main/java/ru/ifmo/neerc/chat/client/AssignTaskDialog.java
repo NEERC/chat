@@ -139,6 +139,7 @@ public class AssignTaskDialog extends JDialog {
         for (Task task : tasks) {
             Task updatedTask = new Task(task.getId(), task.getType(), task.getTitle());
             updatedTask.schedule(task.getScheduleType(), task.getScheduleTime());
+            updatedTask.setNeedsConfirmation(task.getNeedsConfirmation());
             Map<String, TaskStatus> statuses = task.getStatuses();
             for (UserEntry user : selectedUsers) {
                 updatedTask.setStatus(user.getName(), "none", "");

@@ -302,15 +302,18 @@ public class AdminTaskList extends JTable {
                     scheduled.append(")");
                 }
 
-                setText(task.getTitle() + scheduled);
+                setText(" " + task.getTitle() + scheduled);
                 setToolTipText(task.getTitle());
 
                 TaskStatus ourStatus = task.getStatus(username);
                 String displayStatus = null;
                 
-                if (type != Task.ScheduleType.NONE)
-                    displayStatus = TaskActions.STATUS_SCHEDULED;
-                else if (ourStatus != null) {
+                if (type != Task.ScheduleType.NONE) {
+                    if (task.getNeedsConfirmation())
+                        displayStatus = TaskActions.STATUS_SCHEDULED_CONFIRM;
+                    else
+                        displayStatus = TaskActions.STATUS_SCHEDULED;
+                } else if (ourStatus != null) {
                     displayStatus = ourStatus.getType();
                 } else if (task.getStatuses().size() > 0) {
                     displayStatus = TaskActions.STATUS_SUCCESS;
