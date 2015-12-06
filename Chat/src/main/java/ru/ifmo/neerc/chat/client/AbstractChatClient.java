@@ -50,7 +50,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 
     public ChatArea outputArea;
     public ChatArea outputAreaJury;
-    public JTextArea inputArea;
+    public ChatInputArea inputArea;
     public JLabel neercTimer = new JLabel();
     protected JLabel connectionStatus = new JLabel();
     private JLabel subscriptionsList = new JLabel();
@@ -58,16 +58,14 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     protected TaskRegistry taskRegistry = TaskRegistry.getInstance();
     protected UserEntry user;
     UsersPanel usersPanel;
-    protected int localHistorySize;
     private static final int MAX_MESSAGE_LENGTH = 500;
 
-    ChannelList channelsSubscription = new ChannelList();
+    ChannelList channelsSubscription = new ChannelList(this);
 
     private JSplitPane powerSplitter;
 
-    protected boolean isBeepOn = false;
-
-    protected boolean sendOnEnter = false;
+    protected ToggleIconButton beepSwitch;
+    protected ToggleIconButton sendModeSwitch;
 
     protected TimerTicker ticker = new TimerTicker(neercTimer);
     protected NameColorizer colorizer = new NameColorizer();
@@ -100,9 +98,9 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 
     private JPanel createMainPanel() {
         JPanel chatPanel = new JPanel(new BorderLayout());
-        outputArea = new ChatArea(user, colorizer);
+        outputArea = new ChatArea(user, colorizer, channelsSubscription);
         outputAreaJury = new ChatArea();
-        inputArea = createInputArea();
+        inputArea = new ChatInputArea(this, null);
         JScrollPane outputAreaScroller = new JScrollPane(outputArea);
         JScrollPane outputAreaScrollerJury = new JScrollPane(outputAreaJury);
         JSplitPane outputSplitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, outputAreaScrollerJury,
@@ -118,7 +116,7 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 
         UserPickListener setPrivateAddresseesListener = new UserPickListener() {
             public void userPicked(UserEntry user) {
-                setPrivateAddressees(user.getName());
+                inputArea.setPrivateAddressees(user.getName());
             }
         };
 
@@ -164,65 +162,57 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         about.setFocusable(false);
         about.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                new AboutBox(AbstractChatClient.this).setVisible(true);
+                new AboutBox(AbstractChatClient.this, "res/help.html").setVisible(true);
             }
         });
         toolBar.add(about);
 
-        final ImageIcon beepOnImage = new ImageIcon(AbstractChatClient.class.getResource("res/btn_beep_on.png"));
-        final ImageIcon beepOffImage = new ImageIcon(AbstractChatClient.class.getResource("res/btn_beep_off.png"));
-        final JButton mute = new JButton(beepOffImage);
-        mute.setFocusable(false);
-        mute.setToolTipText(isBeepOn ? "Turn beep off" : "Turn beep on");
-        mute.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                isBeepOn = !isBeepOn;
-                mute.setIcon(isBeepOn ? beepOnImage : beepOffImage);
-                mute.setToolTipText(isBeepOn ? "Turn beep off" : "Turn beep on");
-            }
-        });
-        toolBar.add(mute);
+        beepSwitch = new ToggleIconButton(
+            "res/btn_beep_off.png", "Turn beep on",
+            "res/btn_beep_on.png", "Turn beep off"
+        );
+        toolBar.add(beepSwitch);
 
-        final ImageIcon enterImage = new ImageIcon(AbstractChatClient.class.getResource("res/btn_enter.png"));
-        final ImageIcon ctrlEnterImage = new ImageIcon(AbstractChatClient.class.getResource("res/btn_ctrl_enter.png"));
-        final JButton sendModeSwitch = new JButton(ctrlEnterImage);
-        sendModeSwitch.setFocusable(false);
-        final String sendModeEnter = "Messages are sent on Enter";
-        final String sendModeCtrlEnter = "Messages are sent on Ctrl+Enter";
-        sendModeSwitch.setToolTipText(sendOnEnter ? sendModeEnter : sendModeCtrlEnter);
-        sendModeSwitch.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                sendOnEnter = !sendOnEnter;
-                sendModeSwitch.setIcon(sendOnEnter ? enterImage : ctrlEnterImage);
-                sendModeSwitch.setToolTipText(sendOnEnter ? sendModeEnter : sendModeCtrlEnter);
-            }
-        });
+        sendModeSwitch = new ToggleIconButton(
+            "res/btn_ctrl_enter.png", "Messages are sent on Ctrl+Enter",
+            "res/btn_enter.png", "Messages are sent on Enter"
+        );
         toolBar.add(sendModeSwitch);
 
-        final ImageIcon coloredImage = new ImageIcon(AbstractChatClient.class.getResource("res/btn_colored.png"));
-        final ImageIcon blackAndWhiteImage = new ImageIcon(AbstractChatClient.class.getResource("res/btn_black_and_white.png"));
-        final JButton chatColorSwitch = new JButton(coloredImage);
-        chatColorSwitch.setFocusable(false);
-        final String chatColored = "Colored names in chat";
-        final String chatBlackAndWhite = "Black names in chat";
-        chatColorSwitch.setToolTipText(chatColored);
+        final ToggleIconButton chatColorSwitch = new ToggleIconButton(
+            "res/btn_black_and_white.png", "Black names in chat",
+            "res/btn_colored.png", "Colored names in chat"
+        );
+        chatColorSwitch.setSelected(true);
         chatColorSwitch.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 colorizer.setColored(!colorizer.isColored());
-                chatColorSwitch.setIcon(colorizer.isColored() ? coloredImage : blackAndWhiteImage);
-                chatColorSwitch.setToolTipText(colorizer.isColored() ? chatColored : chatBlackAndWhite);
-
                 outputArea.repaint();
                 usersPanel.repaint();
-
             }
         });
         toolBar.add(chatColorSwitch);
+
+        final ToggleIconButton separateChannelsSwitch = new ToggleIconButton(
+            "res/channels_together.png", "Channel messages in main window",
+            "res/channels_separated.png", "Channel messages in separate window"
+        );
+        separateChannelsSwitch.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                channelsSubscription.setSeparated(!channelsSubscription.isSeparated());
+            }
+        });
+        toolBar.add(separateChannelsSwitch);
 
         resetButton = new JButton("Reconnect");
         resetButton.setFocusable(false);
 
         subscriptionsList.setText(channelsSubscription.toString());
+        channelsSubscription.addListener(new SubscriptionListener() {
+            public void subscriptionChanged() {
+                subscriptionsList.setText(channelsSubscription.toString());
+            }
+        });
 
         toolBar.add(Box.createHorizontalGlue());
         toolBar.add(subscriptionsList);
@@ -240,93 +230,23 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         chatSplitter.setOneTouchExpandable(false);
     }
 
-    private JTextArea createInputArea() {
-        final JTextArea inputArea = new JTextArea(2, 45);
-        inputArea.setLineWrap(true);
-        inputArea.setWrapStyleWord(true);
-        if (!user.isPower()) {
-            inputArea.setDocument(new PlainDocument() {
-                public void insertString(int offs, String str, AttributeSet a) throws BadLocationException {
-                    if (getLength() + str.length() > MAX_MESSAGE_LENGTH) {
-                        str = str.substring(0, MAX_MESSAGE_LENGTH - getLength());
-                    }
-                    super.insertString(offs, str, a);
-                }
-            });
-        }
-        final MessageLocalHistory messageLocalHistory = new MessageLocalHistory(localHistorySize);
-        inputArea.addKeyListener(new KeyAdapter() {
-            public void keyTyped(KeyEvent e1) {
-                if (e1.getKeyChar() == KeyEvent.VK_ENTER) {
-                    boolean hasCtrl = (e1.getModifiers() & KeyEvent.CTRL_MASK) > 0;
-                    if (hasCtrl != sendOnEnter) {
-                        String text = inputArea.getText().trim();
-                        if (text.equals("")) return;
-
-                        Matcher privateMatcher = Pattern.compile(ChatMessage.PRIVATE_FIND_REGEX, Pattern.DOTALL).matcher(text);
-                        if (privateMatcher.find() && privateMatcher.groupCount() > 0) {
-                            messageLocalHistory.setLastPrivateAddressees(privateMatcher.group(1));
-                        }
-
-                        messageLocalHistory.add(text);
-                        send(text);
-                    } else {
-                        if (hasCtrl) {
-                            inputArea.setText(inputArea.getText() + "\n");
-                        }
-                    }
-                }
-            }
-
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_UP && (e.getModifiers() & KeyEvent.CTRL_MASK) == 0) {
-                    try {
-                        int caretPosition = inputArea.getCaretPosition();
-                        int lineNum = inputArea.getLineOfOffset(caretPosition);
-                        if (lineNum == 0) {
-                            setPrivateAddressees(messageLocalHistory.getLastPrivateAddressees());
-                        }
-
-                    } catch (BadLocationException e1) {
-                        // it's not like anything can be done here
-                    }
-                } else if (e.getKeyCode() == KeyEvent.VK_DOWN && (e.getModifiers() & KeyEvent.CTRL_MASK) > 0) {
-                    String message = messageLocalHistory.moveDown();
-                    if (message != null) {
-                        inputArea.setText(message);
-                    }
-                } else if (e.getKeyCode() == KeyEvent.VK_UP && (e.getModifiers() & KeyEvent.CTRL_MASK) > 0) {
-                    String message = messageLocalHistory.moveUp();
-                    if (message != null) {
-                        inputArea.setText(message);
-                    }
-                } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                    inputArea.setText("");
-                }
-            }
-        });
-        return inputArea;
+    public boolean isBeepOn() {
+        return beepSwitch.isSelected();
     }
 
-    protected void setPrivateAddressees(String addressees) {
-        if (!"".equals(addressees)) {
-            String text = inputArea.getText();
-            text = text.replaceAll("\\A[a-zA-Z0-9%]+>\\s*", "");
-            text = addressees + "> " + text;
-            inputArea.setText(text);
-        }
-        inputArea.requestFocus();
+    public boolean sendOnEnter() {
+        return sendModeSwitch.isSelected();
     }
 
     protected void send(String text) {
         // ensure that null won't be here
         text = String.valueOf(text);
-        String pattern = "^@(todo|todofail|task|confirm|ok|okfail|reason|question|q)( [\\w,]+)?( (start|end)([+-]\\d+)?)? (.*)$";
+        String pattern = "^@(todo|todofail|task|confirm|ok|okfail|reason|question|q)( [\\w,]+)?( (start|end)([+-]\\d+)?(!)?)? (.*)$";
         Matcher matcher = Pattern.compile(pattern, Pattern.MULTILINE).matcher(text);
         while (matcher.find()) {
             String type = TaskActions.getTypeByAlias(matcher.group(1));
             String to = matcher.group(2) == null ? "" : matcher.group(2).substring(1);
-            String title = matcher.group(6);
+            String title = matcher.group(7);
             Task task = new Task(type, title);
 
             if (matcher.group(3) != null) {
@@ -342,8 +262,10 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
                 }
 
                 long time = matcher.group(5) == null ? 0 : Integer.parseInt(matcher.group(5)) * 60000;
+                boolean needsConfirmation = matcher.group(6) == null;
 
                 task.schedule(scheduleType, time);
+                task.setNeedsConfirmation(needsConfirmation);
             }
 
             for (UserEntry user : UserRegistry.getInstance().findMatchingUsers(to)) {
@@ -359,13 +281,11 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         Matcher channelMatches = Pattern.compile("^/s\\s+" + ChatMessage.CHANNEL_MATCH_REGEX + "\\s*$", Pattern.DOTALL).matcher(text);
         if (channelMatches.find()) {
             channelsSubscription.subscribeTo(channelMatches.group(1));
-            subscriptionsList.setText(channelsSubscription.toString());
         }
 
         channelMatches = Pattern.compile("^/d\\s+" + ChatMessage.CHANNEL_MATCH_REGEX + "\\s*$", Pattern.DOTALL).matcher(text);
         if (channelMatches.find()) {
             channelsSubscription.unsubscribeFrom(channelMatches.group(1));
-            subscriptionsList.setText(channelsSubscription.toString());
         }
 
         int destination = -1;
@@ -373,7 +293,6 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         if (!Pattern.compile("^(@|/)\\w+ .*", Pattern.DOTALL).matcher(text).matches()) {
             chat.write(new UserMessage(user.getJid(), destination, text));
         }
-        inputArea.setText("");
     }
 
     public void processMessage(Message message) {
@@ -387,11 +306,9 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
             chatMessage = ChatMessage.createUserMessage((UserMessage) message);
             String jid = user.getJid();
 
-            if (chatMessage.isPrivate()
+            if (chatMessage.isPrivate() && !chatMessage.isChannel()
                     && !jid.equals(chatMessage.getUser().getJid())
-                    && !jid.equals(chatMessage.getTo())
-                    && !channelsSubscription.isSubscribed(chatMessage.getTo())
-                    ) {
+                    && !jid.equals(chatMessage.getTo())) {
                 // foreign private message
                 return;
             }
@@ -417,6 +334,9 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
     }
 
     private void showMessage(ChatMessage chatMessage) {
+        if (chatMessage.isChannel())
+            channelsSubscription.showMessage(chatMessage);
+
         outputArea.addMessage(chatMessage);
         if (chatMessage.isSpecial()) {
             outputAreaJury.addMessage(chatMessage);

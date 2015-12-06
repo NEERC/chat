@@ -1,22 +1,90 @@
 package ru.ifmo.neerc.chat.client;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class ChannelList {
+    private AbstractChatClient client;
     private Set<String> channels = new HashSet<>();
+    private Map<String, ChatWindow> windows = new HashMap<>();
+    private List<SubscriptionListener> listeners = new ArrayList<>();
+    private boolean isSeparated = false;
+
+    public ChannelList(AbstractChatClient client) {
+        this.client = client;
+    }
+
+    public void addListener(SubscriptionListener listener) {
+        listeners.add(listener);
+    }
+
+    private void notifySubscriptionChanged() {
+        for (SubscriptionListener listener : listeners)
+            listener.subscriptionChanged();
+    }
 
     public void subscribeTo(String channel) {
+        if (isSeparated)
+            getOrCreateWindow(channel).setVisible(true);
         channels.add(channel);
+        notifySubscriptionChanged();
     }
 
     public void unsubscribeFrom(String channel) {
+        if (isSeparated)
+            getOrCreateWindow(channel).setVisible(false);
         channels.remove(channel);
+        notifySubscriptionChanged();
     }
 
     public boolean isSubscribed(String channel) {
         return channels.contains(channel);
+    }
+
+    public boolean isSeparated() {
+        return isSeparated;
+    }
+
+    private ChatWindow getOrCreateWindow(final String channel) {
+        if (!windows.containsKey(channel)) {
+            ChatWindow window = new ChatWindow(client, channel);
+            window.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    unsubscribeFrom(channel);
+                }
+            });
+            window.setVisible(isSeparated);
+            windows.put(channel, window);
+        }
+
+        return windows.get(channel);
+    }
+
+    public void showMessage(ChatMessage message) {
+        if (!message.isChannel())
+            return;
+
+        getOrCreateWindow(message.getTo()).addMessage(message);
+    }
+
+    public void setSeparated(boolean isSeparated) {
+        this.isSeparated = isSeparated;
+        if (isSeparated) {
+            for (String channel : channels)
+                getOrCreateWindow(channel).setVisible(true);
+        } else {
+            for (ChatWindow window : windows.values())
+                window.setVisible(false);
+        }
+        notifySubscriptionChanged();
     }
 
     public String toString() {

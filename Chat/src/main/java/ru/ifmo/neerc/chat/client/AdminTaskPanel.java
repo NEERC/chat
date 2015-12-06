@@ -174,6 +174,15 @@ public class AdminTaskPanel extends JPanel {
             }
         });
         toolBar.add(btnRemoveTask);
+
+        JButton btnHelp = createButton(new ImageIcon(AdminTaskPanel.class.getResource("res/btn_about.gif")), "Help");
+        btnHelp.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                new AboutBox(owner, "res/tasks.html").setVisible(true);
+            }
+        });
+        toolBar.add(btnHelp);
+
         return toolBar;
     }
 

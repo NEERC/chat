@@ -36,7 +36,7 @@ public class AboutBox extends JDialog{
      * Constructs about box
      * @param owner wner window
      */
-    public AboutBox(Frame owner) {
+    public AboutBox(Frame owner, String page) {
         super(owner, true);
         // change title of the about box
         setTitle("About NEERC chat");
@@ -45,7 +45,8 @@ public class AboutBox extends JDialog{
 
         JEditorPane html;
         try {
-            html = new JEditorPane(getClass().getResource("res/help.html"));
+            html = new JEditorPane(getClass().getResource(page));
+            html.setContentType("text/html; charset=UTF-8");
             html.setEditable(false);
             mainPanel.add(new JScrollPane(html), BorderLayout.CENTER);
         } catch (IOException e) {
@@ -59,11 +60,13 @@ public class AboutBox extends JDialog{
                 dispose();
             }
         });
+        mainPanel.add(buttonOK, BorderLayout.SOUTH);
+
         // set border for about box
         mainPanel.setBorder(BorderFactory.createLineBorder(mainPanel.getBackground(), 10));
         setContentPane(mainPanel);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        setSize(400, 500);
+        setSize(500, 500);
         setLocationRelativeTo(owner);
     }
 

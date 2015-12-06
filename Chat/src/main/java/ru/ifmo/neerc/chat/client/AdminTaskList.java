@@ -288,29 +288,32 @@ public class AdminTaskList extends JTable {
                 StringBuilder scheduled = new StringBuilder();
 
                 if (type != Task.ScheduleType.NONE) {
-                    scheduled.append(" (at ");
+                    scheduled.append(" (");
 
                     if (type == Task.ScheduleType.CONTEST_START)
-                        scheduled.append("contest start ");
+                        scheduled.append("start");
                     else if (type == Task.ScheduleType.CONTEST_END)
-                        scheduled.append("contest end ");
+                        scheduled.append("end");
 
                     if (type != Task.ScheduleType.ABSOLUTE)
-                        scheduled.append((time < 0) ? "- " : "+ ");
+                        scheduled.append((time < 0) ? " - " : " + ");
 
                     scheduled.append(String.format("%02d:%02d", Math.abs(time) / 60, Math.abs(time) % 60));
                     scheduled.append(")");
                 }
 
-                setText(task.getTitle() + scheduled);
+                setText(" " + task.getTitle() + scheduled);
                 setToolTipText(task.getTitle());
 
                 TaskStatus ourStatus = task.getStatus(username);
                 String displayStatus = null;
                 
-                if (type != Task.ScheduleType.NONE)
-                    displayStatus = TaskActions.STATUS_SCHEDULED;
-                else if (ourStatus != null) {
+                if (type != Task.ScheduleType.NONE) {
+                    if (task.getNeedsConfirmation())
+                        displayStatus = TaskActions.STATUS_SCHEDULED_CONFIRM;
+                    else
+                        displayStatus = TaskActions.STATUS_SCHEDULED;
+                } else if (ourStatus != null) {
                     displayStatus = ourStatus.getType();
                 } else if (task.getStatuses().size() > 0) {
                     displayStatus = TaskActions.STATUS_SUCCESS;

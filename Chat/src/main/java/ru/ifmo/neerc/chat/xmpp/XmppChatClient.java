@@ -124,7 +124,7 @@ public class XmppChatClient extends AbstractChatClient {
                         return;
                     }
 
-                    if (isBeepOn) {
+                    if (isBeepOn()) {
                         System.out.print('\u0007'); // PC-speaker beep
                     }
                     setAlwaysOnTop(true);
@@ -226,6 +226,15 @@ public class XmppChatClient extends AbstractChatClient {
 
         @Override
         public void run() {
+            if (!task.getNeedsConfirmation()) {
+                chat.write(task);
+                return;
+            }
+
+            final Runnable sound = (Runnable)Toolkit.getDefaultToolkit().getDesktopProperty("win.sound.exclamation");
+            if (sound != null)
+                sound.run();
+
             int result = JOptionPane.showConfirmDialog(
                     XmppChatClient.this,
                     "Create task '" + task.getTitle() + "'?",
@@ -279,6 +288,7 @@ public class XmppChatClient extends AbstractChatClient {
         public void reconnectingIn(int i) {
             if (i == 0) {
                 setConnectionStatus("Reconnecting...");
+                xmppChat.connect();
                 resetButton.setEnabled(false);
                 return;
             }

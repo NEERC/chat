@@ -16,6 +16,7 @@ public class TaskActions {
     public static final String STATUS_SUCCESS = "success";
     public static final String STATUS_FAIL = "fail";
     public static final String STATUS_SCHEDULED = "scheduled";
+    public static final String STATUS_SCHEDULED_CONFIRM = "scheduled_confirm";
 
     public static final int ACTION_START = 0;
     public static final int ACTION_DONE = 1;

@@ -43,6 +43,10 @@ public final class TaskIcon {
                 TaskActions.STATUS_SCHEDULED,
                 new ImageIcon(TaskIcon.class.getResource("res/task_state_scheduled.png"))
         );
+        STATUS.put(
+                TaskActions.STATUS_SCHEDULED_CONFIRM,
+                new ImageIcon(TaskIcon.class.getResource("res/task_state_scheduled_confirm.png"))
+        );
 
         ACTION.put(
                 TaskActions.ACTION_DONE,

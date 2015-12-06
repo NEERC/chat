@@ -1,0 +1,28 @@
+<html>
+<body>
+<h3>@TYPE [ASSIGNED] [SCHEDULED] DESCRIPTION</h3>
+<p>Create task with TYPE and DESCRIPTION. Task may be ASSIGNED to some users and/or SCHEDULED for some time.</p>
+<h3>TYPE</h3>
+<ul>
+<li><b>todo</b>, <b>task</b> - task with running and done states</li>
+<li><b>todofail</b> - same as <b>todo</b>, but can be failed with reason</li>
+<li><b>confirm</b>, <b>ok</b> - task with single ok state</li>
+<li><b>okfail</b>, <b>reason</b> - task with ok and failed states</li>
+<li><b>question</b>, <b>q</b> - task asking for text answer</li>
+</ul>
+<h3>ASSIGNED</h3>
+<p>Comma delimited list of users. <b>halls</b> is an alias to list of all halls, <b>hall1,hall2,hall3,...</b></p>
+<h3>SCHEDULED</h3>
+<ul>
+<li><b>start[+n]</b> - schedule the task for <b>n</b> minutes after contest start, <b>n</b> = 0 if omitted</li>
+<li><b>end[-n]</b> - schedule the task for <b>n</b> minutes before contest end, <b>n</b> = 0 if omitted</li>
+</ul>
+<p>Appending <b>!</b> schedules a task that do not require confirmation (i.e. <b>end-60!</b>)</p>
+<h3>DESCRIPTION</h3>
+<p>Description of the task</p>
+<h3>Examples</h3>
+<p>@todo halls Впустить участников<br>
+@ok halls start Начали<br>
+@todo halls end-60 Объявить заморозку</p>  
+</body>
+</html>
