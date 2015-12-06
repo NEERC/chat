@@ -46,6 +46,7 @@ public class AboutBox extends JDialog{
         JEditorPane html;
         try {
             html = new JEditorPane(getClass().getResource(page));
+            html.setContentType("text/html; charset=UTF-8");
             html.setEditable(false);
             mainPanel.add(new JScrollPane(html), BorderLayout.CENTER);
         } catch (IOException e) {
