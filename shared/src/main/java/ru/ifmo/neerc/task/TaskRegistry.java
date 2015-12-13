@@ -17,8 +17,6 @@ public final class TaskRegistry {
         return INSTANCE;
     }
 
-    private long nextId = 0;
-
     /**
      * Hide default constructor.
      */
@@ -46,7 +44,7 @@ public final class TaskRegistry {
     }
 
     private String genId() {
-        return Long.toString(nextId++);
+        return UUID.randomUUID().toString();
     }
 
     public Task getById(String id) {
