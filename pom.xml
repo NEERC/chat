@@ -66,8 +66,8 @@
 
     <repositories>
         <repository>
-            <id>googlecode</id>
-            <url>https://neerc-soft.googlecode.com/svn/trunk/maven-repository/releases/</url>
+            <id>neerc</id>
+            <url>https://raw.githubusercontent.com/NEERC/chat/master/maven-repository/releases/</url>
         </repository>
     </repositories>
 </project>
