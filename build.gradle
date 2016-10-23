@@ -10,7 +10,6 @@ subprojects {
     sourceCompatibility = 1.7
     version = "0.1-SNAPSHOT"
     repositories {
-      maven { url OMNICS_MAVEN_REPO }
       mavenLocal();
       maven {
         url 'https://raw.githubusercontent.com/NEERC/chat/master/maven-repository/releases/'
