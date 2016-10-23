@@ -1,1 +1,12 @@
-@start java -Dserver.host=hostname -Dusername=username -Dpassword=password -Dping=5 -Dconsole.encoding=CP866 -cp chat-client.jar ru.ifmo.neerc.chat.xmpp.XmppChatClient
+@echo off
+
+rem IP address where Chat Server is visible
+set hostname=10.0.0.1
+
+rem internal name of the server - same as Openfire setting
+set serverName=10.0.0.1
+set username=admin
+set password=admin
+
+
+@start java -Dserver.host=%hostname%   -Dserver.hostname=%serverName%  -Dusername=%username% -Dpassword=%password% -Dping=5 -Dconsole.encoding=CP866 -jar chat-client.jar
