@@ -1,0 +1,27 @@
+apply plugin: 'java-library-distribution'
+
+dependencies {
+  compile project(':shared')
+  compileOnly 'org.igniterealtime:openfire:3.8.2'
+}
+
+task chatPlugin(type: Jar, dependsOn: jar) {
+
+  archiveName="neerc.jar"
+  project.configurations.compile.each {
+    if (it.name.startsWith('shared')) {
+      from(it) {
+        into ('lib')
+      }
+    }
+  }
+  from file("src/main/etc/plugin.xml")
+  from (file("build/libs/${project.name}-${version}.jar")) {
+    into('lib')
+  }
+}
+
+task chatServer(type: Copy, dependsOn: chatPlugin) {
+  from file("build/libs/neerc.jar")
+  into ("../deploy")
+}

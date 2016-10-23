@@ -1,0 +1,86 @@
+dependencies {
+  compile project(':shared')
+  compile 'org.slf4j:slf4j-log4j12:1.5.8'
+  compile 'jivesoftware:smackx:3.1.0'
+  compile 'jivesoftware:smack:3.1.0'
+
+}
+
+String chatDeployDir='../deploy'
+
+def generator = { String alphabet, int n ->
+  new Random().with {
+    (1..n).collect { alphabet[ nextInt( alphabet.length() ) ] }.join()
+  }
+}
+
+def shWriter = { String username, String password, String hostname, String serverName ->
+  File bat = file("$chatDeployDir/chat-client-${username}.sh");
+  bat.withWriter('UTF-8') { writer ->
+    writer.write("java -Dserver.host=$hostname  -Dserver.hostname=$serverName -Dusername=$username -Dpassword=$password -Dconsole.encoding=UTF-8 -jar chat-client.jar")
+  }
+}
+
+def batWriter = { String username, String password, String hostname, String serverName ->
+  File bat = file("$chatDeployDir/chat-client-${username}.bat");
+  bat.withWriter('UTF-8') { writer ->
+    writer.write("@start java -Dserver.host=$hostname  -Dserver.hostname=$serverName -Dusername=$username -Dpassword=$password -Dconsole.encoding=CP866 -jar chat-client.jar")
+  }
+}
+
+def writeUserXml = { String username, String password, xml ->
+  xml.write('    <user name="'+username+'" password="'+password+'">\n')
+  xml.write('      <query xmlns="jabber:id:roster"/>\n')
+  xml.write('    </user>\n')
+}
+
+
+jar {
+  from {
+       (configurations.runtime).collect {
+           it.isDirectory() ? it : zipTree(it)
+       }
+   }
+   archiveName='chat-client.jar'
+  manifest {
+    attributes 'Main-Class': 'ru.ifmo.neerc.chat.xmpp.XmppChatClient'
+  }
+}
+
+task chatClient(type: Copy, dependsOn: jar) {
+  from file('build/libs/chat-client.jar')
+  from file('src/main/etc/client.sh')
+  from file('src/main/etc/client.bat')
+  into('deploy')
+}
+
+task chatClientHalls(type: Copy, dependsOn: jar) {
+  Properties props = new Properties()
+  props.load(new FileInputStream(file("build.properties")))
+  file(chatDeployDir).mkdir();
+  String inthostname = props['inthostname'];
+  String exthostname = props['exthostname'];
+  String serverName = props['serverName'];
+  file("$chatDeployDir/users.xml").withWriter('UTF-8') { xml ->
+    xml.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+    xml.write('<server-data xmlns="urn:xmpp:pie:0">\n')
+    xml.write('  <host jid="'+serverName+'">\n')
+    props['halls'].split(",").each { username ->
+      String password = generator( (('A'..'Z')+('a'..'z')+('0'..'9')).join(), 20 );
+      shWriter (username, password, inthostname, serverName)
+      batWriter (username, password, inthostname, serverName)
+      writeUserXml(username, password, xml);
+    }
+    props['tk'].split(",").each { username ->
+      String password = generator( (('A'..'Z')+('a'..'z')+('0'..'9')).join(), 20 );
+      shWriter (username, password, exthostname, serverName)
+      batWriter (username, password, exthostname, serverName)
+      writeUserXml(username, password, xml);
+    }
+    xml.write('  </host>\n')
+    xml.write('</server-data>\n')
+  }
+
+  from file('build/libs/chat-client.jar')
+  into(chatDeployDir)
+}

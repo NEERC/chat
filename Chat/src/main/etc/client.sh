@@ -8,4 +8,4 @@ username=admin
 password=admin
 
 
-java -Dserver.host=$hostname  -Dserver.hostname=$serverName -Dusername=$username -Dpassword=$password -Dping=5 -Dconsole.encoding=UTF-8 -jar chat-client.jar
+java -Dserver.host=$hostname  -Dserver.hostname=$serverName -Dusername=$username -Dpassword=$password -Dconsole.encoding=UTF-8 -jar chat-client.jar

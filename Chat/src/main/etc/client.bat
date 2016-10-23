@@ -9,4 +9,4 @@ set username=admin
 set password=admin
 
 
-@start java -Dserver.host=%hostname%   -Dserver.hostname=%serverName%  -Dusername=%username% -Dpassword=%password% -Dping=5 -Dconsole.encoding=CP866 -jar chat-client.jar
+@start java -Dserver.host=%hostname%   -Dserver.hostname=%serverName%  -Dusername=%username% -Dpassword=%password% -Dconsole.encoding=CP866 -jar chat-client.jar
