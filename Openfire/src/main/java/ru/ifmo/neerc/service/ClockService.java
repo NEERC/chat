@@ -26,7 +26,21 @@ public class ClockService extends Thread {
     private long timeStarted;
     private final Collection<ClockListener> listeners = new ArrayList<ClockListener>();
     private Clock clock = new Clock();
-    
+
+		private static enum ClockStatus {
+			BEFORE(1), PAUSED(3), RUNNING(2), OVER(4);
+			private final int id;
+
+			private ClockStatus(int id) {
+				this.id = id;
+			}
+
+			public int getId() {
+				return id;
+			}
+
+		}
+
     public ClockService() {
     }
 
@@ -43,7 +57,7 @@ public class ClockService extends Thread {
 
         }
     }
-    
+
     private void checkUpdate() throws Exception {
         clockFile = new File(JiveGlobals.getProperty("neerc.clock", defaultFileName));
         long modified = clockFile.lastModified();
@@ -66,7 +80,7 @@ public class ClockService extends Thread {
         Element root = document.getRootElement();
         long time = Long.parseLong(root.attributeValue("time"));
         long total = Long.parseLong(root.attributeValue("length"));
-        int status = Integer.parseInt(root.attributeValue("status"));
+        int status = ClockStatus.valueOf(root.attributeValue("status")).getId();
 
         long newTimeStarted = System.currentTimeMillis() - time;
         if (clock.getStatus() != 2 || status != 2 || newTimeStarted < timeStarted || newTimeStarted > timeStarted + 60000) {
@@ -74,7 +88,7 @@ public class ClockService extends Thread {
         } else {
             time = System.currentTimeMillis() - timeStarted;
         }
-        
+
         clock.setTime(time);
         clock.setTotal(total);
         clock.setStatus(status);
