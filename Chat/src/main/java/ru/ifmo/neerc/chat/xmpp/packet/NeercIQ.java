@@ -1,45 +1,32 @@
 package ru.ifmo.neerc.chat.xmpp.packet;
 
+import java.io.IOException;
+
 import org.jivesoftware.smack.packet.IQ;
+
 import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
 import ru.ifmo.neerc.utils.XmlUtils;
 
 /**
  * @author Dmitriy Trofimov
  */
 public class NeercIQ extends IQ {
-	private String namespace;
-	private String elementName;
-
 	public NeercIQ(String name) {
 		this(name, "query");
 	}
 
 	public NeercIQ(String name, String element) {
-		super();
-		namespace = XmlUtils.NAMESPACE + "#" + name;
-		elementName = element;
+		super(element, XmlUtils.NAMESPACE + "#" + name);
 	}
 
-	public String getElementName() {
-		return elementName;
-	}
+    protected IQ.IQChildElementXmlStringBuilder getIQChildElementBuilder(IQ.IQChildElementXmlStringBuilder xml) {
+        xml.rightAngleBracket();
+        return xml;
+    }
 
-	public String getNamespace() {
-		return namespace;
-	}
-
-	public String getChildElementXML() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("<").append(getElementName()).append(" xmlns=\"").append(getNamespace()).append("\" />");
-		return buf.toString();
-	}
-	
-	public void parse(XmlPullParser parser) throws Exception {
-		throw new UnsupportedOperationException();
-	}
-	
-	protected String escape(String xml) {
-		return xml.replaceAll(">", "&gt;").replaceAll("<", "&lt;").replaceAll("\"", "&quot;");
-	}
+    public void parse(XmlPullParser parser) throws XmlPullParserException, IOException {
+        throw new UnsupportedOperationException();
+    }
 }

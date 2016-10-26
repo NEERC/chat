@@ -1,26 +1,30 @@
 package ru.ifmo.neerc.chat.xmpp.provider;
 
-import org.jivesoftware.smack.packet.PacketExtension;
-import org.jivesoftware.smack.provider.PacketExtensionProvider;
+import java.io.IOException;
+
+import org.jivesoftware.smack.provider.ExtensionElementProvider;
 import org.jivesoftware.smack.provider.ProviderManager;
+
 import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
 import ru.ifmo.neerc.clock.Clock;
 import ru.ifmo.neerc.utils.XmlUtils;
 
 /**
  * @author Evgeny Mandrikov
  */
-public class NeercClockPacketExtensionProvider implements PacketExtensionProvider {
+public class NeercClockPacketExtensionProvider extends ExtensionElementProvider<NeercClockPacketExtension> {
     public static void register() {
-        ProviderManager.getInstance().addExtensionProvider(
-                "x",
-                XmlUtils.NAMESPACE_CLOCK,
+        ProviderManager.addExtensionProvider(
+                NeercClockPacketExtension.ELEMENT,
+                NeercClockPacketExtension.NAMESPACE,
                 new NeercClockPacketExtensionProvider()
         );
     }
 
     @Override
-    public PacketExtension parseExtension(XmlPullParser parser) throws Exception {
+    public NeercClockPacketExtension parse(XmlPullParser parser, int initialDepth) throws XmlPullParserException, IOException {
         NeercClockPacketExtension neercPacketExtension = new NeercClockPacketExtension();
         boolean done = false;
         while (!done) {

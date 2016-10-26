@@ -2,13 +2,15 @@ package ru.ifmo.neerc.chat.xmpp;
 
 import java.util.Date;
 
+import org.jivesoftware.smackx.muc.MUCRole;
+
 /**
  * @author Evgeny Mandrikov
  */
 public interface MUCListener {
     void connected(XmppChat chat);
 
-    void roleChanged(String jid, String role);
+    void roleChanged(String jid, MUCRole role);
 
     void joined(String participant);
 

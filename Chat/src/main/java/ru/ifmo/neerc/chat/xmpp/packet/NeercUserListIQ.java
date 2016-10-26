@@ -1,10 +1,14 @@
 package ru.ifmo.neerc.chat.xmpp.packet;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.jivesoftware.smack.packet.IQ;
+
 import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.utils.XmlUtils;
@@ -17,13 +21,6 @@ public class NeercUserListIQ extends NeercIQ {
 
 	public NeercUserListIQ() {
 		super("users");
-	}
-	public String getElementName() {
-		return "query";
-	}
-
-	public String getNamespace() {
-		return XmlUtils.NAMESPACE_USERS;
 	}
 
 	public Collection<UserEntry> getUsers() {
@@ -40,20 +37,23 @@ public class NeercUserListIQ extends NeercIQ {
 		addUser(user);
 	}
 
-	public String getChildElementXML() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("<").append(getElementName()).append(" xmlns=\"").append(getNamespace()).append("\">");
-		for (UserEntry user: users) {
-			buf.append("<user");
-			buf.append(" name=\"").append(escape(user.getName())).append("\"");
-			buf.append(" group=\"").append(escape(user.getGroup())).append("\"");
-			buf.append(" power=\"").append(user.isPower() ? "yes" :"no").append("\" />");
+    @Override
+    protected IQ.IQChildElementXmlStringBuilder getIQChildElementBuilder(IQ.IQChildElementXmlStringBuilder xml) {
+        xml.rightAngleBracket();
+
+		for (UserEntry user : users) {
+            xml.halfOpenElement("user");
+            xml.attribute("name", user.getName());
+            xml.attribute("group", user.getGroup());
+            xml.attribute("power", user.isPower() ? "yes" : "no");
+            xml.closeEmptyElement();
 		}
-		buf.append("</").append(getElementName()).append(">");
-		return buf.toString();
+
+        return xml;
 	}
 
-	public void parse(XmlPullParser parser) throws Exception {
+    @Override
+	public void parse(XmlPullParser parser) throws XmlPullParserException, IOException {
 		boolean done = false;
 		while (!done) {
 			int eventType = parser.next();
@@ -69,7 +69,7 @@ public class NeercUserListIQ extends NeercIQ {
 		}
 	}
 
-	private UserEntry parseUser(XmlPullParser parser) throws Exception {
+	private UserEntry parseUser(XmlPullParser parser) {
 		String name = parser.getAttributeValue("", "name");
 		String group = parser.getAttributeValue("", "group");
 		boolean power = "yes".equals(parser.getAttributeValue("", "power"));

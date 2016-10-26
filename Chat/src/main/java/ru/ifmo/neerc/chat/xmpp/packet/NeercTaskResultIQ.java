@@ -1,5 +1,7 @@
 package ru.ifmo.neerc.chat.xmpp.packet;
 
+import org.jivesoftware.smack.packet.IQ;
+
 import ru.ifmo.neerc.task.Task;
 import ru.ifmo.neerc.task.TaskStatus;
 
@@ -16,15 +18,13 @@ public class NeercTaskResultIQ extends NeercIQ {
 		this.result = result;
 	}
 
-	public String getChildElementXML() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("<").append(getElementName());
-		buf.append(" xmlns=\"").append(getNamespace()).append("\"");
-		buf.append(" id=\"").append(escape(task.getId())).append("\"");
-		buf.append(" type=\"").append(escape(result.getType())).append("\"");
-		buf.append(" value=\"").append(escape(result.getValue())).append("\"");
-		buf.append(" />");
-		return buf.toString();
-	}
-	
+    @Override
+    protected IQ.IQChildElementXmlStringBuilder getIQChildElementBuilder(IQ.IQChildElementXmlStringBuilder xml) {
+        xml.attribute("id", task.getId());
+        xml.attribute("type", result.getType());
+        xml.attribute("value", result.getValue());
+        xml.rightAngleBracket();
+
+        return xml;
+    }
 }

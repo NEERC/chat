@@ -1,28 +1,31 @@
 package ru.ifmo.neerc.chat.xmpp.provider;
 
 import java.util.Date;
+import java.io.IOException;
 
-import org.jivesoftware.smack.packet.PacketExtension;
-import org.jivesoftware.smack.provider.PacketExtensionProvider;
+import org.jivesoftware.smack.provider.ExtensionElementProvider;
 import org.jivesoftware.smack.provider.ProviderManager;
+
 import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
 import ru.ifmo.neerc.task.Task;
 import ru.ifmo.neerc.utils.XmlUtils;
 
 /**
  * @author Evgeny Mandrikov
  */
-public class NeercTaskPacketExtensionProvider implements PacketExtensionProvider {
+public class NeercTaskPacketExtensionProvider extends ExtensionElementProvider<NeercTaskPacketExtension> {
     public static void register() {
-        ProviderManager.getInstance().addExtensionProvider(
-                "x",
-                XmlUtils.NAMESPACE_TASKS,
+        ProviderManager.addExtensionProvider(
+                NeercTaskPacketExtension.ELEMENT,
+                NeercTaskPacketExtension.NAMESPACE,
                 new NeercTaskPacketExtensionProvider()
         );
     }
 
     @Override
-    public PacketExtension parseExtension(XmlPullParser parser) throws Exception {
+    public NeercTaskPacketExtension parse(XmlPullParser parser, int initialDepth) throws XmlPullParserException, IOException {
         NeercTaskPacketExtension neercPacketExtension = new NeercTaskPacketExtension();
         boolean done = false;
         while (!done) {
@@ -40,7 +43,7 @@ public class NeercTaskPacketExtensionProvider implements PacketExtensionProvider
         return neercPacketExtension;
     }
 
-    private Task parseTask(XmlPullParser parser) throws Exception {
+    private Task parseTask(XmlPullParser parser) throws XmlPullParserException, IOException {
     	Date date = new Date();
     	String timestamp = parser.getAttributeValue("", "timestamp");
     	if (timestamp != null) {

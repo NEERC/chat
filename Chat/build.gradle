@@ -1,9 +1,9 @@
 dependencies {
   compile project(':shared')
   compile 'org.slf4j:slf4j-log4j12:1.5.8'
-  compile 'jivesoftware:smackx:3.1.0'
-  compile 'jivesoftware:smack:3.1.0'
-
+  compile 'org.igniterealtime.smack:smack-java7:4.1.8'
+  compile 'org.igniterealtime.smack:smack-tcp:4.1.8'
+  compile 'org.igniterealtime.smack:smack-extensions:4.1.8'
 }
 
 String chatDeployDir='../deploy'

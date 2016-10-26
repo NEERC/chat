@@ -16,10 +16,12 @@
 package ru.ifmo.neerc.chat.xmpp;
 
 import org.jivesoftware.smack.ConnectionListener;
-import org.jivesoftware.smack.PacketListener;
-import org.jivesoftware.smack.filter.PacketExtensionFilter;
+import org.jivesoftware.smack.StanzaListener;
+import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.filter.StanzaExtensionFilter;
 import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smackx.muc.MUCRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.ifmo.neerc.chat.client.AbstractChatClient;
@@ -251,8 +253,8 @@ public class XmppChatClient extends AbstractChatClient {
         @Override
         public void connected(XmppChat chat) {
             chat.getConnection().addConnectionListener(this);
-            chat.getConnection().addPacketListener(new ClockPacketListener(),
-                    new PacketExtensionFilter("x", XmlUtils.NAMESPACE_CLOCK));
+            chat.getConnection().addAsyncStanzaListener(new ClockPacketListener(),
+                    new StanzaExtensionFilter(new NeercClockPacketExtension()));
             if (chat.getMultiUserChat().isJoined()) {
                 final String message = "Connected";
                 setConnectionStatus(message);
@@ -261,6 +263,14 @@ public class XmppChatClient extends AbstractChatClient {
             }
             alertNewTasks();
             resetButton.setEnabled(true);
+        }
+
+        @Override
+        public void connected(XMPPConnection connection) {
+        }
+
+        @Override
+        public void authenticated(XMPPConnection connection, boolean resumed) {
         }
 
         @Override
@@ -288,7 +298,6 @@ public class XmppChatClient extends AbstractChatClient {
         public void reconnectingIn(int i) {
             if (i == 0) {
                 setConnectionStatus("Reconnecting...");
-                xmppChat.connect();
                 resetButton.setEnabled(false);
                 return;
             }
@@ -327,17 +336,17 @@ public class XmppChatClient extends AbstractChatClient {
         }
 
         @Override
-        public void roleChanged(String jid, String role) {
-            if ("none".equals(role)) {
+        public void roleChanged(String jid, MUCRole role) {
+            if (role == MUCRole.none) {
                 return;
             }
-            UserRegistry.getInstance().setRole(jid, role);
+            UserRegistry.getInstance().setRole(jid, role.toString());
             String nick = getNick(jid);
 //            processMessage(new ServerMessage(
 //                    "User " + nick + " now " + role
 //            ));
             if (nick.equals(user.getName())) {
-                taskPanel.adminToolBar.setVisible("moderator".equals(role));
+                taskPanel.adminToolBar.setVisible(role == MUCRole.moderator);
             }
         }
 
@@ -365,9 +374,9 @@ public class XmppChatClient extends AbstractChatClient {
         }
     }
 
-    private class ClockPacketListener implements PacketListener {
+    private class ClockPacketListener implements StanzaListener {
         @Override
-        public void processPacket(Packet packet) {
+        public void processPacket(Stanza packet) {
             Message message = (Message) packet;
             NeercClockPacketExtension extension = (NeercClockPacketExtension) message.getExtension("x", XmlUtils.NAMESPACE_CLOCK);
             Clock clock = extension.getClock();

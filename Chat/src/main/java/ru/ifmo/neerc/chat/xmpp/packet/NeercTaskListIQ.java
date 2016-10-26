@@ -1,12 +1,16 @@
 package ru.ifmo.neerc.chat.xmpp.packet;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 
+import org.jivesoftware.smack.packet.IQ;
+
 import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 
 import ru.ifmo.neerc.task.Task;
 import ru.ifmo.neerc.task.TaskStatus;
@@ -21,13 +25,6 @@ public class NeercTaskListIQ extends NeercIQ {
 	public NeercTaskListIQ() {
 		super("tasks");
 	}
-	public String getElementName() {
-		return "query";
-	}
-
-	public String getNamespace() {
-		return XmlUtils.NAMESPACE_TASKS;
-	}
 
 	public Collection<Task> getTasks() {
 		return Collections.unmodifiableCollection(tasks);
@@ -37,28 +34,33 @@ public class NeercTaskListIQ extends NeercIQ {
 		tasks.add(task);
 	}
 
-	public String getChildElementXML() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("<").append(getElementName()).append(" xmlns=\"").append(getNamespace()).append("\">");
-		for (Task task: tasks) {
-			buf.append("<task");
-			buf.append(" id=\"").append(escape(task.getId())).append("\"");
-			buf.append(" type=\"").append(escape(task.getType())).append("\"");
-			buf.append(" title=\"").append(escape(task.getTitle())).append("\">");
+    @Override
+    protected IQ.IQChildElementXmlStringBuilder getIQChildElementBuilder(IQ.IQChildElementXmlStringBuilder xml) {
+        xml.rightAngleBracket();
+
+		for (Task task : tasks) {
+            xml.halfOpenElement("task");
+            xml.attribute("title", task.getTitle());
+            xml.attribute("type", task.getType());
+            xml.attribute("id", task.getId());
+            xml.rightAngleBracket();
+
 			for (Map.Entry<String, TaskStatus> entry : task.getStatuses().entrySet()) {
-				TaskStatus status = entry.getValue();
-				buf.append("<status");
-				buf.append(" for=\"").append(escape(entry.getKey())).append("\"");
-				buf.append(" type=\"").append(escape(status.getType())).append("\"");
-				buf.append(" value=\"").append(escape(status.getValue())).append("\" />");
+                xml.halfOpenElement("status");
+                xml.attribute("for", entry.getKey());
+                xml.attribute("type", entry.getValue().getType());
+                xml.optAttribute("value", entry.getValue().getValue());
+                xml.closeEmptyElement();
 			}
-			buf.append("</task>");
+
+            xml.closeElement("task");
 		}
-		buf.append("</").append(getElementName()).append(">");
-		return buf.toString();
+
+        return xml;
 	}
 
-	public void parse(XmlPullParser parser) throws Exception {
+    @Override
+	public void parse(XmlPullParser parser) throws XmlPullParserException, IOException {
 		boolean done = false;
 		while (!done) {
 			int eventType = parser.next();
@@ -74,7 +76,7 @@ public class NeercTaskListIQ extends NeercIQ {
 		}
     }
 
-	public static Task parseTask(XmlPullParser parser) throws Exception {
+	public static Task parseTask(XmlPullParser parser) throws XmlPullParserException, IOException {
 		Date date = new Date();
     	String timestamp = parser.getAttributeValue("", "timestamp");
     	if (timestamp != null) {

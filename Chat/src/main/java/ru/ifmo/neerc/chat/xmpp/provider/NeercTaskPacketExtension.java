@@ -1,13 +1,18 @@
 package ru.ifmo.neerc.chat.xmpp.provider;
 
-import org.jivesoftware.smack.packet.PacketExtension;
+import org.jivesoftware.smack.packet.ExtensionElement;
+import org.jivesoftware.smack.util.XmlStringBuilder;
+
 import ru.ifmo.neerc.task.Task;
 import ru.ifmo.neerc.utils.XmlUtils;
 
 /**
  * @author Evgeny Mandrikov
  */
-public class NeercTaskPacketExtension implements PacketExtension {
+public class NeercTaskPacketExtension implements ExtensionElement {
+    public static final String ELEMENT = "x";
+    public static final String NAMESPACE = XmlUtils.NAMESPACE_TASKS;
+
     private Task task;
 
     public NeercTaskPacketExtension() {
@@ -23,22 +28,25 @@ public class NeercTaskPacketExtension implements PacketExtension {
 
     @Override
     public String getElementName() {
-        return "x";
+        return ELEMENT;
     }
 
     @Override
     public String getNamespace() {
-        return XmlUtils.NAMESPACE_TASKS;
+        return NAMESPACE;
     }
 
     @Override
-    public String toXML() {
-        StringBuilder buf = new StringBuilder();
-        buf.append("<").append(getElementName()).append(" xmlns=\"").append(getNamespace()).append("\">");
+    public CharSequence toXML() {
+        XmlStringBuilder xml = new XmlStringBuilder(this);
+        xml.rightAngleBracket();
+
         if (getTask() != null) {
             // TODO
         }
-        buf.append("</").append(getElementName()).append(">");
-        return buf.toString();
+
+        xml.closeElement(getElementName());
+
+        return xml;
     }
 }

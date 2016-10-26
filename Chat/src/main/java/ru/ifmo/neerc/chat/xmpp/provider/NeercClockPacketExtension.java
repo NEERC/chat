@@ -1,13 +1,18 @@
 package ru.ifmo.neerc.chat.xmpp.provider;
 
-import org.jivesoftware.smack.packet.PacketExtension;
+import org.jivesoftware.smack.packet.ExtensionElement;
+import org.jivesoftware.smack.util.XmlStringBuilder;
+
 import ru.ifmo.neerc.clock.Clock;
 import ru.ifmo.neerc.utils.XmlUtils;
 
 /**
  * @author Evgeny Mandrikov
  */
-public class NeercClockPacketExtension implements PacketExtension {
+public class NeercClockPacketExtension implements ExtensionElement {
+    public static final String ELEMENT = "x";
+    public static final String NAMESPACE = XmlUtils.NAMESPACE_CLOCK;
+
     private Clock clock;
 
     public NeercClockPacketExtension() {
@@ -23,19 +28,20 @@ public class NeercClockPacketExtension implements PacketExtension {
 
     @Override
     public String getElementName() {
-        return "x";
+        return ELEMENT;
     }
 
     @Override
     public String getNamespace() {
-        return XmlUtils.NAMESPACE_CLOCK;
+        return NAMESPACE;
     }
 
     @Override
-    public String toXML() {
-        StringBuilder buf = new StringBuilder();
-        buf.append("<").append(getElementName()).append(" xmlns=\"").append(getNamespace()).append("\">");
-        buf.append("</").append(getElementName()).append(">");
-        return buf.toString();
+    public CharSequence toXML() {
+        XmlStringBuilder xml = new XmlStringBuilder(this);
+        xml.rightAngleBracket();
+        xml.closeElement(getElementName());
+
+        return xml;
     }
 }
