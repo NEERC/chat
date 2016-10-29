@@ -19,8 +19,6 @@
  */
 package ru.ifmo.neerc.chat.message;
 
-import ru.ifmo.ips.config.Config;
-
 import java.util.Date;
 
 /**
@@ -52,34 +50,14 @@ public abstract class Message {
      * Stores message type.
      */
     private int type;
-    /**
-     * Serialized representation of this message.
-     */
-    private byte[] serialized = null;
-
-    /**
-     * Destination user. -1 -means everyone.
-     */
-    private int destination = -1;
 
     /**
      * Constructor cteates message of given type.
      *
      * @param type        new message type.
-     * @param destination destination of the message.
-     */
-    protected Message(int type, int destination) {
-        this.type = type;
-        this.destination = destination;
-    }
-
-    /**
-     * Constructor cteates message of given type.
-     *
-     * @param type new message type.
      */
     protected Message(int type) {
-        this(type, -1);
+        this.type = type;
     }
 
     /**
@@ -89,19 +67,6 @@ public abstract class Message {
      */
     public int getType() {
         return type;
-    }
-
-    /**
-     * Returns message destination.
-     *
-     * @return user ID
-     */
-    public int getDestination() {
-        return destination;
-    }
-
-    public void setDestination(int destination) {
-        this.destination = destination;
     }
 
     /**
@@ -115,32 +80,5 @@ public abstract class Message {
 
     public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
-    }
-
-    /**
-     * Returns serialized form of the message.
-     *
-     * @param serialized byte array representing this message.
-     */
-    public void setSerialized(byte[] serialized) {
-        this.serialized = serialized;
-    }
-
-    public byte[] getSerialized() {
-        return serialized;
-    }
-
-    protected void serialize(Config message) {
-        throw new UnsupportedOperationException();
-    }
-
-    protected void deserialize(Config message) {
-        throw new UnsupportedOperationException();
-    }
-
-    public abstract String asString();
-
-    public boolean shouldBeSentTo(int id) {
-        return destination == -1 || destination == id;
     }
 }

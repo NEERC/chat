@@ -32,8 +32,8 @@ public class UserMessage extends Message {
 
     private String jid;
 
-    public UserMessage(String jid, int destination, String text) {
-        super(USER_MESSAGE, destination);
+    public UserMessage(String jid, String text) {
+        super(USER_MESSAGE);
         this.jid = jid;
         this.text = text;
     }
@@ -47,14 +47,6 @@ public class UserMessage extends Message {
 
     public String getJid() {
         return jid;
-    }
-
-    public String asString() {
-        String fromName = UserRegistry.getInstance().findOrRegister(jid).getName();
-        StringBuilder route = getDestination() < 0 ? new StringBuilder().append(fromName)
-                : new StringBuilder().append(fromName).append(">").append(
-                UserRegistry.getInstance().findOrRegister(jid).getName());
-        return route.append(": ").append(getText()).toString();
     }
 
     public String getText() {
@@ -72,9 +64,5 @@ public class UserMessage extends Message {
         } catch (Exception e) {
             return false;
         }
-    }
-
-    public boolean isPrivate() {
-        return getDestination() >= 0;
     }
 }

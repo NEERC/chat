@@ -23,9 +23,7 @@ import ru.ifmo.neerc.chat.message.UserMessage;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
 
-import java.text.CharacterIterator;
 import java.text.SimpleDateFormat;
-import java.text.StringCharacterIterator;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -141,60 +139,6 @@ public class ChatMessage implements Comparable<ChatMessage> {
             case USER_MESSAGE:
                 result.append(user).append("> ").append(line);
                 break;
-        }
-        return result.toString();
-    }
-
-    public String getConvertedMessage() {
-        String src = getText().trim();
-        if (user.isPower()) {
-            if (src.startsWith("#")) {
-                return "<html><b><font color=\"green\">" + replaceEnters(src.substring(1)) + "</font></b></html>";
-            } else if (src.startsWith("!!!")) {
-                return "<html><b><font color=\"red\" size=\"+10\">" + replaceEnters(src.substring(3)) + "</font></b></html>";
-            } else if (src.startsWith("!!")) {
-                return "<html><b><font color=\"red\" size=\"+5\">" + replaceEnters(src.substring(2)) + "</font></b></html>";
-            } else if (src.startsWith("!")) {
-                return "<html><b><font color=\"red\">" + replaceEnters(src.substring(1)) + "</font></b></html>";
-            }
-        }
-        return "<html>" + replaceEnters(replaceHTML(src)) + "</html>";
-    }
-
-    private static String replaceHTML(String src) {
-        StringCharacterIterator iterator = new StringCharacterIterator(src);
-        StringBuilder result = new StringBuilder();
-        for (char c = iterator.first(); c != CharacterIterator.DONE; c = iterator.next()) {
-            switch (c) {
-                case '<':
-                    result.append("&lt;");
-                    break;
-                case '>':
-                    result.append("&gt;");
-                    break;
-                case '&':
-                    result.append("&amp;");
-                    break;
-                case '"':
-                    result.append("&quot;");
-                    break;
-                default:
-                    result.append(c);
-                    break;
-            }
-        }
-        return result.toString();
-    }
-
-    private static String replaceEnters(String src) {
-        StringCharacterIterator iterator = new StringCharacterIterator(src);
-        StringBuilder result = new StringBuilder();
-        for (char c = iterator.first(); c != CharacterIterator.DONE; c = iterator.next()) {
-            if (c == '\n') {
-                result.append("<br>");
-            } else {
-                result.append(c);
-            }
         }
         return result.toString();
     }

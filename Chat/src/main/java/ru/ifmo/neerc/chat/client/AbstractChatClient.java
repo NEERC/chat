@@ -284,10 +284,9 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
             channelsSubscription.unsubscribeFrom(channelMatches.group(1));
         }
 
-        int destination = -1;
         // do not echo commands (including mistyped) to chat
         if (!Pattern.compile("^(@|/)\\w+ .*", Pattern.DOTALL).matcher(text).matches()) {
-            chat.write(new UserMessage(user.getJid(), destination, text));
+            chat.write(new UserMessage(user.getJid(), text));
         }
     }
 

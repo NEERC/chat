@@ -30,10 +30,6 @@ public class ServerMessage extends Message {
         this.text = text;
     }
 
-    public String asString() {
-        return "----->>> " + text;
-    }
-
     public String getText() {
         return text;
     }
