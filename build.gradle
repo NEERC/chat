@@ -8,7 +8,8 @@ subprojects {
 
     apply plugin: 'java'
     sourceCompatibility = 1.7
-    version = "0.1-SNAPSHOT"
+    group "ru.ifmo.neerc"
+    version "1.0-SNAPSHOT"
     repositories {
       mavenLocal();
       maven {
