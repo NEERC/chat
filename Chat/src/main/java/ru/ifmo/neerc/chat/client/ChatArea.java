@@ -21,7 +21,6 @@ package ru.ifmo.neerc.chat.client;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.ifmo.neerc.chat.user.UserEntry;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -34,6 +33,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.TreeSet;
+
+import ru.ifmo.neerc.chat.user.UserEntry;
+import ru.ifmo.neerc.chat.user.UserRegistry;
 
 /**
  * @author Matvey Kazakov
@@ -94,7 +96,7 @@ public class ChatArea extends JTable {
         });
     }
 
-    public void addToModel(final ChatMessage message) {
+    public void addToModel(final Message message) {
         model.add(message);
     }
 
@@ -102,8 +104,8 @@ public class ChatArea extends JTable {
         userPickListeners.add(listener);
     }
 
-    public void addMessage(final ChatMessage message) {
-        if ((new Date()).getTime() - message.getTimestamp() > 1000) {
+    public void addMessage(final Message message) {
+        if ((new Date()).getTime() - message.getDate().getTime() > 1000) {
             model.add(message);
             doScroll = true;
             return;
@@ -139,8 +141,8 @@ public class ChatArea extends JTable {
 
 
     private class ChatModel extends AbstractTableModel {
-        private ArrayList<ChatMessage> cache = new ArrayList<ChatMessage>();
-        private TreeSet<ChatMessage> messages = new TreeSet<ChatMessage>();
+        private ArrayList<Message> cache = new ArrayList<Message>();
+        private TreeSet<Message> messages = new TreeSet<Message>();
         private ChannelList channels;
         private boolean valid = true;
 
@@ -158,16 +160,17 @@ public class ChatArea extends JTable {
             }
         }
 
-        public boolean isMessageVisible(ChatMessage message) {
+        public boolean isMessageVisible(Message message) {
             return (channels == null
-                || !message.isChannel()
-                || (!channels.isSeparated() && channels.isSubscribed(message.getTo())));
+                || message.getChannel() == null
+                || (!channels.isSeparated() && channels.isSubscribed(message.getChannel()))
+            );
         }
 
         private synchronized void validate() {
             if (valid) return;
             cache.clear();
-            for (ChatMessage message : messages) {
+            for (Message message : messages) {
                 if (isMessageVisible(message))
                     cache.add(message);
             }
@@ -184,22 +187,22 @@ public class ChatArea extends JTable {
 
         public Object getValueAt(int rowIndex, int columnIndex) {
             validate();
-            ChatMessage chatMessage = cache.get(rowIndex);
+            Message message = cache.get(rowIndex);
             if (columnIndex == 0) {
-                return chatMessage.getTime();
+                return message.getDate();
             } else if (columnIndex == 1) {
-                return chatMessage.getUser();
+                return message.getUser();
             } else {
-                return chatMessage;
+                return message;
             }
         }
 
-        public synchronized int add(ChatMessage message) {
+        public synchronized int add(Message message) {
             valid = false;
             return append(message);
         }
 
-        public synchronized int append(ChatMessage message) {
+        public synchronized int append(Message message) {
             int size = cache.size();
             if (messages.contains(message)) {
                 return size - 1;

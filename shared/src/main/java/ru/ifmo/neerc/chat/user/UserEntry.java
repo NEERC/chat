@@ -19,10 +19,12 @@
  */
 package ru.ifmo.neerc.chat.user;
 
+import java.io.Serializable;
+
 /**
  * @author Matvey Kazakov
  */
-public class UserEntry implements Comparable<UserEntry> {
+public class UserEntry implements Comparable<UserEntry>, Serializable {
     @Deprecated
     private int id;
 

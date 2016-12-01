@@ -8,6 +8,7 @@ import java.util.Date;
 
 import org.jivesoftware.smack.AbstractConnectionListener;
 import org.jivesoftware.smack.AbstractXMPPConnection;
+import org.jivesoftware.smack.ConnectionListener;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.PacketCollector;
 import org.jivesoftware.smack.PresenceListener;
@@ -34,9 +35,9 @@ import org.jivesoftware.smackx.muc.packet.MUCItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ru.ifmo.neerc.chat.client.Chat;
-import ru.ifmo.neerc.chat.message.Message;
-import ru.ifmo.neerc.chat.message.UserMessage;
+import ru.ifmo.neerc.chat.AbstractChat;
+import ru.ifmo.neerc.chat.ChatListener;
+import ru.ifmo.neerc.chat.ChatMessage;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
 import ru.ifmo.neerc.chat.utils.DebugUtils;
@@ -50,7 +51,7 @@ import ru.ifmo.neerc.utils.XmlUtils;
 /**
  * @author Evgeny Mandrikov
  */
-public class XmppChat implements Chat {
+public class XmppChat extends AbstractChat {
     private static final Logger LOG = LoggerFactory.getLogger(XmppChat.class);
 
     private static final String SERVER_HOST = System.getProperty("server.host", "localhost");
@@ -66,15 +67,15 @@ public class XmppChat implements Chat {
     private String name;
     private String password = System.getProperty("password", "12345");
 
-    private MUCListener mucListener;
+    private ConnectionListener connectionListener;
     private Date lastActivity = null;
 
     public XmppChat(
             String name,
-            MUCListener mucListener
+            ConnectionListener connectionListener
     ) {
         this.name = name;
-        this.mucListener = mucListener;
+        this.connectionListener = connectionListener;
 
         NeercTaskPacketExtensionProvider.register();
         NeercClockPacketExtensionProvider.register();
@@ -113,6 +114,7 @@ public class XmppChat implements Chat {
 
         connection = new XMPPTCPConnection(config);
         connection.addConnectionListener(new MyConnectionListener());
+        connection.addConnectionListener(connectionListener);
         connection.addAsyncStanzaListener(new TaskPacketListener(), new StanzaExtensionFilter(new NeercTaskPacketExtension()));
 
         // Connect to the server
@@ -172,21 +174,35 @@ public class XmppChat implements Chat {
     }
 
     @Override
-    public void write(Message message) {
+    public void sendMessage(ChatMessage message) {
         try {
-            if (message instanceof UserMessage) {
-                UserMessage userMessage = (UserMessage) message;
-                muc.sendMessage(userMessage.getText());
-            } else {
-                throw new UnsupportedOperationException(message.getClass().getSimpleName());
+            String text = message.getText();
+            char c = ' ';
+            switch (message.getType()) {
+                case info:
+                    c = '#';
+                    break;
+                case question:
+                    c = '?';
+                    break;
+                case urgent:
+                    c = '!';
+                    break;
             }
+            for (int i = 0; i < message.getPriority(); i++) {
+                text = c + text;
+            }
+            if (message.getTo() != null) {
+                text = message.getTo() + "> " + text;
+            }
+            muc.sendMessage(text);
         } catch (SmackException e) {
             LOG.error("Unable to write message", e);
         }
     }
     
 	@Override
-	public void write(Task task) {
+	public void sendTask(Task task) {
         if (task.getScheduleType() == Task.ScheduleType.NONE) {
             NeercTaskIQ packet = new NeercTaskIQ(task);
             packet.setTo(NEERC_SERVICE);
@@ -201,7 +217,7 @@ public class XmppChat implements Chat {
     }
 
 	@Override
-	public void write(Task task, TaskStatus status) {
+	public void sendTaskStatus(Task task, TaskStatus status) {
 		NeercTaskResultIQ packet = new NeercTaskResultIQ(task, status);
 		packet.setTo(NEERC_SERVICE);
         try {
@@ -246,14 +262,6 @@ public class XmppChat implements Chat {
 		}
 	}
 
-    public MultiUserChat getMultiUserChat() {
-        return muc;
-    }
-
-    public AbstractXMPPConnection getConnection() {
-        return connection;
-    }
-
     private class MyConnectionListener extends AbstractConnectionListener {
         @Override
         public void authenticated(XMPPConnection connection, boolean resumed) {
@@ -267,7 +275,6 @@ public class XmppChat implements Chat {
             debugConnection();
 
             connected = true;
-            mucListener.connected(XmppChat.this);
         }
     }
 
@@ -279,12 +286,12 @@ public class XmppChat implements Chat {
             if (mucExtension != null) {
                 MUCItem item = mucExtension.getItem();
                 LOG.debug(from + " " + DebugUtils.userItemToString(item));
-                mucListener.roleChanged(from, item.getRole());
+                UserRegistry.getInstance().setRole(from, item.getRole().toString());
             }
             if (presence.isAvailable()) {
-                mucListener.joined(from);
+                UserRegistry.getInstance().putOnline(from);
             } else {
-                mucListener.left(from);
+                UserRegistry.getInstance().putOffline(from);
             }
         }
     }
@@ -292,7 +299,7 @@ public class XmppChat implements Chat {
     private class MyMessageListener implements MessageListener {
         @Override
         public void processMessage(org.jivesoftware.smack.packet.Message message) {
-            Date timestamp = null;
+            Date timestamp = new Date();
             for (ExtensionElement extension : message.getExtensions()) {
                 if (DelayInformation.NAMESPACE.equals(extension.getNamespace())) {
                     DelayInformation delayInformation = (DelayInformation) extension;
@@ -305,24 +312,21 @@ public class XmppChat implements Chat {
                 }
             }
 
-            boolean history = true;
-            if (timestamp == null) {
-                timestamp = new Date();
-                history = false;
+            ChatMessage chatMessage = new ChatMessage(
+                message.getBody(),
+                UserRegistry.getInstance().findOrRegister(message.getFrom()),
+                null,
+                timestamp
+            );
+
+            if (chatMessage.getTo() != null
+                    && !name.equals(chatMessage.getUser().getName())
+                    && !name.equals(chatMessage.getTo())) {
+                return;
             }
 
-            if (history) {
-                mucListener.historyMessageReceived(
-                        message.getFrom(),
-                        message.getBody(),
-                        timestamp
-                );
-            } else {
-                mucListener.messageReceived(
-                        message.getFrom(),
-                        message.getBody(),
-                        timestamp
-                );
+            for (ChatListener listener : listeners) {
+                listener.processMessage(chatMessage);
             }
 
             lastActivity = timestamp;

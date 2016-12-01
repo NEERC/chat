@@ -24,11 +24,11 @@ import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smackx.muc.MUCRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.ifmo.neerc.chat.ChatMessage;
 import ru.ifmo.neerc.chat.client.AbstractChatClient;
-import ru.ifmo.neerc.chat.client.Chat;
-import ru.ifmo.neerc.chat.client.ChatMessage;
-import ru.ifmo.neerc.chat.message.ServerMessage;
-import ru.ifmo.neerc.chat.message.UserMessage;
+import ru.ifmo.neerc.chat.client.StatusMessage;
+import ru.ifmo.neerc.chat.client.TaskMessage;
+import ru.ifmo.neerc.chat.client.UserMessage;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
 import ru.ifmo.neerc.chat.xmpp.provider.NeercClockPacketExtension;
@@ -41,7 +41,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -50,27 +49,26 @@ import java.util.ArrayList;
  */
 public class XmppChatClient extends AbstractChatClient {
     private static final Logger LOG = LoggerFactory.getLogger(XmppChatClient.class);
-    private boolean alertPending;
 
     private XmppChat xmppChat;
-    private HashSet<String> newTaskIds = new HashSet<String>();
 
     public XmppChatClient() {
         final String name = System.getProperty("username");
 
         UserRegistry userRegistry = UserRegistry.getInstance();
         user = userRegistry.findOrRegister(name);
-        userRegistry.putOnline(name);
-        userRegistry.setRole(name, "moderator");
 
-        MyListener listener = new MyListener();
-        taskRegistry.addListener(listener);
-
-        chat = xmppChat = new XmppChat(name, listener);
+        chat = xmppChat = new XmppChat(name, new MyListener());
+        chat.addListener(this);
 
         setupUI();
 
-        xmppChat.connect();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                xmppChat.connect();
+            }
+        }).start();
 
         resetButton.addActionListener(new ActionListener() {
             @Override
@@ -92,80 +90,6 @@ public class XmppChatClient extends AbstractChatClient {
                 new XmppChatClient().setVisible(true);
             }
         });
-    }
-
-    private synchronized void alertNewTasks() {
-        if (alertPending) {
-            return;
-        }
-        alertPending = true;
-        new Thread(new Runnable() {
-            public void run() {
-                try {
-                    Thread.sleep(500);
-                    StringBuilder description = new StringBuilder("New tasks:\n");
-                    boolean hasNew = false;
-                    for (Task task : TaskRegistry.getInstance().getTasks()) {
-                        TaskStatus status = task.getStatus(user.getName());
-                        if (status == null || !TaskActions.STATUS_NEW.equals(status.getType())) {
-                            continue;
-                        }
-                        if (newTaskIds.contains(task.getId())) continue;
-                        newTaskIds.add(task.getId());
-                        hasNew = true;
-                        LOG.debug("got new task " + task.getTitle());
-                        description.append(task.getTitle()).append("\n");
-                        ChatMessage chatMessage = ChatMessage.createTaskMessage(
-                                "!!! New task '" + task.getTitle() + "' has been assigned to you !!!",
-                                task.getDate()
-                        );
-                        processMessage(chatMessage);
-                    }
-                    if (!hasNew) {
-                        alertPending = false;
-                        return;
-                    }
-
-                    if (isBeepOn()) {
-                        System.out.print('\u0007'); // PC-speaker beep
-                    }
-                    setAlwaysOnTop(true);
-                    JOptionPane.showMessageDialog(
-                            XmppChatClient.this,
-                            description.toString(),
-                            "New tasks",
-                            JOptionPane.WARNING_MESSAGE
-                    );
-                    setAlwaysOnTop(false);
-                } catch (InterruptedException e) {
-
-                } finally {
-                    alertPending = false;
-                }
-            }
-        }).start();
-    }
-
-    private void setConnectionStatus(String status, boolean isError) {
-        if (status.equals(connectionStatus.getText())) {
-            return;
-        }
-        if (!isError) {
-            LOG.info("Connection status: " + status);
-            connectionStatus.setForeground(Color.BLUE);
-        } else {
-            LOG.error("Connection status: " + status);
-            connectionStatus.setForeground(Color.RED);
-        }
-        connectionStatus.setText(status);
-    }
-
-    private void setConnectionStatus(String status) {
-        setConnectionStatus(status, false);
-    }
-
-    private void setConnectionError(String error) {
-        setConnectionStatus(error, true);
     }
 
     private String getNick(String participant) {
@@ -229,7 +153,7 @@ public class XmppChatClient extends AbstractChatClient {
         @Override
         public void run() {
             if (!task.getNeedsConfirmation()) {
-                chat.write(task);
+                chat.sendTask(task);
                 return;
             }
 
@@ -245,39 +169,30 @@ public class XmppChatClient extends AbstractChatClient {
             );
 
             if (result == JOptionPane.YES_OPTION)
-                chat.write(task);
+                chat.sendTask(task);
         }
     }
 
-    private class MyListener implements MUCListener, ConnectionListener, TaskRegistryListener {
-        @Override
-        public void connected(XmppChat chat) {
-            chat.getConnection().addConnectionListener(this);
-            chat.getConnection().addAsyncStanzaListener(new ClockPacketListener(),
-                    new StanzaExtensionFilter(new NeercClockPacketExtension()));
-            if (chat.getMultiUserChat().isJoined()) {
-                final String message = "Connected";
-                setConnectionStatus(message);
-            } else {
-                setConnectionError("Unable to connect");
-            }
-            alertNewTasks();
-            resetButton.setEnabled(true);
-        }
-
+    private class MyListener implements ConnectionListener {
         @Override
         public void connected(XMPPConnection connection) {
         }
 
         @Override
         public void authenticated(XMPPConnection connection, boolean resumed) {
+            connection.addAsyncStanzaListener(new ClockPacketListener(),
+                    new StanzaExtensionFilter(new NeercClockPacketExtension()));
+
+            setConnectionStatus("Connected");
+            alertNewTasks();
+            resetButton.setEnabled(true);
         }
 
         @Override
         public void connectionClosed() {
             final String message = "Connection closed";
             setConnectionError(message);
-            processMessage(new ServerMessage(message));
+            showMessage(new StatusMessage(message));
             for (UserEntry user : UserRegistry.getInstance().getUsers()) {
                 UserRegistry.getInstance().putOffline(user.getName());
             }
@@ -287,7 +202,7 @@ public class XmppChatClient extends AbstractChatClient {
         public void connectionClosedOnError(Exception e) {
             final String message = "Connection closed on error";
             setConnectionError(message);
-            processMessage(new ServerMessage(message));
+            showMessage(new StatusMessage(message));
             for (UserEntry user : UserRegistry.getInstance().getUsers()) {
                 UserRegistry.getInstance().putOffline(user.getName());
             }
@@ -308,7 +223,7 @@ public class XmppChatClient extends AbstractChatClient {
         public void reconnectionSuccessful() {
             final String message = "Reconnected";
             setConnectionStatus(message);
-            processMessage(new ServerMessage(message));
+            showMessage(new StatusMessage(message));
             resetButton.setEnabled(true);
         }
 
@@ -316,61 +231,6 @@ public class XmppChatClient extends AbstractChatClient {
         public void reconnectionFailed(Exception e) {
             setConnectionError("Reconnection failed");
             resetButton.setEnabled(true);
-        }
-
-        @Override
-        public void joined(String participant) {
-            UserRegistry.getInstance().putOnline(participant);
-            processMessage(new ServerMessage(
-                    getNick(participant) + " online"
-            ));
-        }
-
-        @Override
-        public void left(String participant) {
-            final String username = getNick(participant);
-            if (UserRegistry.getInstance().findByName(username).isOnline()) {
-                UserRegistry.getInstance().putOffline(participant);
-                processMessage(new ServerMessage(username + " offline"));
-            }
-        }
-
-        @Override
-        public void roleChanged(String jid, MUCRole role) {
-            if (role == MUCRole.none) {
-                return;
-            }
-            UserRegistry.getInstance().setRole(jid, role.toString());
-            String nick = getNick(jid);
-//            processMessage(new ServerMessage(
-//                    "User " + nick + " now " + role
-//            ));
-            if (nick.equals(user.getName())) {
-                taskPanel.adminToolBar.setVisible(role == MUCRole.moderator);
-            }
-        }
-
-        @Override
-        public void messageReceived(String jid, String message, Date timestamp) {
-            processMessage(new UserMessage(jid, message, timestamp));
-        }
-
-        @Override
-        public void historyMessageReceived(String jid, String message, Date timestamp) {
-            processMessage(new UserMessage(jid, message, timestamp));
-        }
-
-        @Override
-        public void taskChanged(Task task) {
-            TaskStatus status = task.getStatus(user.getName());
-            if (status == null || !TaskActions.STATUS_NEW.equals(status.getType())) {
-                return;
-            }
-            alertNewTasks();
-        }
-
-        @Override
-        public void tasksReset() {
         }
     }
 

@@ -19,22 +19,27 @@ package ru.ifmo.neerc.chat.client;
  * Date: 28.10.2005
  */
 
-import ru.ifmo.neerc.chat.user.UserEntry;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+
+import ru.ifmo.neerc.chat.user.UserEntry;
 
 /**
  * @author Matvey Kazakov
  */
 public class NewChatMessageRenderer extends JTextArea implements TableCellRenderer {
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss");
+
     private final DefaultTableCellRenderer adaptee = new DefaultTableCellRenderer();
     private UserEntry currentUser;
 
@@ -80,14 +85,20 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
         } else {
             setFont(adaptee.getFont());
         }
-        if (obj instanceof ChatMessage && column == 2) {
-            ChatMessage message = (ChatMessage) obj;
-            updateRenderer(message);
+        if (obj instanceof Message && column == 2) {
+            Message message = (Message) obj;
+            setForeground(message.getColor());
+            setFont(adaptee.getFont()
+                .deriveFont(adaptee.getFont().getSize() * message.getScale())
+                .deriveFont(message.getStyle())
+            );
+            setText(message.getText());
         } else if (obj instanceof UserEntry && column == 1) {
-            ChatMessage message = (ChatMessage) table.getValueAt(row, 2);
-            UserEntry user = message.getUser();
-            setText(user == null ? "" : user.getName());
+            UserEntry user = (UserEntry) obj;
+            setText(user.getName());
             setForeground(generateColor(user));
+        } else if (obj instanceof Date && column == 0) {
+            setText(DATE_FORMAT.format((Date) obj));
         } else {
             setText(adaptee.getText());
         }
@@ -102,66 +113,6 @@ public class NewChatMessageRenderer extends JTextArea implements TableCellRender
             table.setRowHeight(row, height_wanted);
         }
         return this;
-    }
-
-    private void updateRenderer(ChatMessage message) {
-        switch (message.getType()) {
-            case SERVER_MESSAGE:
-                setFont(adaptee.getFont().deriveFont(Font.BOLD));
-                setForeground(Color.BLUE);
-                setText(">>>>>   " + message.getText() + "   <<<<<");
-                break;
-            case TASK_MESSAGE:
-                setFont(adaptee.getFont().deriveFont(Font.BOLD).deriveFont(20.0f));
-                setForeground(Color.RED);
-                setText(message.getText());
-                break;
-            case USER_MESSAGE:
-                UserEntry user = message.getUser();
-                String messageText = message.getText();
-                boolean importantToUs = currentUser != null && messageText.contains(currentUser.getName());
-
-                if (importantToUs) {
-                    setForeground(Color.RED);
-                }
-                char c = '.';
-                if (messageText != null && messageText.length() > 0) {
-                    c = messageText.charAt(0);
-                }
-
-                if (user.isPower()) {
-
-                    if (c == '#' || c == '\uFFFD') {
-                        messageText = setupPowerMessage(messageText, Color.green.darker());
-                    } else if (c == '!') {
-                        messageText = setupPowerMessage(messageText, Color.red);
-                    } else if (c == '?') {
-                        messageText = setupPowerMessage(messageText, Color.blue.darker());
-                    }  else if (message.isPrivate()) {
-                        setForeground(new Color(0xFF5767));
-                        setFont(adaptee.getFont().deriveFont(Font.BOLD));
-                    }
-                } else if (message.isPrivate() && c == '%') {
-                    setForeground(Color.BLUE);
-                } else if (message.isPrivate()) {
-                    setForeground(new Color(0xFF5767));
-					setFont(adaptee.getFont().deriveFont(Font.BOLD));
-                }
-                setText(messageText);
-                break;
-        }
-    }
-
-    private String setupPowerMessage(String messageText, Color fg) {
-        char c = messageText.charAt(0);
-        int counter = 0;
-        while (counter < messageText.length() && messageText.charAt(counter) == c) {
-            counter++;
-        }
-        messageText = messageText.substring(counter);
-        setForeground(fg);
-        setFont(adaptee.getFont().deriveFont((float) (12.0 + (counter - 1) * 12.0)).deriveFont(Font.BOLD));
-        return messageText;
     }
 
     private synchronized void addSize(JTable table, int row, int column, int height) {

@@ -19,6 +19,7 @@
  */
 package ru.ifmo.neerc.chat.client;
 
+import ru.ifmo.neerc.chat.Chat;
 import ru.ifmo.neerc.task.Task;
 import ru.ifmo.neerc.task.TaskActions;
 import ru.ifmo.neerc.task.TaskRegistry;
@@ -168,7 +169,7 @@ public class AdminTaskPanel extends JPanel {
                 for (Task task : tasks) {
                     Task remove = new Task(task.getId(), "remove", "");
                     remove.schedule(task.getScheduleType(), task.getScheduleTime());
-                    chat.write(remove);
+                    chat.sendTask(remove);
                 }
                 enableButtons();
             }
@@ -215,7 +216,7 @@ public class AdminTaskPanel extends JPanel {
                 String taskDescription = JOptionPane.showInputDialog(AdminTaskPanel.this, message);
                 if (taskDescription != null && taskDescription.trim().length() > 0) {
                     Task task = new Task(type, taskDescription);
-                    chat.write(task);
+                    chat.sendTask(task);
                 }
                 enableButtons();
             }
@@ -316,7 +317,7 @@ public class AdminTaskPanel extends JPanel {
 
         String status = TaskActions.getNewStatus(task, username, action);
         try {
-            chat.write(task, new TaskStatus(status, value));
+            chat.sendTaskStatus(task, new TaskStatus(status, value));
         } catch (IllegalStateException e) {
             JOptionPane.showMessageDialog(
                 SwingUtilities.getWindowAncestor(this),

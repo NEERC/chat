@@ -27,6 +27,7 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.tree.*;
 
+import ru.ifmo.neerc.chat.Chat;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
 import ru.ifmo.neerc.task.Task;
@@ -148,7 +149,7 @@ public class AssignTaskDialog extends JDialog {
                 TaskStatus status = statuses.get(user);
                 updatedTask.setStatus(user, status.getType(), status.getValue());
             }
-            chat.write(updatedTask);
+            chat.sendTask(updatedTask);
         }
         dispose();
     }

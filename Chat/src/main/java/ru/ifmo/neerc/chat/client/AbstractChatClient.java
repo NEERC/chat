@@ -15,16 +15,20 @@
 */
 package ru.ifmo.neerc.chat.client;
 
-import ru.ifmo.neerc.chat.message.Message;
-import ru.ifmo.neerc.chat.message.MessageListener;
-import ru.ifmo.neerc.chat.message.ServerMessage;
-import ru.ifmo.neerc.chat.message.UserMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import ru.ifmo.neerc.chat.Chat;
+import ru.ifmo.neerc.chat.ChatListener;
+import ru.ifmo.neerc.chat.ChatMessage;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.chat.user.UserRegistry;
-import ru.ifmo.neerc.chat.utils.ChatLogger;
+import ru.ifmo.neerc.chat.user.UserRegistryListener;
 import ru.ifmo.neerc.task.Task;
 import ru.ifmo.neerc.task.TaskActions;
 import ru.ifmo.neerc.task.TaskRegistry;
+import ru.ifmo.neerc.task.TaskRegistryListener;
+import ru.ifmo.neerc.task.TaskStatus;
 
 import javax.swing.*;
 import javax.swing.text.AttributeSet;
@@ -36,6 +40,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,7 +50,9 @@ import java.util.regex.Pattern;
  *
  * @author Matvey Kazakov
  */
-public abstract class AbstractChatClient extends JFrame implements MessageListener {
+public abstract class AbstractChatClient extends JFrame implements ChatListener, UserRegistryListener, TaskRegistryListener {
+
+    private static final Logger LOG = LoggerFactory.getLogger("Chat");
 
     public ChatArea outputArea;
     public ChatArea outputAreaJury;
@@ -71,7 +78,12 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
 
     protected Chat chat;
 
+    private boolean alertPending;
+    private HashSet<String> newTaskIds = new HashSet<String>();
+
     public AbstractChatClient() {
+        UserRegistry.getInstance().addListener(this);
+        TaskRegistry.getInstance().addListener(this);
     }
 
     protected AdminTaskPanel taskPanel;
@@ -234,6 +246,28 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
         return sendModeSwitch.isSelected();
     }
 
+    private void setConnectionStatus(String status, boolean isError) {
+        if (status.equals(connectionStatus.getText())) {
+            return;
+        }
+        if (!isError) {
+            LOG.info("Connection status: " + status);
+            connectionStatus.setForeground(Color.BLUE);
+        } else {
+            LOG.error("Connection status: " + status);
+            connectionStatus.setForeground(Color.RED);
+        }
+        connectionStatus.setText(status);
+    }
+
+    protected void setConnectionStatus(String status) {
+        setConnectionStatus(status, false);
+    }
+
+    protected void setConnectionError(String error) {
+        setConnectionStatus(error, true);
+    }
+
     protected void send(String text) {
         // ensure that null won't be here
         text = String.valueOf(text);
@@ -270,80 +304,114 @@ public abstract class AbstractChatClient extends JFrame implements MessageListen
                     task.setStatus(username, "none", "");
                 }
             }
-            chat.write(task);
+            chat.sendTask(task);
         }
 
         // channels support
-        Matcher channelMatches = Pattern.compile("^/s\\s+" + ChatMessage.CHANNEL_MATCH_REGEX + "\\s*$", Pattern.DOTALL).matcher(text);
+        Matcher channelMatches = Pattern.compile("^/s\\s+(%\\w+)\\s*$", Pattern.DOTALL).matcher(text);
         if (channelMatches.find()) {
             channelsSubscription.subscribeTo(channelMatches.group(1));
         }
 
-        channelMatches = Pattern.compile("^/d\\s+" + ChatMessage.CHANNEL_MATCH_REGEX + "\\s*$", Pattern.DOTALL).matcher(text);
+        channelMatches = Pattern.compile("^/d\\s+(%\\w+)\\s*$", Pattern.DOTALL).matcher(text);
         if (channelMatches.find()) {
             channelsSubscription.unsubscribeFrom(channelMatches.group(1));
         }
 
         // do not echo commands (including mistyped) to chat
         if (!Pattern.compile("^(@|/)\\w+ .*", Pattern.DOTALL).matcher(text).matches()) {
-            chat.write(new UserMessage(user.getJid(), text));
+            chat.sendMessage(new ChatMessage(text, user));
         }
     }
 
-    public void processMessage(Message message) {
-        ChatMessage chatMessage = null;
-        if (message instanceof ServerMessage) {
-            ServerMessage serverMessage = (ServerMessage) message;
-            chatMessage = ChatMessage.createServerMessage(
-                    serverMessage.getText()
-            );
-        } else if (message instanceof UserMessage) {
-            chatMessage = ChatMessage.createUserMessage((UserMessage) message);
-            String jid = user.getJid();
+    protected void showMessage(Message message) {
+        if (message.getChannel() != null)
+            channelsSubscription.showMessage(message);
 
-            if (chatMessage.isPrivate() && !chatMessage.isChannel()
-                    && !jid.equals(chatMessage.getUser().getJid())
-                    && !jid.equals(chatMessage.getTo())) {
-                // foreign private message
-                return;
-            }
+        outputArea.addMessage(message);
+        if (message.isImportant()) {
+            outputAreaJury.addMessage(message);
         }
-        processMessage(chatMessage);
+
+        LOG.info(message.toString());
     }
 
-    public void processMessage(ChatMessage chatMessage) {
-        if (chatMessage != null) {
-            if (outputArea == null || outputAreaJury == null) {
-                addMessage(chatMessage);
-            } else {
-                synchronized (messagesToShow) {
-                    for (ChatMessage chatMessage1 : messagesToShow) {
-                        showMessage(chatMessage1);
+    protected synchronized void alertNewTasks() {
+        if (alertPending) {
+            return;
+        }
+        alertPending = true;
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    Thread.sleep(500);
+                    StringBuilder description = new StringBuilder("New tasks:\n");
+                    boolean hasNew = false;
+                    for (Task task : TaskRegistry.getInstance().getTasks()) {
+                        TaskStatus status = task.getStatus(user.getName());
+                        if (status == null || !TaskActions.STATUS_NEW.equals(status.getType())) {
+                            continue;
+                        }
+                        if (newTaskIds.contains(task.getId())) continue;
+                        newTaskIds.add(task.getId());
+                        hasNew = true;
+                        LOG.debug("got new task " + task.getTitle());
+                        description.append(task.getTitle()).append("\n");
+                        showMessage(new TaskMessage(task));
                     }
-                    messagesToShow.clear();
-                    showMessage(chatMessage);
+                    if (!hasNew) {
+                        alertPending = false;
+                        return;
+                    }
+
+                    if (isBeepOn()) {
+                        System.out.print('\u0007'); // PC-speaker beep
+                    }
+                    setAlwaysOnTop(true);
+                    JOptionPane.showMessageDialog(
+                            AbstractChatClient.this,
+                            description.toString(),
+                            "New tasks",
+                            JOptionPane.WARNING_MESSAGE
+                    );
+                    setAlwaysOnTop(false);
+                } catch (InterruptedException e) {
+
+                } finally {
+                    alertPending = false;
                 }
             }
+        }).start();
+    }
+
+    @Override
+    public void processMessage(ChatMessage message) {
+        showMessage(new UserMessage(message));
+    }
+
+    @Override
+    public void userPresenceChanged(UserEntry userEntry) {
+        final String status = userEntry.isOnline() ? "online" : "offline";
+        showMessage(new StatusMessage(userEntry.getName() + " " + status));
+    }
+
+    @Override
+    public void userChanged(UserEntry userEntry) {
+        if (user != null && userEntry.getName().equals(user.getName())) {
+            taskPanel.adminToolBar.setVisible(userEntry.isPower());
         }
     }
 
-    private void showMessage(ChatMessage chatMessage) {
-        if (chatMessage.isChannel())
-            channelsSubscription.showMessage(chatMessage);
-
-        outputArea.addMessage(chatMessage);
-        if (chatMessage.isSpecial()) {
-            outputAreaJury.addMessage(chatMessage);
+    @Override
+    public void taskChanged(Task task) {
+        TaskStatus status = task.getStatus(user.getName());
+        if (status != null && TaskActions.STATUS_NEW.equals(status.getType())) {
+            alertNewTasks();
         }
-
-        ChatLogger.logChat(chatMessage.log());
     }
 
-    private final ArrayList<ChatMessage> messagesToShow = new ArrayList<ChatMessage>();
-
-    private void addMessage(ChatMessage msg) {
-        synchronized (messagesToShow) {
-            messagesToShow.add(msg);
-        }
+    @Override
+    public void tasksReset() {
+        newTaskIds.clear();
     }
 }

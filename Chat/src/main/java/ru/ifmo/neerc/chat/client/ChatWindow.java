@@ -29,7 +29,7 @@ public class ChatWindow extends JFrame {
         setLocationRelativeTo(client);
     }
 
-    public void addMessage(ChatMessage chatMessage) {
-        outputArea.addMessage(chatMessage);
+    public void addMessage(Message message) {
+        outputArea.addMessage(message);
     }
 }

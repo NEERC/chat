@@ -81,8 +81,10 @@ public class UserRegistry {
     }
 
     private synchronized void putOnline(UserEntry user, boolean online) {
-        user.setOnline(online);
-        notifyPresenceListeners(user);
+        if (online != user.isOnline()) {
+            user.setOnline(online);
+            notifyPresenceListeners(user);
+        }
     }
 
     public void putOnline(String jid) {

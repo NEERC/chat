@@ -68,11 +68,11 @@ public class ChannelList {
         return windows.get(channel);
     }
 
-    public void showMessage(ChatMessage message) {
-        if (!message.isChannel())
+    public void showMessage(Message message) {
+        if (message.getChannel() == null)
             return;
 
-        getOrCreateWindow(message.getTo()).addMessage(message);
+        getOrCreateWindow(message.getChannel()).addMessage(message);
     }
 
     public void setSeparated(boolean isSeparated) {

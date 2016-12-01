@@ -23,7 +23,7 @@ public class ChatInputArea extends JTextArea {
                     if (text.isEmpty())
                         return;
 
-                    Matcher privateMatcher = Pattern.compile(ChatMessage.PRIVATE_FIND_REGEX, Pattern.DOTALL).matcher(text);
+                    Matcher privateMatcher = Pattern.compile("^([a-zA-Z0-9%]+)>", Pattern.DOTALL).matcher(text);
                     if (privateMatcher.find() && privateMatcher.groupCount() > 0) {
                         messageLocalHistory.setLastPrivateAddressees(privateMatcher.group(1));
                     }
