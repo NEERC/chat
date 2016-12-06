@@ -15,9 +15,10 @@ public class ChatInputArea extends JTextArea {
 
     private class KeyListener extends KeyAdapter {
 
-        public void keyTyped(KeyEvent e1) {
-            if (e1.getKeyChar() == KeyEvent.VK_ENTER) {
-                boolean hasCtrl = e1.isControlDown();
+        @Override
+        public void keyPressed(KeyEvent e) {
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                boolean hasCtrl = e.isControlDown();
                 if (hasCtrl != client.sendOnEnter()) {
                     String text = getText().trim();
                     if (text.isEmpty())
@@ -31,15 +32,14 @@ public class ChatInputArea extends JTextArea {
                     messageLocalHistory.add(text);
                     client.send(prefix + text);
                     setText("");
-                } else {
-                    if (hasCtrl)
-                        append("\n");
-                }
-            }
-        }
 
-        public void keyPressed(KeyEvent e) {
-            if (e.getKeyCode() == KeyEvent.VK_UP && !e.isControlDown()) {
+                    e.consume();
+                } else {
+                    if (hasCtrl) {
+                        insert("\n", getCaretPosition());
+                    }
+                }
+            } else if (e.getKeyCode() == KeyEvent.VK_UP && !e.isControlDown()) {
                 try {
                     int caretPosition = getCaretPosition();
                     int lineNum = getLineOfOffset(caretPosition);
