@@ -25,7 +25,7 @@ import java.util.*;
  * @author Matvey Kazakov
  */
 public class UserRegistry {
-    private static final UserRegistry INSTANCE = new UserRegistry();
+    private static final Map<String, UserRegistry> INSTANCES = new HashMap<String, UserRegistry>();
 
     private Map<Integer, UserEntry> userById = new HashMap<Integer, UserEntry>();
     private Map<String, UserEntry> userByName = new HashMap<String, UserEntry>();
@@ -38,7 +38,16 @@ public class UserRegistry {
      * @return user registry instance
      */
     public static UserRegistry getInstance() {
-        return INSTANCE;
+        return getInstanceFor(null);
+    }
+
+    public static UserRegistry getInstanceFor(String roomName) {
+        UserRegistry userRegistry = INSTANCES.get(roomName);
+        if (userRegistry == null) {
+            userRegistry = new UserRegistry();
+            INSTANCES.put(roomName, userRegistry);
+        }
+        return userRegistry;
     }
 
     /**
