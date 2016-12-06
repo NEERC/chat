@@ -26,6 +26,7 @@ import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smack.util.TLSUtils;
 import org.jivesoftware.smackx.muc.DiscussionHistory;
+import org.jivesoftware.smackx.muc.MUCRole;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.jivesoftware.smackx.muc.MultiUserChatManager;
 import org.jivesoftware.smackx.delay.packet.DelayInformation;
@@ -244,9 +245,7 @@ public class XmppChat extends AbstractChat {
         UserRegistry registry = UserRegistry.getInstance();
 		for (UserEntry user: packet.getUsers()) {
 		    // TODO: replace with registry.add(UserEntry user)
-            UserEntry reguser = registry.findOrRegister(user.getName());
-            reguser.setPower(user.isPower());
-            reguser.setGroup(user.getGroup());
+            registry.setPower(user.getName(), user.isPower());
 		}
 	}
 
@@ -284,7 +283,8 @@ public class XmppChat extends AbstractChat {
             if (mucExtension != null) {
                 MUCItem item = mucExtension.getItem();
                 LOG.debug(from + " " + DebugUtils.userItemToString(item));
-                UserRegistry.getInstance().setRole(from, item.getRole().toString());
+                boolean power = (item.getRole() == MUCRole.moderator);
+                UserRegistry.getInstance().setPower(from, power);
             }
             if (presence.isAvailable()) {
                 UserRegistry.getInstance().putOnline(from);
