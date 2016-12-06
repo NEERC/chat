@@ -62,7 +62,6 @@ public class XmppChat extends AbstractChat {
 
     private MultiUserChat muc;
     private AbstractXMPPConnection connection;
-    private boolean connected;
     
     private String name;
     private String password = System.getProperty("password", "12345");
@@ -85,7 +84,6 @@ public class XmppChat extends AbstractChat {
     }
 
     public synchronized void disconnect() {
-        connected = false;
         if (connection != null) {
             connection.disconnect();
         }
@@ -128,7 +126,7 @@ public class XmppChat extends AbstractChat {
     }
     
     public boolean isConnected() {
-        return connected;
+        return muc.isJoined();
     }
     
     private void join() {
@@ -273,8 +271,6 @@ public class XmppChat extends AbstractChat {
             join();
 
             debugConnection();
-
-            connected = true;
         }
     }
 

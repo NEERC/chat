@@ -183,7 +183,12 @@ public class XmppChatClient extends AbstractChatClient {
             connection.addAsyncStanzaListener(new ClockPacketListener(),
                     new StanzaExtensionFilter(new NeercClockPacketExtension()));
 
-            setConnectionStatus("Connected");
+            if (xmppChat.isConnected()) {
+                setConnectionStatus("Connected");
+            } else {
+                setConnectionError("Unable to connect");
+            }
+
             alertNewTasks();
             resetButton.setEnabled(true);
         }
