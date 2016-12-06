@@ -15,11 +15,16 @@
 */
 package ru.ifmo.neerc.service.query;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.dom4j.Element;
 import org.xmpp.packet.IQ;
 import ru.ifmo.neerc.chat.user.UserEntry;
 import ru.ifmo.neerc.service.NEERCComponent;
 import ru.ifmo.neerc.task.Task;
+import ru.ifmo.neerc.task.TaskRegistry;
 import ru.ifmo.neerc.utils.XmlUtils;
 
 /**
@@ -27,9 +32,13 @@ import ru.ifmo.neerc.utils.XmlUtils;
  */
 public class TasksQueryHandler implements QueryHandler {
     
-    public void processQuery(NEERCComponent component, IQ iq, IQ reply, UserEntry sender) {
+    public void processQuery(NEERCComponent component, IQ iq, IQ reply, UserEntry sender, String roomName) {
+		TaskRegistry taskRegistry = TaskRegistry.getInstanceFor(roomName);
         Element childElement = reply.getChildElement();
-        for (Task task : component.getTasks()) {
+        List<Task> tasks = new ArrayList<>();
+        tasks.addAll(taskRegistry.getTasks());
+        Collections.sort(tasks);
+        for (Task task : tasks) {
             XmlUtils.taskToXml(childElement, task);
         }
     }

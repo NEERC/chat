@@ -7,14 +7,23 @@ import java.util.*;
  */
 public final class TaskRegistry {
 
-    private static final TaskRegistry INSTANCE = new TaskRegistry();
+    private static final Map<String, TaskRegistry> INSTANCES = new HashMap<String, TaskRegistry>();
 
     private final Map<String, Task> tasks = new TreeMap<String, Task>();
 
     private final Collection<TaskRegistryListener> listeners = new ArrayList<TaskRegistryListener>();
 
     public static TaskRegistry getInstance() {
-        return INSTANCE;
+        return getInstanceFor(null);
+    }
+
+    public static TaskRegistry getInstanceFor(String roomName) {
+        TaskRegistry taskRegistry = INSTANCES.get(roomName);
+        if (taskRegistry == null) {
+            taskRegistry = new TaskRegistry();
+            INSTANCES.put(roomName, taskRegistry);
+        }
+        return taskRegistry;
     }
 
     /**

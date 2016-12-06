@@ -18,6 +18,7 @@ package ru.ifmo.neerc.service.query;
 import org.dom4j.Element;
 import org.xmpp.packet.IQ;
 import ru.ifmo.neerc.chat.user.UserEntry;
+import ru.ifmo.neerc.chat.user.UserRegistry;
 import ru.ifmo.neerc.service.NEERCComponent;
 import ru.ifmo.neerc.utils.XmlUtils;
 
@@ -26,9 +27,10 @@ import ru.ifmo.neerc.utils.XmlUtils;
  */
 public class UsersQueryHandler implements QueryHandler {
     
-    public void processQuery(NEERCComponent component, IQ iq, IQ reply, UserEntry sender) {
+    public void processQuery(NEERCComponent component, IQ iq, IQ reply, UserEntry sender, String roomName) {
+        UserRegistry users = UserRegistry.getInstanceFor(roomName);
         Element childElement = reply.getChildElement();
-        for (UserEntry user : component.getUsers()) {
+        for (UserEntry user : users.getUsers()) {
             XmlUtils.userToXml(childElement, user);
         }
     }

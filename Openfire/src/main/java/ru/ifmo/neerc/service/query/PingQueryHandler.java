@@ -24,7 +24,7 @@ import ru.ifmo.neerc.service.NEERCComponent;
  */
 public class PingQueryHandler implements QueryHandler{
     
-    public void processQuery(NEERCComponent component, IQ iq, IQ reply, UserEntry sender) {
+    public void processQuery(NEERCComponent component, IQ iq, IQ reply, UserEntry sender, String roomName) {
         // leave reply as is
     }
 }

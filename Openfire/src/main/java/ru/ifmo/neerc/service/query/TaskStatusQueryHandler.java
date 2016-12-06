@@ -30,8 +30,8 @@ import ru.ifmo.neerc.task.TaskStatus;
  */
 public class TaskStatusQueryHandler implements QueryHandler {
     
-	public void processQuery(NEERCComponent component, IQ iq, IQ reply, UserEntry sender) {
-		TaskRegistry tasks = TaskRegistry.getInstance();
+	public void processQuery(NEERCComponent component, IQ iq, IQ reply, UserEntry sender, String roomName) {
+		TaskRegistry tasks = TaskRegistry.getInstanceFor(roomName);
 		Element childElement = iq.getChildElement();
 		String name = sender.getName();
 		String id = childElement.attributeValue("id");

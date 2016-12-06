@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.dom4j.Element;
 import org.jivesoftware.openfire.XMPPServer;
+import org.jivesoftware.openfire.muc.MUCRole;
 import org.jivesoftware.openfire.muc.MUCRoom;
 import org.jivesoftware.openfire.muc.MultiUserChatService;
 import org.slf4j.Logger;
@@ -62,8 +63,7 @@ public class NEERCComponent implements Component {
     private String myName;
 	private static final Logger Log = LoggerFactory.getLogger(NEERCComponent.class);
     private ComponentManager componentManager = null;
-    private UserRegistry users = UserRegistry.getInstance();
-    private TaskRegistry tasks = TaskRegistry.getInstance();
+    private final MultiUserChatService mucService;
 
     private HashMap<String, QueryHandler> handlers = new HashMap<String, QueryHandler>();
 
@@ -72,72 +72,49 @@ public class NEERCComponent implements Component {
      */
     public static final String NAMESPACE = "http://neerc.ifmo.ru/protocol/neerc";
     public static final String NAME = "neerc";
+    public static final String DEFAULT_ROOM_NAME = "neerc";
 
     public NEERCComponent() {
         this.componentManager = ComponentManagerFactory.getComponentManager();
         myName = NAME + "." + componentManager.getServerName();
+        XMPPServer server = XMPPServer.getInstance();
+        mucService = server.getMultiUserChatManager().getMultiUserChatServices().get(0);
     }
 
     private void initUsers() {
 		Log.debug("init start");
-        XMPPServer server = XMPPServer.getInstance(); 
-        MultiUserChatService service = server.getMultiUserChatManager().getMultiUserChatServices().get(0);
-        MUCRoom room = service.getChatRoom("neerc");
-        if (room == null) {
-           Log.error("no neerc room in MUC");
-           return;
-        }
 
-        for (JID jid: room.getOwners()) {
-            String username = jid.getNode() == null ? jid.toString() : jid.getNode();
-            UserEntry user = users.findOrRegister(username);
-            user.setPower(true);
-            user.setGroup("Admins");
-        }
+        for (MUCRoom room : mucService.getChatRooms()) {
+            UserRegistry users = UserRegistry.getInstanceFor(room.getName());
 
-        for (JID jid: room.getAdmins()) {
-            String username = jid.getNode() == null ? jid.toString() : jid.getNode();
-            UserEntry user = users.findOrRegister(username);
-            user.setPower(true);
-            user.setGroup("Admins");
-        }
+            for (JID jid: room.getOwners()) {
+                String username = jid.getNode() == null ? jid.toString() : jid.getNode();
+                UserEntry user = users.findOrRegister(username);
+                user.setPower(true);
+                user.setGroup("Admins");
+            }
 
-        for (JID jid: room.getMembers()) {
-            String username = jid.getNode() == null ? jid.toString() : jid.getNode();
-            UserEntry user = users.findOrRegister(username);
-            user.setGroup("Users");
+            for (JID jid: room.getAdmins()) {
+                String username = jid.getNode() == null ? jid.toString() : jid.getNode();
+                UserEntry user = users.findOrRegister(username);
+                user.setPower(true);
+                user.setGroup("Admins");
+            }
+
+            for (JID jid: room.getMembers()) {
+                String username = jid.getNode() == null ? jid.toString() : jid.getNode();
+                UserEntry user = users.findOrRegister(username);
+                user.setGroup("Users");
+            }
         }
     }
     
-    public Collection<UserEntry> getUsers() {
-        return users.getUsers();
-    }
-    
-    public Collection<Task> getTasks() {
-    	List<Task> result = new ArrayList<>(); 
-    	result.addAll(tasks.getTasks());
-    	Collections.sort(result, new Comparator<Task>() {
-			@Override
-			public int compare(Task arg0, Task arg1) {
-				return arg1.getDate().compareTo(arg1.getDate());
-			}
-    		
-    	});
-        return result;
-    }
-
     private void initHandlers() {
         handlers.put("users", new UsersQueryHandler());
         handlers.put("tasks", new TasksQueryHandler());
         handlers.put("task", new TaskQueryHandler());
         handlers.put("taskstatus", new TaskStatusQueryHandler());
         handlers.put("ping", new PingQueryHandler());
-    }
-
-    public UserEntry getSender(Packet packet) {
-        String jid = packet.getFrom().toBareJID();
-        if (jid.equals("component." + componentManager.getServerName())) return null;
-        return users.findOrRegister(jid);
     }
 
     public void initialize(JID jid, ComponentManager componentManager) {
@@ -152,10 +129,14 @@ public class NEERCComponent implements Component {
         message.setBody("NEERC Service start");
         sendPacket(message);
 
-        MyListener listener = new MyListener();
-        tasks.addListener(listener);
+        for (MUCRoom room : mucService.getChatRooms()) {
+            TaskRegistry tasks = TaskRegistry.getInstanceFor(room.getName());
+            TaskRegistryListener taskListener = new MyTaskListener(room.getName());
+            tasks.addListener(taskListener);
+        }
+
         ClockService clockservice = new ClockService();
-        clockservice.addListener(listener);
+        clockservice.addListener(new MyClockListener());
         clockservice.start();
     }
 
@@ -191,7 +172,6 @@ public class NEERCComponent implements Component {
 
     private void processIQ(IQ iq) {
         IQ reply = IQ.createResultIQ(iq);
-        UserEntry sender = getSender(iq);
 
         String namespace = iq.getChildElement().getNamespaceURI();
         Element childElement = iq.getChildElement().createCopy();
@@ -209,17 +189,8 @@ public class NEERCComponent implements Component {
                     childElement.addElement("feature").addAttribute("var", NAMESPACE + "#" + key);
                 }
             }
-        } else if (sender == null) {
-	        reply.setError(PacketError.Condition.forbidden);
 	    } else if (namespace.startsWith(NAMESPACE + '#')) {
-            String query = namespace.substring(NAMESPACE.length() + 1);
-            if (!handlers.containsKey(query)) {
-                Log.info("neerc got unknown query " + query);
-                reply.setError(PacketError.Condition.service_unavailable);
-            } else {
-                QueryHandler handler = handlers.get(query);
-                handler.processQuery(this, iq, reply, sender);
-            }
+            processQuery(iq, reply);
         } else {
             // Answer an error since the server can't handle the requested
             // namespace
@@ -228,6 +199,38 @@ public class NEERCComponent implements Component {
         sendPacket(reply);
     }
 
+    private void processQuery(IQ iq, IQ reply) {
+        String roomName = iq.getTo().getNode();
+        if (roomName == null) {
+            roomName = DEFAULT_ROOM_NAME;
+        }
+
+        MUCRoom room = mucService.getChatRoom(roomName);
+        if (room == null) {
+            reply.setError(PacketError.Condition.service_unavailable);
+            return;
+        }
+
+        MUCRole.Affiliation affiliation = room.getAffiliation(iq.getFrom());
+        if (affiliation == MUCRole.Affiliation.none || affiliation == MUCRole.Affiliation.outcast) {
+            reply.setError(PacketError.Condition.forbidden);
+            return;
+        }
+
+        String namespace = iq.getChildElement().getNamespaceURI();
+        String query = namespace.substring(NAMESPACE.length() + 1);
+        if (!handlers.containsKey(query)) {
+            Log.info("neerc got unknown query " + query);
+            reply.setError(PacketError.Condition.service_unavailable);
+        } else {
+            String jid = iq.getFrom().toBareJID();
+            UserRegistry users = UserRegistry.getInstanceFor(roomName);
+            UserEntry sender = users.findOrRegister(jid);
+
+            QueryHandler handler = handlers.get(query);
+            handler.processQuery(this, iq, reply, sender, roomName);
+        }
+    }
 
     public String getDescription() {
         return "NEERC service";
@@ -247,6 +250,13 @@ public class NEERCComponent implements Component {
     }
     
     public void broadcastMessage(String body, PacketExtension extension) {
+        for (MUCRoom room : mucService.getChatRooms()) {
+            broadcastMessage(room.getName(), body, extension);
+        }
+    }
+
+    public void broadcastMessage(String roomName, String body, PacketExtension extension) {
+        UserRegistry users = UserRegistry.getInstanceFor(roomName);
         for (UserEntry user : users.getUsers()) {
             Message message = new Message();
             message.setFrom(myName);
@@ -259,14 +269,28 @@ public class NEERCComponent implements Component {
         }
     }
 
-    private class MyListener implements TaskRegistryListener, ClockListener {
+    private class MyTaskListener implements TaskRegistryListener {
+
+        private final String roomName;
+
+        public MyTaskListener(String roomName) {
+            this.roomName = roomName;
+        }
+
         @Override
         public void taskChanged(Task task) {
             PacketExtension extension = new PacketExtension("x", XmlUtils.NAMESPACE_TASKS);
             XmlUtils.taskToXml(extension.getElement(), task);
             String body = "Task '" + task.getTitle() + "' (" + task.getId() + ") changed";
-            broadcastMessage(body, extension);
+            broadcastMessage(roomName, body, extension);
         }
+
+        @Override
+        public void tasksReset() {
+        }
+    }
+
+    private class MyClockListener implements ClockListener {
 
         @Override
         public void clockChanged(Clock clock) {
@@ -275,10 +299,5 @@ public class NEERCComponent implements Component {
             String body = "The clock is ticking";
             broadcastMessage(body, extension);
         }
-
-        @Override
-        public void tasksReset() {
-        }
     }
-
 }

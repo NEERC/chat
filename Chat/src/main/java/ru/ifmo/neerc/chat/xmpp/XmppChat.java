@@ -57,8 +57,9 @@ public class XmppChat extends AbstractChat {
     private static final String SERVER_HOST = System.getProperty("server.host", "localhost");
     private static final String SERVER_HOSTNAME = System.getProperty("server.hostname", SERVER_HOST);
     private static final int SERVER_PORT = Integer.parseInt(System.getProperty("server.port", "5222"));
-    private static final String ROOM = "neerc@conference." + SERVER_HOSTNAME;
-	private static final String NEERC_SERVICE = "neerc." + SERVER_HOSTNAME;
+    private static final String ROOM_NAME = System.getProperty("room", "neerc");
+    private static final String ROOM = ROOM_NAME + "@conference." + SERVER_HOSTNAME;
+    private static final String NEERC_SERVICE = ROOM_NAME + "@neerc." + SERVER_HOSTNAME;
 
     private MultiUserChat muc;
     private AbstractXMPPConnection connection;
@@ -99,6 +100,7 @@ public class XmppChat extends AbstractChat {
             .setServiceName(SERVER_HOSTNAME)
             .setHost(SERVER_HOST)
             .setPort(SERVER_PORT)
+            .setResource(ROOM_NAME)
             .setCompressionEnabled(true);
 
         try {

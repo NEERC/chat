@@ -24,5 +24,5 @@ import ru.ifmo.neerc.service.NEERCComponent;
  */
 public interface QueryHandler {
     
-    public void processQuery(NEERCComponent component, IQ iq, IQ reply, UserEntry sender);
+    public void processQuery(NEERCComponent component, IQ iq, IQ reply, UserEntry sender, String roomName);
 }

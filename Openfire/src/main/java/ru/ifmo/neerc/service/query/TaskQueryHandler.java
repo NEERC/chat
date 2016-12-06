@@ -29,8 +29,8 @@ import ru.ifmo.neerc.utils.XmlUtils;
  */
 public class TaskQueryHandler implements QueryHandler {
     
-	public void processQuery(NEERCComponent component, IQ iq, IQ reply, UserEntry sender) {
-		TaskRegistry tasks = TaskRegistry.getInstance();
+	public void processQuery(NEERCComponent component, IQ iq, IQ reply, UserEntry sender, String roomName) {
+		TaskRegistry tasks = TaskRegistry.getInstanceFor(roomName);
 		if (!sender.isPower()) {
 			reply.setError(PacketError.Condition.forbidden);
 			return;
