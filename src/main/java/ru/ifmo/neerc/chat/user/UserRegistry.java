@@ -95,11 +95,10 @@ public class UserRegistry {
         putOnline(findOrRegister(jid), false);
     }
 
-    public synchronized void setRole(String jid, String role) {
+    public synchronized void setPower(String jid, boolean power) {
         UserEntry user = findOrRegister(jid);
-        boolean newPower = "moderator".equalsIgnoreCase(role);
-        if (newPower != user.isPower()) {
-            user.setPower(newPower);
+        if (power != user.isPower()) {
+            user.setPower(power);
             notifyListeners(user);
         }
     }
