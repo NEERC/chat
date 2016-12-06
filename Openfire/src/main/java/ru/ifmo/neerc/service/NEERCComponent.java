@@ -131,7 +131,7 @@ public class NEERCComponent implements Component {
 
         for (MUCRoom room : mucService.getChatRooms()) {
             TaskRegistry tasks = TaskRegistry.getInstanceFor(room.getName());
-            TaskRegistryListener taskListener = new MyTaskListener(room.getName());
+            TaskRegistryListener taskListener = new MyTaskListener(room);
             tasks.addListener(taskListener);
         }
 
@@ -251,30 +251,29 @@ public class NEERCComponent implements Component {
     
     public void broadcastMessage(String body, PacketExtension extension) {
         for (MUCRoom room : mucService.getChatRooms()) {
-            broadcastMessage(room.getName(), body, extension);
+            broadcastMessage(room, body, extension);
         }
     }
 
-    public void broadcastMessage(String roomName, String body, PacketExtension extension) {
-        UserRegistry users = UserRegistry.getInstanceFor(roomName);
-        for (UserEntry user : users.getUsers()) {
-            Message message = new Message();
-            message.setFrom(myName);
-            message.setBody(body);
-            message.setTo(user.getName() + "@" + componentManager.getServerName());
-            if (extension != null) {
-                message.addExtension(new PacketExtension(extension.getElement().createCopy()));
-            }
-            sendPacket(message);
+    public void broadcastMessage(MUCRoom room, String body, PacketExtension extension) {
+        Message message = new Message();
+        message.setFrom(myName);
+        message.setBody(body);
+        if (extension != null) {
+            message.addExtension(new PacketExtension(extension.getElement().createCopy()));
+        }
+
+        for (MUCRole occupant : room.getOccupants()) {
+            occupant.send(message);
         }
     }
 
     private class MyTaskListener implements TaskRegistryListener {
 
-        private final String roomName;
+        private final MUCRoom room;
 
-        public MyTaskListener(String roomName) {
-            this.roomName = roomName;
+        public MyTaskListener(MUCRoom room) {
+            this.room = room;
         }
 
         @Override
@@ -282,7 +281,7 @@ public class NEERCComponent implements Component {
             PacketExtension extension = new PacketExtension("x", XmlUtils.NAMESPACE_TASKS);
             XmlUtils.taskToXml(extension.getElement(), task);
             String body = "Task '" + task.getTitle() + "' (" + task.getId() + ") changed";
-            broadcastMessage(roomName, body, extension);
+            broadcastMessage(room, body, extension);
         }
 
         @Override
