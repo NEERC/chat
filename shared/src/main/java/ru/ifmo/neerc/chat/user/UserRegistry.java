@@ -136,13 +136,7 @@ public class UserRegistry {
             String name = user.getName();
             String group = user.getGroup();
             for (String s : search) {
-                if (s.equalsIgnoreCase("halls")) {
-                    if (name.startsWith("hall")) {
-                        res.add(user);
-                        break;
-                    }
-                }
-                else if (s.equalsIgnoreCase(name) || s.equalsIgnoreCase(group)) {
+                if (s.equalsIgnoreCase(name) || s.equalsIgnoreCase(group)) {
                     res.add(user);
                     break;
                 }

@@ -24,6 +24,10 @@ import java.util.List;
 
 import org.dom4j.Element;
 import org.jivesoftware.openfire.XMPPServer;
+import org.jivesoftware.openfire.group.Group;
+import org.jivesoftware.openfire.group.GroupJID;
+import org.jivesoftware.openfire.group.GroupManager;
+import org.jivesoftware.openfire.group.GroupNotFoundException;
 import org.jivesoftware.openfire.muc.MUCRole;
 import org.jivesoftware.openfire.muc.MUCRoom;
 import org.jivesoftware.openfire.muc.MultiUserChatService;
@@ -87,25 +91,31 @@ public class NEERCComponent implements Component {
         for (MUCRoom room : mucService.getChatRooms()) {
             UserRegistry users = UserRegistry.getInstanceFor(room.getName());
 
-            for (JID jid: room.getOwners()) {
-                String username = jid.getNode() == null ? jid.toString() : jid.getNode();
-                UserEntry user = users.findOrRegister(username);
-                user.setPower(true);
-                user.setGroup("Admins");
-            }
+            addUsers(users, room.getOwners(), true, null);
+            addUsers(users, room.getAdmins(), true, null);
+            addUsers(users, room.getMembers(), false, null);
+        }
+    }
 
-            for (JID jid: room.getAdmins()) {
-                String username = jid.getNode() == null ? jid.toString() : jid.getNode();
-                UserEntry user = users.findOrRegister(username);
-                user.setPower(true);
-                user.setGroup("Admins");
+    private void addUser(UserRegistry users, JID jid, boolean power, String groupName) {
+        if (GroupJID.isGroup(jid)) {
+            try {
+                Group group = GroupManager.getInstance().getGroup(jid);
+                addUsers(users, group.getAll(), power, group.getName());
+            } catch (GroupNotFoundException e) {
+                Log.error("Can't find group " + jid, e);
             }
+        } else {
+            String username = (jid.getNode() == null) ? jid.toString() : jid.getNode();
+            UserEntry user = users.findOrRegister(username);
+            user.setPower(power);
+            user.setGroup(groupName);
+        }
+    }
 
-            for (JID jid: room.getMembers()) {
-                String username = jid.getNode() == null ? jid.toString() : jid.getNode();
-                UserEntry user = users.findOrRegister(username);
-                user.setGroup("Users");
-            }
+    private void addUsers(UserRegistry users, Collection<JID> jids, boolean power, String groupName) {
+        for (JID jid : jids) {
+            addUser(users, jid, power, groupName);
         }
     }
     

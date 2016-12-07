@@ -245,6 +245,8 @@ public class XmppChat extends AbstractChat {
         UserRegistry registry = UserRegistry.getInstance();
 		for (UserEntry user: packet.getUsers()) {
 		    // TODO: replace with registry.add(UserEntry user)
+		    UserEntry reguser = registry.findOrRegister(user.getName());
+            reguser.setGroup(user.getGroup());
             registry.setPower(user.getName(), user.isPower());
 		}
 	}
