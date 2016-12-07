@@ -2,7 +2,7 @@ apply plugin: 'java-library-distribution'
 
 dependencies {
   compile project(':shared')
-  compileOnly 'org.igniterealtime:openfire:3.8.2'
+  compileOnly 'org.igniterealtime:openfire:4.0.3'
 }
 
 task chatPlugin(type: Jar, dependsOn: jar) {
