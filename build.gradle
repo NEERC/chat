@@ -13,7 +13,7 @@ subprojects {
     repositories {
       mavenLocal();
       maven {
-        url 'https://raw.githubusercontent.com/NEERC/chat/master/maven-repository/releases/'
+        url 'https://raw.githubusercontent.com/NEERC/chat/multiroom/maven-repository/releases/'
       }
       jcenter();
     }
