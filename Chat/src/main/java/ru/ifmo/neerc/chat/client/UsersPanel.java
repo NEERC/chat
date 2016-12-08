@@ -96,7 +96,7 @@ public class UsersPanel extends JPanel {
             init();
         }
 
-        private void init() {
+        private synchronized void init() {
             userEntries = UserRegistry.getInstance().serialize();
             Arrays.sort(userEntries);
             resize(userEntries.length);
