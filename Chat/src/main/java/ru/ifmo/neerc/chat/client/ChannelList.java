@@ -4,6 +4,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,15 +32,17 @@ public class ChannelList {
     }
 
     public void subscribeTo(String channel) {
+        ChatWindow window = getOrCreateWindow(channel);
         if (isSeparated)
-            getOrCreateWindow(channel).setVisible(true);
+            window.setVisible(true);
         channels.add(channel);
         notifySubscriptionChanged();
     }
 
     public void unsubscribeFrom(String channel) {
+        ChatWindow window = getOrCreateWindow(channel);
         if (isSeparated)
-            getOrCreateWindow(channel).setVisible(false);
+            window.setVisible(false);
         channels.remove(channel);
         notifySubscriptionChanged();
     }
@@ -63,6 +66,7 @@ public class ChannelList {
             });
             window.setVisible(isSeparated);
             windows.put(channel, window);
+            notifySubscriptionChanged();
         }
 
         return windows.get(channel);
@@ -85,6 +89,10 @@ public class ChannelList {
                 window.setVisible(false);
         }
         notifySubscriptionChanged();
+    }
+
+    public Set<String> getChannels() {
+        return Collections.unmodifiableSet(windows.keySet());
     }
 
     public String toString() {

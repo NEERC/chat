@@ -59,7 +59,6 @@ public abstract class AbstractChatClient extends JFrame implements ChatListener,
     public ChatInputArea inputArea;
     public JLabel neercTimer = new JLabel();
     protected JLabel connectionStatus = new JLabel();
-    private JLabel subscriptionsList = new JLabel();
     protected JButton resetButton;
     protected TaskRegistry taskRegistry = TaskRegistry.getInstance();
     protected UserEntry user;
@@ -128,21 +127,18 @@ public abstract class AbstractChatClient extends JFrame implements ChatListener,
             }
         };
 
-//        JPanel controlPanel = new JPanel(new BorderLayout());
         usersPanel = new UsersPanel(user, colorizer);
         usersPanel.addListener(setPrivateAddresseesListener);
 
+        ChannelsPanel channelsPanel = new ChannelsPanel(channelsSubscription);
+
+        JSplitPane leftPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, usersPanel, channelsPanel);
+        leftPane.setResizeWeight(0.8);
+
         outputArea.addUserPickListener(setPrivateAddresseesListener);
-//        TaskPanel personalTasks = new TaskPanel(taskRegistry, user, chat);
-//        JSplitPane controlSplitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, users, personalTasks);
-//        setupSplitter(controlSplitter);
-//        controlSplitter.setResizeWeight(1);
-//        controlSplitter.setDividerLocation(300);
-//        controlPanel.add(controlSplitter, BorderLayout.CENTER);
-//        users.setSplitter(controlSplitter);
 
         JPanel topPanel = new JPanel(new BorderLayout());
-        JSplitPane mainSplitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, usersPanel, chatPanel);
+        JSplitPane mainSplitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPane, chatPanel);
         setupSplitter(mainSplitter);
         mainSplitter.setDividerLocation(100);
         topPanel.add(mainSplitter);
@@ -215,16 +211,7 @@ public abstract class AbstractChatClient extends JFrame implements ChatListener,
         resetButton = new JButton("Reconnect");
         resetButton.setFocusable(false);
 
-        subscriptionsList.setText(channelsSubscription.toString());
-        channelsSubscription.addListener(new SubscriptionListener() {
-            public void subscriptionChanged() {
-                subscriptionsList.setText(channelsSubscription.toString());
-            }
-        });
-
         toolBar.add(Box.createHorizontalGlue());
-        toolBar.add(subscriptionsList);
-        toolBar.add(Box.createHorizontalStrut(10));
         toolBar.add(connectionStatus);
         toolBar.add(Box.createHorizontalStrut(10));
         toolBar.add(neercTimer);
