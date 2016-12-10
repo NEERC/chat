@@ -32,6 +32,7 @@ import org.jivesoftware.smackx.muc.MultiUserChatManager;
 import org.jivesoftware.smackx.delay.packet.DelayInformation;
 import org.jivesoftware.smackx.muc.packet.MUCUser;
 import org.jivesoftware.smackx.muc.packet.MUCItem;
+import org.jivesoftware.smackx.ping.PingManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,6 +83,7 @@ public class XmppChat extends AbstractChat {
         NeercIQProvider.register();
 
         ReconnectionManager.setEnabledPerDefault(true);
+        PingManager.setDefaultPingInterval(5);
     }
 
     public synchronized void disconnect() {
