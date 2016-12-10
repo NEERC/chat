@@ -41,7 +41,10 @@ public class ChannelsPanel extends JPanel {
                 if (e.getClickCount() % 2 != 0)
                     return;
 
-                String channel = (String)list.getSelectedValue();
+                String channel = list.getSelectedValue();
+                if (channel == null)
+                    return;
+
                 if (channelList.isSubscribed(channel))
                     channelList.unsubscribeFrom(channel);
                 else
@@ -102,6 +105,8 @@ public class ChannelsPanel extends JPanel {
             setBackground(list.getBackground());
             setForeground(list.getForeground());
             setText(channel);
+
+            setBorderPainted(true);
             setBorder((cellHasFocus) ? UIManager.getBorder("List.focusCellHighlightBorder") : noFocusBorder);
 
             return this;

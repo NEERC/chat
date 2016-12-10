@@ -32,6 +32,7 @@ import org.jivesoftware.smackx.muc.MultiUserChatManager;
 import org.jivesoftware.smackx.delay.packet.DelayInformation;
 import org.jivesoftware.smackx.muc.packet.MUCUser;
 import org.jivesoftware.smackx.muc.packet.MUCItem;
+import org.jivesoftware.smackx.ping.PingManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,6 +84,7 @@ public class XmppChat extends AbstractChat {
         NeercIQProvider.register();
 
         ReconnectionManager.setEnabledPerDefault(true);
+        PingManager.setDefaultPingInterval(5);
     }
 
     public synchronized void disconnect() {
@@ -117,6 +119,11 @@ public class XmppChat extends AbstractChat {
         connection.addConnectionListener(new MyConnectionListener());
         connection.addConnectionListener(connectionListener);
         connection.addAsyncStanzaListener(new TaskPacketListener(), new StanzaExtensionFilter(new NeercTaskPacketExtension()));
+
+        muc = MultiUserChatManager.getInstanceFor(connection)
+            .getMultiUserChat(ROOM);
+        muc.addMessageListener(new MyMessageListener());
+        muc.addParticipantListener(new MyPresenceListener());
 
         // Connect to the server
         try {
@@ -266,11 +273,6 @@ public class XmppChat extends AbstractChat {
     private class MyConnectionListener extends AbstractConnectionListener {
         @Override
         public void authenticated(XMPPConnection connection, boolean resumed) {
-            muc = MultiUserChatManager.getInstanceFor(connection)
-                .getMultiUserChat(ROOM);
-            muc.addMessageListener(new MyMessageListener());
-            muc.addParticipantListener(new MyPresenceListener());
-
             join();
 
             debugConnection();

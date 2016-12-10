@@ -9,7 +9,7 @@ subprojects {
     apply plugin: 'java'
     sourceCompatibility = 1.7
     group "ru.ifmo.neerc"
-    version "2016.12-multiroom-SNAPSHOT"
+    version "2016.12a-multiroom-SNAPSHOT"
     repositories {
       mavenLocal();
       maven {

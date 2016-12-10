@@ -120,7 +120,12 @@ public class UsersPanel extends JPanel {
 
         private void update() {
             init();
-            fireContentsChanged(this, 0, userEntries.length);
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    fireContentsChanged(this, 0, getSize());
+                }
+            });
         }
     }
 
