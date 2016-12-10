@@ -118,6 +118,11 @@ public class XmppChat extends AbstractChat {
         connection.addConnectionListener(connectionListener);
         connection.addAsyncStanzaListener(new TaskPacketListener(), new StanzaExtensionFilter(new NeercTaskPacketExtension()));
 
+        muc = MultiUserChatManager.getInstanceFor(connection)
+            .getMultiUserChat(ROOM);
+        muc.addMessageListener(new MyMessageListener());
+        muc.addParticipantListener(new MyPresenceListener());
+
         // Connect to the server
         try {
             connection.connect();
@@ -264,11 +269,6 @@ public class XmppChat extends AbstractChat {
     private class MyConnectionListener extends AbstractConnectionListener {
         @Override
         public void authenticated(XMPPConnection connection, boolean resumed) {
-            muc = MultiUserChatManager.getInstanceFor(connection)
-                .getMultiUserChat(ROOM);
-            muc.addMessageListener(new MyMessageListener());
-            muc.addParticipantListener(new MyPresenceListener());
-
             join();
 
             debugConnection();
