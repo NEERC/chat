@@ -321,7 +321,8 @@ public class XmppChat extends AbstractChat {
                 timestamp
             );
 
-            if (chatMessage.getTo() != null
+            if (chatMessage.getType() != ChatMessage.Type.channel
+                    && chatMessage.getTo() != null
                     && !name.equals(chatMessage.getUser().getName())
                     && !name.equals(chatMessage.getTo())) {
                 return;
