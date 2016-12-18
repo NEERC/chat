@@ -1,8 +1,14 @@
 apply plugin: 'java-library-distribution'
 
+repositories {
+  maven {
+    url 'https://raw.githubusercontent.com/NEERC/openfire/mvn-repo/'
+  }
+}
+
 dependencies {
   compile project(':shared')
-  compileOnly 'org.igniterealtime:openfire:4.0.3'
+  compileOnly 'org.igniterealtime:openfire:4.0.4'
 }
 
 task chatPlugin(type: Jar, dependsOn: jar) {
