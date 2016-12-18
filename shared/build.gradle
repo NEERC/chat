@@ -1,5 +1,0 @@
-apply plugin: 'maven'
-
-dependencies {
-  compile 'dom4j:dom4j:1.6.1'
-}
