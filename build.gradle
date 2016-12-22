@@ -1,5 +1,8 @@
+apply plugin: 'java'
 apply plugin: 'maven'
 
+sourceCompatibility = 1.7
+
 dependencies {
-  compile 'dom4j:dom4j:1.6.1'
+  compileOnly 'dom4j:dom4j:1.6.1'
 }
