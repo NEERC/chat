@@ -40,6 +40,10 @@ public final class TaskRegistry {
         listeners.add(listener);
     }
 
+    public void removeListener(TaskRegistryListener listener) {
+        listeners.remove(listener);
+    }
+
     private void notifyListeners(Task task) {
         for (TaskRegistryListener listener : listeners) {
             listener.taskChanged(task);
