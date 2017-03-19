@@ -25,6 +25,7 @@ import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smack.util.TLSUtils;
+import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.DiscussionHistory;
 import org.jivesoftware.smackx.muc.MUCRole;
 import org.jivesoftware.smackx.muc.MultiUserChat;
@@ -103,7 +104,7 @@ public class XmppChat extends AbstractChat {
             .setServiceName(SERVER_HOSTNAME)
             .setHost(SERVER_HOST)
             .setPort(SERVER_PORT)
-            .setResource(ROOM_NAME)
+            .setResource(StringUtils.randomString(10))
             .setCompressionEnabled(true);
 
         try {
