@@ -1,10 +1,14 @@
 package ru.ifmo.neerc.chat.xmpp;
 
+import java.io.InputStream;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.KeyManagementException;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+import java.security.SecureRandom;
 import java.util.Calendar;
 import java.util.Date;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
 
 import org.jivesoftware.smack.AbstractConnectionListener;
 import org.jivesoftware.smack.AbstractXMPPConnection;
@@ -107,12 +111,12 @@ public class XmppChat extends AbstractChat {
             .setResource(StringUtils.randomString(10))
             .setCompressionEnabled(true);
 
-        try {
-            TLSUtils.acceptAllCertificates(builder);
-            TLSUtils.disableHostnameVerificationForTlsCertificicates(builder);
-        } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            LOG.error("Unable to configure connection", e);
+        SSLContext sslContext = createSSLContext();
+        if (sslContext != null) {
+            builder.setCustomSSLContext(sslContext);
         }
+
+        TLSUtils.disableHostnameVerificationForTlsCertificicates(builder);
 
         XMPPTCPConnectionConfiguration config = builder.build();
 
@@ -134,6 +138,35 @@ public class XmppChat extends AbstractChat {
             LOG.error("Unable to connect", e);
             throw new RuntimeException(e);
         }
+    }
+
+    protected SSLContext createSSLContext() {
+        InputStream keystoreInputStream = XmppChat.class.getResourceAsStream("chat.jks");
+        if (keystoreInputStream == null) {
+            LOG.debug("Keystore not found");
+            return null;
+        }
+
+        final char[] PASSWORD = "neercchat".toCharArray();
+
+        try {
+            KeyStore keyStore = KeyStore.getInstance("JKS");
+            keyStore.load(keystoreInputStream, PASSWORD);
+
+            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            keyManagerFactory.init(keyStore, PASSWORD);
+
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(keyManagerFactory.getKeyManagers(), null, new SecureRandom());
+
+            LOG.debug("Client certificate loaded");
+
+            return sslContext;
+        } catch (IOException | GeneralSecurityException e) {
+            LOG.error("Failed to load client certificate", e);
+        }
+
+        return null;
     }
     
     public boolean isConnected() {
