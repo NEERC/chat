@@ -118,8 +118,6 @@ public class XmppChat extends AbstractChat {
             builder.setCustomSSLContext(sslContext);
         }
 
-        TLSUtils.disableHostnameVerificationForTlsCertificicates(builder);
-
         XMPPTCPConnectionConfiguration config = builder.build();
 
         connection = new XMPPTCPConnection(config);
