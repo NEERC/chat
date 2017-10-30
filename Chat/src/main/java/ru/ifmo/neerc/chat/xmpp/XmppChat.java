@@ -111,7 +111,8 @@ public class XmppChat extends AbstractChat {
             .setHost(SERVER_HOST)
             .setPort(SERVER_PORT)
             .setResource(StringUtils.randomString(10))
-            .setCompressionEnabled(true);
+            .setCompressionEnabled(true)
+            .setSecurityMode(XMPPTCPConnectionConfiguration.SecurityMode.required);
 
         SSLContext sslContext = createSSLContext();
         if (sslContext != null) {
