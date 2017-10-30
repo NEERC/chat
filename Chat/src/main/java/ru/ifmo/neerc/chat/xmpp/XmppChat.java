@@ -39,6 +39,8 @@ import org.jivesoftware.smackx.muc.packet.MUCUser;
 import org.jivesoftware.smackx.muc.packet.MUCItem;
 import org.jivesoftware.smackx.ping.PingManager;
 
+import org.jxmpp.util.XmppStringUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -335,6 +337,11 @@ public class XmppChat extends AbstractChat {
     private class MyMessageListener implements MessageListener {
         @Override
         public void processMessage(org.jivesoftware.smack.packet.Message message) {
+            String resource = XmppStringUtils.parseResource(message.getFrom());
+            if (resource.isEmpty() || message.getBody() == null) {
+                return;
+            }
+
             Date timestamp = new Date();
             for (ExtensionElement extension : message.getExtensions()) {
                 if (DelayInformation.NAMESPACE.equals(extension.getNamespace())) {
@@ -350,7 +357,7 @@ public class XmppChat extends AbstractChat {
 
             ChatMessage chatMessage = new ChatMessage(
                 message.getBody(),
-                UserRegistry.getInstance().findOrRegister(message.getFrom()),
+                UserRegistry.getInstance().findOrRegister(resource),
                 null,
                 timestamp
             );
