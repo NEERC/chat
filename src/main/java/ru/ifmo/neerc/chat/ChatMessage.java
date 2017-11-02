@@ -65,6 +65,22 @@ public class ChatMessage implements Comparable<ChatMessage>, Serializable {
         return priority;
     }
 
+    public boolean isImportantFor(UserEntry user) {
+        // Ignore our own messages
+        if (this.user.equals(user))
+            return false;
+
+        // Private message for us
+        if (to != null && to.equals(user.getName()))
+            return true;
+
+        // Priority message from power user
+        if (this.user.isPower() && priority > 0)
+            return true;
+
+        return false;
+    }
+
     public int compareTo(ChatMessage message) {
         return getDate().compareTo(message.getDate());
     }
