@@ -23,6 +23,8 @@ package ru.ifmo.neerc.chat.client;
 import javax.swing.*;
 import java.io.CharArrayWriter;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <code>TimerTicker</code> class
@@ -36,6 +38,7 @@ public class TimerTicker extends Thread {
     private long savedTimeStart, savedTime;
     private int status;
 
+    private final List<TimerTickerListener> listeners = new ArrayList<>();
 
     public TimerTicker(JLabel neercTimer) {
         super("Timer Ticker");
@@ -43,12 +46,23 @@ public class TimerTicker extends Thread {
         setDaemon(true);
     }
 
+    public void addListener(TimerTickerListener listener) {
+        listeners.add(listener);
+    }
+
+    private void tick() {
+        updateLabel();
+        for (TimerTickerListener listener : listeners) {
+            listener.tick(total, time, status);
+        }
+    }
+
     public void updateStatus(long total, long time, int status) {
         this.savedTimeStart = this.time = time;
         savedTime = System.currentTimeMillis();
         this.total = total;
         this.status = status;
-        updateLabel();
+        tick();
         if (!isAlive()) {
             start();
         }
@@ -61,7 +75,7 @@ public class TimerTicker extends Thread {
             if (status != 1 && status != 3) {
                 time = Math.min(savedTimeStart + System.currentTimeMillis() - savedTime, total);
             }
-            updateLabel();
+            tick();
             try {
                 sleep(250);
             } catch (InterruptedException e) {

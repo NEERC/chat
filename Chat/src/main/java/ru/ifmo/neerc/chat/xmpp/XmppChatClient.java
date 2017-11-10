@@ -40,9 +40,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Date;
-import java.util.List;
-import java.util.ArrayList;
 
 /**
  * @author Evgeny Mandrikov
@@ -114,63 +111,6 @@ public class XmppChatClient extends AbstractChatClient {
             return;
         }
         super.send(text);
-    }
-
-    public void updateScheduledTasks(long time, long total) {
-        long start = time;
-        long end = time - total;
-
-        List<Task> activatedTasks = new ArrayList<Task>();
-
-        for (Task task : TaskRegistry.getInstance().getTasks()) {
-            Task.ScheduleType type = task.getScheduleType();
-            long scheduleTime = task.getScheduleTime();
-
-            if (type == Task.ScheduleType.NONE)
-                continue;
-
-            if ((type == Task.ScheduleType.CONTEST_START && scheduleTime <= start) ||
-                (type == Task.ScheduleType.CONTEST_END && scheduleTime <= end)) {
-                activatedTasks.add(task);
-            }
-        }
-
-        for (Task task : activatedTasks) {
-            TaskRegistry.getInstance().update(new Task(task.getId(), "remove", ""));
-            task.schedule(Task.ScheduleType.NONE, 0);
-            task.setId(null);
-            new Thread(new ScheduledTaskConfirmation(task)).start();
-        }
-    }
-
-    private class ScheduledTaskConfirmation implements Runnable {
-        private Task task;
-
-        ScheduledTaskConfirmation(Task task) {
-            this.task = task;
-        }
-
-        @Override
-        public void run() {
-            if (!task.getNeedsConfirmation()) {
-                chat.sendTask(task);
-                return;
-            }
-
-            final Runnable sound = (Runnable)Toolkit.getDefaultToolkit().getDesktopProperty("win.sound.exclamation");
-            if (sound != null)
-                sound.run();
-
-            int result = JOptionPane.showConfirmDialog(
-                    XmppChatClient.this,
-                    "Create task '" + task.getTitle() + "'?",
-                    "Scheduled task",
-                    JOptionPane.YES_NO_OPTION
-            );
-
-            if (result == JOptionPane.YES_OPTION)
-                chat.sendTask(task);
-        }
     }
 
     private class MyListener implements ConnectionListener {
@@ -246,8 +186,6 @@ public class XmppChatClient extends AbstractChatClient {
             NeercClockPacketExtension extension = (NeercClockPacketExtension) message.getExtension("x", XmlUtils.NAMESPACE_CLOCK);
             Clock clock = extension.getClock();
             ticker.updateStatus(clock.getTotal(), clock.getTime(), clock.getStatus());
-            if (clock.getStatus() != 1)
-                updateScheduledTasks(clock.getTime(), clock.getTotal());
         }
     }
 }

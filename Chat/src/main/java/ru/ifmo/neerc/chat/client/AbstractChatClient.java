@@ -41,6 +41,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -83,6 +84,15 @@ public abstract class AbstractChatClient extends JFrame implements ChatListener,
     public AbstractChatClient() {
         UserRegistry.getInstance().addListener(this);
         TaskRegistry.getInstance().addListener(this);
+
+        ticker.addListener(new TimerTickerListener() {
+            @Override
+            public void tick(long total, long time, int status) {
+                if (status != 1) {
+                    updateScheduledTasks(time, total);
+                }
+            }
+        });
     }
 
     protected AdminTaskPanel taskPanel;
@@ -369,6 +379,63 @@ public abstract class AbstractChatClient extends JFrame implements ChatListener,
                 }
             }
         }).start();
+    }
+
+    protected void updateScheduledTasks(long time, long total) {
+        long start = time;
+        long end = time - total;
+
+        List<Task> activatedTasks = new ArrayList<Task>();
+
+        for (Task task : TaskRegistry.getInstance().getTasks()) {
+            Task.ScheduleType type = task.getScheduleType();
+            long scheduleTime = task.getScheduleTime();
+
+            if (type == Task.ScheduleType.NONE)
+                continue;
+
+            if ((type == Task.ScheduleType.CONTEST_START && scheduleTime <= start) ||
+                (type == Task.ScheduleType.CONTEST_END && scheduleTime <= end)) {
+                activatedTasks.add(task);
+            }
+        }
+
+        for (Task task : activatedTasks) {
+            TaskRegistry.getInstance().update(new Task(task.getId(), "remove", ""));
+            task.schedule(Task.ScheduleType.NONE, 0);
+            task.setId(null);
+            new Thread(new ScheduledTaskConfirmation(task)).start();
+        }
+    }
+
+    private class ScheduledTaskConfirmation implements Runnable {
+        private Task task;
+
+        ScheduledTaskConfirmation(Task task) {
+            this.task = task;
+        }
+
+        @Override
+        public void run() {
+            if (!task.getNeedsConfirmation()) {
+                chat.sendTask(task);
+                return;
+            }
+
+            final Runnable sound = (Runnable)Toolkit.getDefaultToolkit().getDesktopProperty("win.sound.exclamation");
+            if (sound != null)
+                sound.run();
+
+            int result = JOptionPane.showConfirmDialog(
+                    AbstractChatClient.this,
+                    "Create task '" + task.getTitle() + "'?",
+                    "Scheduled task",
+                    JOptionPane.YES_NO_OPTION
+            );
+
+            if (result == JOptionPane.YES_OPTION)
+                chat.sendTask(task);
+        }
     }
 
     @Override
