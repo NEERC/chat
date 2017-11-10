@@ -19,17 +19,17 @@
  */
 package ru.ifmo.neerc.chat.client;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.TableColumnModelEvent;
+import javax.swing.event.TableColumnModelListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.TreeSet;
@@ -41,13 +41,14 @@ import ru.ifmo.neerc.chat.user.UserRegistry;
  * @author Matvey Kazakov
  */
 public class ChatArea extends JTable {
+    private static final int TIME_COLUMN_WIDTH = 60;
     private static final int USER_COLUMN_WIDTH = 50;
     private static final int MAXIMUM_LINES = 1000;
-    private ChatModel model;
-    private static final int TIME_COLUMN_WIDTH = 60;
-    private TableCellRenderer cellRenderer = new NewChatMessageRenderer();
-    private boolean doScroll = false;
-    private static final Logger LOG = LoggerFactory.getLogger(ChatArea.class);
+
+    private final ChatModel model;
+
+    private boolean forceScroll = false;
+
     private ArrayList<UserPickListener> userPickListeners = new ArrayList<>();
 
     public ChatArea() {
@@ -56,26 +57,65 @@ public class ChatArea extends JTable {
 
     public ChatArea(UserEntry user, NameColorizer colorizer, ChannelList channels) {
         model = new ChatModel(channels);
+        model.addTableModelListener(new TableModelListener() {
+            @Override
+            public void tableChanged(final TableModelEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateRowHeights(e.getFirstRow(), e.getLastRow());
+                        scrollToBottomIfNeeded();
+                    }
+                });
+            }
+        });
+
         setModel(model);
+
         setShowHorizontalLines(false);
         setShowGrid(false);
         setTableHeader(null);
         setBackground(Color.white);
+        setAutoResizeMode(AUTO_RESIZE_LAST_COLUMN);
+
         final TableColumn timeColumn = getColumnModel().getColumn(0);
+        timeColumn.setMinWidth(TIME_COLUMN_WIDTH);
+        timeColumn.setMaxWidth(TIME_COLUMN_WIDTH);
         timeColumn.setResizable(false);
         timeColumn.setCellRenderer(new NewChatMessageRenderer());
+
         final TableColumn userColumn = getColumnModel().getColumn(1);
+        userColumn.setMinWidth(USER_COLUMN_WIDTH);
+        userColumn.setMaxWidth(USER_COLUMN_WIDTH);
         userColumn.setCellRenderer(new NewChatMessageRenderer(Font.BOLD, colorizer, user));
+
         final TableColumn messageColumn = getColumnModel().getColumn(2);
         messageColumn.setCellRenderer(new NewChatMessageRenderer(user));
-        addComponentListener(new ComponentAdapter() {
-            public void componentResized(ComponentEvent e) {
-                timeColumn.setPreferredWidth(TIME_COLUMN_WIDTH);
-                userColumn.setPreferredWidth(USER_COLUMN_WIDTH);
-                messageColumn.setPreferredWidth(getWidth() - TIME_COLUMN_WIDTH - USER_COLUMN_WIDTH);
-                if (doScroll) {
-                    scrollRectToVisible(new Rectangle(1, 100000, 1, 1));
-                }
+
+        getColumnModel().addColumnModelListener(new TableColumnModelListener() {
+            @Override
+            public void columnAdded(TableColumnModelEvent e) {
+
+            }
+
+            @Override
+            public void columnMarginChanged(ChangeEvent e) {
+                updateRowHeights(0, getRowCount() - 1);
+            }
+
+            @Override
+            public void columnMoved(TableColumnModelEvent e) {
+
+            }
+
+            @Override
+            public void columnRemoved(TableColumnModelEvent e) {
+
+            }
+
+            @Override
+            public void columnSelectionChanged(ListSelectionEvent e) {
+
             }
         });
 
@@ -96,10 +136,6 @@ public class ChatArea extends JTable {
         });
     }
 
-    public void addToModel(final Message message) {
-        model.add(message);
-    }
-
     public void addUserPickListener(UserPickListener listener) {
         userPickListeners.add(listener);
     }
@@ -107,38 +143,34 @@ public class ChatArea extends JTable {
     public void addMessage(final Message message) {
         if ((new Date()).getTime() - message.getDate().getTime() > 1000) {
             model.add(message);
-            doScroll = true;
-            return;
+            forceScroll = true;
+        } else {
+            model.append(message);
+            forceScroll = false;
         }
-        final int index = model.append(message);
-        doScroll = false;
-
-        try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                public void run() {
-                    Component tableCellRendererComponent = cellRenderer.getTableCellRendererComponent(ChatArea.this,
-                            message, false, false, index, 2);
-                    int height = tableCellRendererComponent.getPreferredSize().height;
-                    synchronized (ChatArea.this) {
-                        setRowHeight(index, height);
-                        Rectangle cellRectPrev = getCellRect(index - 1, 2, true);
-                        Rectangle cellRect = getCellRect(index, 2, true);
-                        cellRect.setSize(tableCellRendererComponent.getPreferredSize());
-                        Rectangle visibleRect = getVisibleRect();
-                        if (visibleRect.y + visibleRect.height >= cellRectPrev.y + cellRectPrev.height) {
-                            scrollRectToVisible(cellRect);
-                        }
-                    }
-                }
-            });
-        } catch (InterruptedException e) {
-//            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-//            e.printStackTrace();
-        }
-
     }
 
+    protected void updateRowHeights(int firstRow, int lastRow) {
+        for (int row = firstRow; row <= lastRow; row++) {
+            int rowHeight = 0;
+
+            for (int column = 0; column < getColumnCount(); column++) {
+                Component comp = prepareRenderer(getCellRenderer(row, column), row, column);
+                rowHeight = Math.max(rowHeight, comp.getPreferredSize().height);
+            }
+
+            if (rowHeight != getRowHeight(row)) {
+                setRowHeight(row, rowHeight);
+            }
+        }
+    }
+
+    protected void scrollToBottomIfNeeded() {
+        Rectangle prevRect = getCellRect(getRowCount() - 2, 0, true);
+        if (getVisibleRect().contains(prevRect) || forceScroll) {
+            scrollRectToVisible(getCellRect(getRowCount() - 1, 0, true));
+        }
+    }
 
     private class ChatModel extends AbstractTableModel {
         private ArrayList<Message> cache = new ArrayList<Message>();
