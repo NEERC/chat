@@ -64,6 +64,10 @@ public abstract class AbstractChatClient extends JFrame implements ChatListener,
     protected TaskRegistry taskRegistry = TaskRegistry.getInstance();
     protected UserEntry user;
     UsersPanel usersPanel;
+    protected JPanel chatPanel;
+    protected JSplitPane mainSplitter;
+    protected JSplitPane scriptsSplitter;
+
     private static final int MAX_MESSAGE_LENGTH = 500;
 
     ChannelList channelsSubscription = new ChannelList(this);
@@ -114,7 +118,7 @@ public abstract class AbstractChatClient extends JFrame implements ChatListener,
     }
 
     private JPanel createMainPanel() {
-        JPanel chatPanel = new JPanel(new BorderLayout());
+        chatPanel = new JPanel(new BorderLayout());
         outputArea = new ChatArea(user, colorizer, channelsSubscription);
         outputAreaJury = new ChatArea();
         inputArea = new ChatInputArea(this, null);
@@ -150,11 +154,11 @@ public abstract class AbstractChatClient extends JFrame implements ChatListener,
         JPanel topPanel = new JPanel(new BorderLayout());
 
         ScriptsPanel scriptsPanel = new ScriptsPanel(inputArea);
-        JSplitPane scriptsSplitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, chatPanel, scriptsPanel);
-        scriptsSplitter.setResizeWeight(2.0 / 3.0);
+        scriptsSplitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, null, scriptsPanel);
+        scriptsSplitter.setResizeWeight(0.7);
         scriptsSplitter.setOneTouchExpandable(true);
 
-        JSplitPane mainSplitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPane, scriptsSplitter);
+        mainSplitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPane, chatPanel);
         setupSplitter(mainSplitter);
         mainSplitter.setDividerLocation(100);
 
@@ -460,6 +464,15 @@ public abstract class AbstractChatClient extends JFrame implements ChatListener,
     public void userChanged(UserEntry userEntry) {
         if (user != null && userEntry.getName().equals(user.getName())) {
             taskPanel.adminToolBar.setVisible(userEntry.isPower());
+            if (userEntry.isPower()) {
+                mainSplitter.setRightComponent(scriptsSplitter);
+                scriptsSplitter.setLeftComponent(chatPanel);
+                mainSplitter.setDividerLocation(100);
+            } else {
+                scriptsSplitter.setLeftComponent(null);
+                mainSplitter.setRightComponent(chatPanel);
+                mainSplitter.setDividerLocation(100);
+            }
         }
     }
 
