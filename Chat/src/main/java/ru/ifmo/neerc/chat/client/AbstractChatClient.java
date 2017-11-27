@@ -148,9 +148,16 @@ public abstract class AbstractChatClient extends JFrame implements ChatListener,
         outputArea.addUserPickListener(setPrivateAddresseesListener);
 
         JPanel topPanel = new JPanel(new BorderLayout());
-        JSplitPane mainSplitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPane, chatPanel);
+
+        ScriptsPanel scriptsPanel = new ScriptsPanel(inputArea);
+        JSplitPane scriptsSplitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, chatPanel, scriptsPanel);
+        scriptsSplitter.setResizeWeight(2.0 / 3.0);
+        scriptsSplitter.setOneTouchExpandable(true);
+
+        JSplitPane mainSplitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPane, scriptsSplitter);
         setupSplitter(mainSplitter);
         mainSplitter.setDividerLocation(100);
+
         topPanel.add(mainSplitter);
         topPanel.add(createToolBar(), BorderLayout.NORTH);
         return topPanel;
