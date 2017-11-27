@@ -266,7 +266,9 @@ public class ScriptsPanel extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            model.add(inputArea.getText());
+            String script = inputArea.getText().trim();
+            if (!script.isEmpty())
+                model.add(script);
         }
     }
 
