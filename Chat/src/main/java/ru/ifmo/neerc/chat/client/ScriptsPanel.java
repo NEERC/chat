@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -61,9 +62,9 @@ public class ScriptsPanel extends JPanel {
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
 
-        toolBar.add(new JButton(new AddAction()));
-        toolBar.add(new JButton(new DeleteAction()));
-        toolBar.add(new JButton(new ModifyAction()));
+        toolBar.add(new AddAction());
+        toolBar.add(new DeleteAction());
+        toolBar.add(new ModifyAction());
 
         return toolBar;
     }
@@ -260,7 +261,7 @@ public class ScriptsPanel extends JPanel {
 
     private class AddAction extends AbstractAction {
         public AddAction() {
-            super("Add");
+            super("Add", new ImageIcon(ScriptsPanel.class.getResource("res/task_add.gif")));
         }
 
         @Override
@@ -271,7 +272,7 @@ public class ScriptsPanel extends JPanel {
 
     private class DeleteAction extends AbstractAction {
         public DeleteAction() {
-            super("Delete");
+            super("Delete", new ImageIcon(ScriptsPanel.class.getResource("res/task_remove.gif")));
         }
 
         @Override
@@ -284,7 +285,7 @@ public class ScriptsPanel extends JPanel {
 
     private class ModifyAction extends AbstractAction {
         public ModifyAction() {
-            super("Modify");
+            super("Modify", new ImageIcon(ScriptsPanel.class.getResource("res/btn_modify.png")));
         }
 
         @Override
