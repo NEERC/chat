@@ -5,6 +5,9 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +31,13 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.yaml.snakeyaml.Yaml;
+
 public class ScriptsPanel extends JPanel {
+    private static final Logger LOG = LoggerFactory.getLogger("ScriptsPanel");
 
     private JTable list;
     private ScriptsModel model;
@@ -83,6 +92,7 @@ public class ScriptsPanel extends JPanel {
 
     private JTable createList() {
         model = new ScriptsModel();
+        model.load();
 
         list = new JTable(model);
         list.setTableHeader(null);
@@ -131,7 +141,9 @@ public class ScriptsPanel extends JPanel {
     }
 
     private class ScriptsModel extends AbstractTableModel {
-        private final List<String> scripts = new ArrayList<>();
+        private final String SCRIPTS_FILENAME = "scripts.yaml";
+
+        private List<String> scripts = new ArrayList<>();
 
         public ScriptsModel() {
             addTableModelListener(new TableModelListener() {
@@ -149,21 +161,45 @@ public class ScriptsPanel extends JPanel {
 
         public void add(String script) {
             scripts.add(script);
+            save();
             fireTableRowsInserted(scripts.size() - 1, scripts.size() - 1);
         }
 
         public void delete(int index) {
             scripts.remove(index);
+            save();
             fireTableRowsDeleted(index, index);
         }
 
         public void modify(int index, String script) {
             scripts.set(index, script);
+            save();
             fireTableRowsUpdated(index, index);
         }
 
         public String get(int index) {
             return scripts.get(index);
+        }
+
+        public void load() {
+            try {
+                Yaml yaml = new Yaml();
+                FileInputStream stream = new FileInputStream(SCRIPTS_FILENAME);
+                scripts = yaml.loadAs(stream, scripts.getClass());
+                fireTableDataChanged();
+            } catch (IOException e) {
+                LOG.error("Failed to load scripts", e);
+            }
+        }
+
+        public void save() {
+            try {
+                Yaml yaml = new Yaml();
+                FileWriter writer = new FileWriter(SCRIPTS_FILENAME);
+                yaml.dump(scripts, writer);
+            } catch (IOException e) {
+                LOG.error("Failed to save scripts", e);
+            }
         }
 
         @Override
