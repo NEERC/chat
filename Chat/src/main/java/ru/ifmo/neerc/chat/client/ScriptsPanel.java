@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,6 +66,7 @@ public class ScriptsPanel extends JPanel {
         toolBar.add(new AddAction());
         toolBar.add(new DeleteAction());
         toolBar.add(new ModifyAction());
+        toolBar.add(new ReloadAction());
 
         return toolBar;
     }
@@ -188,8 +190,8 @@ public class ScriptsPanel extends JPanel {
                 FileInputStream stream = new FileInputStream(SCRIPTS_FILENAME);
                 scripts = yaml.loadAs(stream, scripts.getClass());
                 fireTableDataChanged();
-            } catch (IOException e) {
-                LOG.error("Failed to load scripts", e);
+            } catch (FileNotFoundException e) {
+                LOG.debug("Failed to load scripts");
             }
         }
 
@@ -295,6 +297,17 @@ public class ScriptsPanel extends JPanel {
             int index = list.getSelectedRow();
             if (index != -1)
                 model.modify(list.convertRowIndexToModel(index), inputArea.getText());
+        }
+    }
+
+    private class ReloadAction extends AbstractAction {
+        public ReloadAction() {
+            super("Reload", new ImageIcon(ScriptsPanel.class.getResource("res/btn_reload.png")));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            model.load();
         }
     }
 }
