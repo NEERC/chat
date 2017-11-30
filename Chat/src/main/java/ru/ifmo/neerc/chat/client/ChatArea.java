@@ -60,11 +60,12 @@ public class ChatArea extends JTable {
         model.addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(final TableModelEvent e) {
+                final int prevRowIndex = getRowCount() - 2;
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
                         updateRowHeights(e.getFirstRow(), e.getLastRow());
-                        scrollToBottomIfNeeded();
+                        scrollToBottomIfNeeded(prevRowIndex);
                     }
                 });
             }
@@ -151,7 +152,7 @@ public class ChatArea extends JTable {
     }
 
     protected void updateRowHeights(int firstRow, int lastRow) {
-        for (int row = firstRow; row <= lastRow; row++) {
+        for (int row = firstRow; row <= Math.min(lastRow, getRowCount() - 1); row++) {
             int rowHeight = 0;
 
             for (int column = 0; column < getColumnCount(); column++) {
@@ -165,8 +166,8 @@ public class ChatArea extends JTable {
         }
     }
 
-    protected void scrollToBottomIfNeeded() {
-        Rectangle prevRect = getCellRect(getRowCount() - 2, 0, true);
+    protected void scrollToBottomIfNeeded(int prevRowIndex) {
+        Rectangle prevRect = getCellRect(prevRowIndex, 0, true);
         if (getVisibleRect().contains(prevRect) || forceScroll) {
             scrollRectToVisible(getCellRect(getRowCount() - 1, 0, true));
         }
