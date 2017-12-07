@@ -12,6 +12,7 @@ public class ChatMessage implements Comparable<ChatMessage>, Serializable {
         Pattern.compile("^(?:([a-zA-Z0-9%]+)>)? *(#+|\\?+|!+)?(.*)$", Pattern.DOTALL);
 
     private String text;
+    private String url;
     private UserEntry user;
     private String to;
     private Date date;
@@ -27,6 +28,11 @@ public class ChatMessage implements Comparable<ChatMessage>, Serializable {
     }
 
     public ChatMessage(String text, UserEntry user, String to, Date date) {
+        this(text, null, user, to, date);
+    }
+
+    public ChatMessage(String text, String url, UserEntry user, String to, Date date) {
+        this.url = url;
         this.user = user;
         this.to = to;
         this.date = date;
@@ -47,6 +53,10 @@ public class ChatMessage implements Comparable<ChatMessage>, Serializable {
 
     public String getText() {
         return text;
+    }
+
+    public String getUrl() {
+        return url;
     }
 
     public void setType(Type type) {
