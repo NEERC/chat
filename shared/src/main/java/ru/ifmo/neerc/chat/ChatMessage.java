@@ -12,6 +12,7 @@ public class ChatMessage implements Comparable<ChatMessage>, Serializable {
         Pattern.compile("^(?:([a-zA-Z0-9%]+)>)? *(#+|\\?+|!+)?(.*)$", Pattern.DOTALL);
 
     private String text;
+    private String url;
     private UserEntry user;
     private String to;
     private Date date;
@@ -27,6 +28,11 @@ public class ChatMessage implements Comparable<ChatMessage>, Serializable {
     }
 
     public ChatMessage(String text, UserEntry user, String to, Date date) {
+        this(text, null, user, to, date);
+    }
+
+    public ChatMessage(String text, String url, UserEntry user, String to, Date date) {
+        this.url = url;
         this.user = user;
         this.to = to;
         this.date = date;
@@ -49,6 +55,10 @@ public class ChatMessage implements Comparable<ChatMessage>, Serializable {
         return text;
     }
 
+    public String getUrl() {
+        return url;
+    }
+
     public void setType(Type type) {
         this.type = type;
     }
@@ -63,6 +73,22 @@ public class ChatMessage implements Comparable<ChatMessage>, Serializable {
 
     public int getPriority() {
         return priority;
+    }
+
+    public boolean isImportantFor(UserEntry user) {
+        // Ignore our own messages
+        if (this.user.equals(user))
+            return false;
+
+        // Private message for us
+        if (to != null && to.equals(user.getName()))
+            return true;
+
+        // Priority message from power user
+        if (this.user.isPower() && priority > 0)
+            return true;
+
+        return false;
     }
 
     public int compareTo(ChatMessage message) {
