@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.error.YAMLException;
 
 public class ScriptsPanel extends JPanel {
     private static final Logger LOG = LoggerFactory.getLogger("ScriptsPanel");
@@ -192,6 +193,8 @@ public class ScriptsPanel extends JPanel {
                 fireTableDataChanged();
             } catch (FileNotFoundException e) {
                 LOG.debug("Failed to load scripts");
+            } catch (YAMLException e) {
+                LOG.error("Failed to load scripts", e);
             }
         }
 
