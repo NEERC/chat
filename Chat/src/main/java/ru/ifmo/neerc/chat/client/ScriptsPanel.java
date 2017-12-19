@@ -7,8 +7,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -201,7 +203,7 @@ public class ScriptsPanel extends JPanel {
         public void save() {
             try {
                 Yaml yaml = new Yaml();
-                FileWriter writer = new FileWriter(SCRIPTS_FILENAME);
+                OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(SCRIPTS_FILENAME), "UTF8");
                 yaml.dump(scripts, writer);
             } catch (IOException e) {
                 LOG.error("Failed to save scripts", e);
